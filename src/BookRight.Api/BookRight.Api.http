@@ -1,0 +1,6 @@
+@BookRight.Api_HostAddress = http://localhost:5105
+
+GET {{BookRight.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

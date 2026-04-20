@@ -1,0 +1,133 @@
+## =========================
+## Visual Studio / .NET
+## =========================
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.env
+*.DotSettings.user
+*.vscode/
+
+# Visual Studio folder (IMPORTANT)
+.vs/
+
+# Build output (FIXED: simplified + corrected)
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+
+# Debug/Release (redundant but harmless cleanup)
+Debug/
+Release/
+DebugPublic/
+Releases/
+
+# Logs
+*.log
+Logs/
+Log/
+
+# Publish output
+publish/
+wwwroot/
+
+# =========================
+# .NET / NuGet / SDK
+# =========================
+
+# NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/
+*.nuget.props
+*.nuget.targets
+artifacts/
+
+# Lock files (keep optional - depends on workflow)
+project.lock.json
+project.fragment.lock.json
+
+# =========================
+# Test / coverage
+# =========================
+
+TestResults/
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+coverage*.json
+coverage*.xml
+
+# =========================
+# Database / local files
+# =========================
+
+*.mdf
+*.ldf
+*.sqlite
+*.db
+*.db-shm
+*.db-wal
+
+# =========================
+# Secrets / security
+# =========================
+
+*.pfx
+*.key
+*.pem
+
+# =========================
+# OS / misc
+# =========================
+
+.DS_Store
+Thumbs.db
+$RECYCLE.BIN/
+
+# temp files
+*~
+*.tmp
+
+# =========================
+# Node / frontend (fullstack)
+# =========================
+
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+build/
+.next/
+.vite/
+.parcel-cache/
+
+# =========================
+# IDE extras
+# =========================
+
+_ReSharper*/
+.idea/
+*.sln.iml
+
+# =========================
+# Azure / deployment
+# =========================
+
+PublishScripts/
+*.pubxml
+*.azurePubxml
+*.publishsettings
+
+# =========================
+# Blazor Envoirmental Settings
+# =========================
+
+*.Blazor/appsettings.json

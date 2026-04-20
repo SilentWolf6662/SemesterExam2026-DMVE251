@@ -1,0 +1,48 @@
+name: Run tests and publish results on PRs
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  run-tests:
+    name: Run tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Create test results directory
+        run: mkdir -p TestResults
+
+      - name: Run Domain tests
+        run: dotnet test --project tests/BookRight.Domain.Tests/BookRight.Domain.Tests.csproj --configuration Release --results-directory TestResults --report-xunit-trx --report-xunit-trx-filename Domain.trx
+        continue-on-error: true
+
+      - name: Run UseCase Tests
+        run: dotnet test --project tests/BookRight.UseCases.Tests/BookRight.UseCases.Tests.csproj --configuration Release --results-directory TestResults --report-xunit-trx --report-xunit-trx-filename UseCases.trx
+        continue-on-error: true
+
+      - name: Publish test results
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action@v2.23.0
+        with:
+          files: "TestResults/**/*.trx"

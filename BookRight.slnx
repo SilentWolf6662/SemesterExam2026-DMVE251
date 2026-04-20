@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/BookRight.Blazor/BookRight.Blazor.csproj" />
+    <Project Path="src/BookRight.Domain/BookRight.Domain.csproj" />
+    <Project Path="src/BookRight.Facade/BookRight.Facade.csproj" />
+    <Project Path="src/BookRight.Infrastructure/BookRight.Infrastructure.csproj" />
+    <Project Path="src/BookRight.UseCases/BookRight.UseCases.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/BookRight.Domain.Tests/BookRight.Domain.Tests.csproj" />
+    <Project Path="tests/BookRight.UseCases.Tests/BookRight.UseCases.Tests.csproj" />
+  </Folder>
+</Solution>
