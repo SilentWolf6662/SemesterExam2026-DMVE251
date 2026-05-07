@@ -23,6 +23,6 @@ namespace BookRight.Domain.ValueObjects
         public TimeSpan Varighed => End - Start;
 
         // Hvis Start er mindre end other.End og End er større end other.Start, så overlapper de
-        public bool Overlapper(AppointmentTime other) => Start < other.End && End > other.Start;
+        public bool Overlapping(AppointmentTime other) => Start < other.End && End > other.Start;
     }
 }
