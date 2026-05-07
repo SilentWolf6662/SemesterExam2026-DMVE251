@@ -5,6 +5,7 @@ on:
   pull_request:
     branches:
       - main # Workflow kører kun når der laves Pull Request mod main
+      - developer
 
 # Giver workflow de nødvendige rettigheder til at læse repo og skrive testresultater i Pull Requestens kommentarer
 permissions:
