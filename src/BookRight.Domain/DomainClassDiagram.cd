@@ -10,15 +10,15 @@
   <Class Name="BookRight.Domain.Entities.Practitioner" Collapsed="true">
     <Position X="0.75" Y="0.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAEAAACgAAAAAAAAAQAAAQAAAAAAAAAAAAAAAAAg=</HashCode>
       <FileName>Entities\Practitioner.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="BookRight.Domain.Entities.Treatment" Collapsed="true">
+  <Class Name="BookRight.Domain.Entities.Appointment" Collapsed="true">
     <Position X="0.75" Y="2" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>Entities\Treatment.cs</FileName>
+      <FileName>Entities\Appointment.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="BookRight.Domain.Entities.Patient" Collapsed="true">

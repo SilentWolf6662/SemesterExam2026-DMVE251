@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BookRight.Domain.ValueObjects
+namespace BookRight.Domain.Entities
 {
-    public record Time
+    public class Appointment
     {
 
     }
