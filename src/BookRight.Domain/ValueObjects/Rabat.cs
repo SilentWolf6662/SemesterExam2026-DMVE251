@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BookRight.Domain.Enums
+namespace BookRight.Domain.ValueObjects
 {
-    internal class Class1
+    internal class Rabat
     {
     }
 }
