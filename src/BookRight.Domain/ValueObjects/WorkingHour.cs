@@ -1,7 +1,6 @@
-﻿namespace BookRight.Domain.ValueObjects
-{
-    public record WorkingHour
-    {
+﻿namespace BookRight.Domain.ValueObjects;
 
-    }
+public record WorkingHour
+{
+
 }

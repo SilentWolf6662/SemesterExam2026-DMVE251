@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace BookRight.Domain.Enums;
 
-namespace BookRight.Domain.Enums
+public enum TreatmentStatus
 {
-    public enum TreatmentStatus
-    {
-        Cancelled,
-        Completed,
-        Booked,
-        NoShow
-    }
+    Cancelled,
+    Completed,
+    Booked,
+    NoShow
 }
