@@ -4,7 +4,7 @@ using System.Text;
 
 namespace BookRight.Domain.Entities
 {
-    internal class Behandler
+    internal class Practitioner
     {
     }
 }

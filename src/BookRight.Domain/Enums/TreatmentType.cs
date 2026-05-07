@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BookRight.Domain.Entities
+namespace BookRight.Domain.Enums
 {
-    internal class Behandling
+    internal class TreatmentType
     {
     }
 }

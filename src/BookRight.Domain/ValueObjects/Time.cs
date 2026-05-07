@@ -4,7 +4,7 @@ using System.Text;
 
 namespace BookRight.Domain.ValueObjects
 {
-    internal class Tidsinterval
+    internal class Time
     {
     }
 }
