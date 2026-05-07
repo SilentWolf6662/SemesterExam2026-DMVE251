@@ -4,7 +4,8 @@ using System.Text;
 
 namespace BookRight.Domain.ValueObjects
 {
-    internal class Time
+    public record Time
     {
+
     }
 }

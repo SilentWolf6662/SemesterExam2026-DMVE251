@@ -15,16 +15,16 @@
     </TypeIdentifier>
   </Class>
   <Class Name="BookRight.Domain.Entities.Treatment" Collapsed="true">
-    <Position X="0.75" Y="1.75" Width="1.5" />
+    <Position X="0.75" Y="2" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Entities\Treatment.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="BookRight.Domain.Entities.Patient" Collapsed="true">
-    <Position X="0.75" Y="2.75" Width="1.5" />
+    <Position X="0.75" Y="3.25" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAgAEAAACAAAAAAAAAAQAAAAAAIAAAAEAAAAAEAAAg=</HashCode>
       <FileName>Entities\Patient.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -43,25 +43,25 @@
     </TypeIdentifier>
   </Class>
   <Class Name="BookRight.Domain.Exceptions.NotFoundException" Collapsed="true">
-    <Position X="4.75" Y="1.75" Width="1.5" />
+    <Position X="4.75" Y="2" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Exceptions\NotFoundException.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="BookRight.Domain.ValueObjects.Rabat" Collapsed="true">
-    <Position X="6.75" Y="0.75" Width="1.5" />
+  <Class Name="BookRight.Domain.Entity" Collapsed="true">
+    <Position X="8.75" Y="4.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>ValueObjects\Discount.cs</FileName>
+      <HashCode>AAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>AggregateRoot.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="BookRight.Domain.ValueObjects.Time" Collapsed="true">
-    <Position X="6.75" Y="1.75" Width="1.5" />
+  <Enum Name="BookRight.Domain.Enums.TreatmentStatus" Collapsed="true">
+    <Position X="2.75" Y="2" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>ValueObjects\Time.cs</FileName>
+      <HashCode>EAAAAAAAACAAAAIAAACAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Enums\TreatmentStatus.cs</FileName>
     </TypeIdentifier>
-  </Class>
+  </Enum>
   <Font Name="Segoe UI" Size="9" />
 </ClassDiagram>
