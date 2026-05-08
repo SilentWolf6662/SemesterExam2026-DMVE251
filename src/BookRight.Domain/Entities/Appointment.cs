@@ -42,7 +42,7 @@ public class Appointment : AggregateRoot
         return appointment; // Returner den validerede appointment uden overlap
     }
 
-    public void OpdaterBehandlingstype(Guid newType)
+    public void UpdateTreatmentType(Guid newType)
     {          
         //Hvis behandlingen er aflyst, gennemført eller Noshow, kan behandlingstypen ikke opdateres
         if (Status == AppointmentStatus.Cancelled || Status == AppointmentStatus.Completed || Status == AppointmentStatus.NoShow)
