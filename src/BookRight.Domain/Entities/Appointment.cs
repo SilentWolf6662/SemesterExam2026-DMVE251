@@ -17,13 +17,11 @@ public class Appointment : AggregateRoot
     private Appointment() { } // EF Core
     private Appointment(TimeInterval timeInterval, Guid type, Guid patient, Guid practitioner)
     {
-
         TimeInterval = timeInterval;
         TreatmentTypeId = type;
         PatientId = patient;
         PractitionerId = practitioner;
         Status = AppointmentStatus.Booked;
-
     }
 
     // ── Factory-metode: eneste måde at oprette en booking for behandling ──────
