@@ -6,7 +6,7 @@ namespace BookRight.Domain.Entities;
 
 public class Appointment : AggregateRoot
 {
-    public AppointmentTime AppointmentTime { get; private set; }
+    public TimeInterval TimeInterval { get; private set; }
     public Guid TreatmentTypeId { get; private set; }
     public Guid PatientId { get; private set; }
     public Guid PractitionerId { get; private set; }
@@ -15,10 +15,10 @@ public class Appointment : AggregateRoot
     
     // PRIVAT constructor — tvinger brug af factory-metoden Create()
     private Appointment() { } // EF Core
-    private Appointment(AppointmentTime appointmentTime, Guid type, Guid patient, Guid practitioner)
+    private Appointment(TimeInterval timeInterval, Guid type, Guid patient, Guid practitioner)
     {
 
-        AppointmentTime = appointmentTime;
+        TimeInterval = timeInterval;
         TreatmentTypeId = type;
         PatientId = patient;
         PractitionerId = practitioner;
@@ -28,7 +28,7 @@ public class Appointment : AggregateRoot
 
     // ── Factory-metode: eneste måde at oprette en booking for behandling ──────
     public static Appointment Create(
-        AppointmentTime appointmentTime,
+        TimeInterval timeInterval,
         Guid treatmentTypeId,
         Guid patientId,
         Guid practitionerId,
@@ -36,7 +36,7 @@ public class Appointment : AggregateRoot
         IEnumerable<Appointment> existingForPractitioner)
     {
         // Laver en ny appointment med en tid, Id for behandlingstype, patient Id og behandler Id
-        var appointment = new Appointment(appointmentTime, treatmentTypeId, patientId, practitionerId);
+        var appointment = new Appointment(timeInterval, treatmentTypeId, patientId, practitionerId);
         // Tjek overlap mellem ny appointment med eksisterende appointment, ved at kigge på den nye appointments sluttid og starttid ligger inde i tiden for den eksisterende appointment
         ValidateNoOverlap(appointment, existingForPatient, existingForPractitioner);
         return appointment; // Returner den validerede appointment uden overlap
@@ -79,13 +79,13 @@ public class Appointment : AggregateRoot
         var activeForPractitioner = existingForPractitioner.Where(k => k.IsActive); // Filtrer kun aktive appointments for behandleren
 
         // Tjek for overlap med patientens eksisterende appointments
-        if (activeForPatient.Any(existingAppointment => appointment.AppointmentTime.Overlapping(existingAppointment.AppointmentTime)))
+        if (activeForPatient.Any(existingAppointment => appointment.TimeInterval.Overlapping(existingAppointment.TimeInterval)))
         {
             throw new DomainException("Der er overlap mellem en anden behandling for patienten");
         }
 
         // Tjek for overlap med behandlerens eksisterende appointments
-        if (activeForPractitioner.Any(existingAppointment => appointment.AppointmentTime.Overlapping(existingAppointment.AppointmentTime)))
+        if (activeForPractitioner.Any(existingAppointment => appointment.TimeInterval.Overlapping(existingAppointment.TimeInterval)))
         {
             throw new DomainException("Der er overlap mellem en anden behandling for behandler");
         }
