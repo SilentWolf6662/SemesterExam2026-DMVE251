@@ -12,7 +12,8 @@ public class Practitioner : AggregateRoot
     public List<Guid> Clinics { get; private set; }
     public List<Guid> Appointments { get; private set; }
 
-    private Practitioner() { }
+    // PRIVAT constructor — tvinger brug af factory-metoden Create()
+    private Practitioner() { } // EF Core
     private Practitioner(string firstName, string lastName, string phoneNumber, string email)
     {
         FirstName = firstName;
@@ -23,7 +24,7 @@ public class Practitioner : AggregateRoot
         Appointments = new List<Guid>();
     }
 
-    // Factory-metode: eneste måde at oprette en behandler på
+    // ── Factory-metode: eneste måde at oprette en behandler ──────
     public static Practitioner Create(string firstName, string lastName, string phoneNumber, string email)
     {
         return new Practitioner(firstName, lastName, phoneNumber, email);
