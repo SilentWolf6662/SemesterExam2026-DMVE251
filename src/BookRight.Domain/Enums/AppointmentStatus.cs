@@ -1,6 +1,6 @@
 ﻿namespace BookRight.Domain.Enums;
 
-public enum TreatmentStatus
+public enum AppointmentStatus
 {
     Cancelled,
     Completed,
