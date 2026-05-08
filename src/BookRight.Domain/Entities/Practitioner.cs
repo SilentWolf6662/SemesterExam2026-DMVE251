@@ -22,6 +22,8 @@ public class Practitioner : AggregateRoot
         Clinics = new List<Guid>();
         Appointments = new List<Guid>();
     }
+
+    // Factory-metode: eneste måde at oprette en behandler på
     public static Practitioner Create(string firstName, string lastName, string phoneNumber, string email)
     {
         return new Practitioner(firstName, lastName, phoneNumber, email);

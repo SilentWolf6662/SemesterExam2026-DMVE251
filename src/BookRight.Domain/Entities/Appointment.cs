@@ -17,13 +17,11 @@ public class Appointment : AggregateRoot
     private Appointment() { } // EF Core
     private Appointment(AppointmentTime appointmentTime, Guid type, Guid patient, Guid practitioner)
     {
-
         AppointmentTime = appointmentTime;
         TreatmentTypeId = type;
         PatientId = patient;
         PractitionerId = practitioner;
         Status = AppointmentStatus.Booked;
-
     }
 
     // ── Factory-metode: eneste måde at oprette en booking for behandling ──────
@@ -49,6 +47,7 @@ public class Appointment : AggregateRoot
         {
             throw new DomainException("Kan ikke opdatere behandlingstype siden behandling er afsluttet");
         }
+
         TreatmentTypeId = newType; // Skift den gamle type til den nye
     }
 
