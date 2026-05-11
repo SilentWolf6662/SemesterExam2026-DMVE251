@@ -171,14 +171,17 @@ public class AppointmentTests
     [Fact]
     public void UpdateTreatmentType_WhenCancelled_ThrowsDomainException()
     {
-        // KOMBINER ALLE DISSE STATUS TEST TIL EN STOR TEST DER TESTER ALLE PÅ EN GANG!!!
         // Arrange
         var interval = CreateInterval(9, 10);
         var appointment = Appointment.Create(interval, TreatmentTypeId, PatientId, PractitionerId, [], []);
-        appointment.Cancel();
-        
+
         // Act & Assert
-        Assert.Throws<DomainException>(() => appointment.UpdateTreatmentType(ExtraTreatmentTypeId)); // (Skift til at den prøver at ændre Status til Cancelled igen
+        appointment.Cancel();
+        Assert.Throws<DomainException>(() => appointment.UpdateTreatmentType(ExtraTreatmentTypeId));
+        appointment.Complete("Hello World");
+        Assert.Throws<DomainException>(() => appointment.UpdateTreatmentType(TreatmentTypeId));
+        appointment.NoOneShowed();
+        Assert.Throws<DomainException>(() => appointment.UpdateTreatmentType(TreatmentTypeId));
     }
 
     // Tester at opdatering af behandlingstype kaster DomainException
