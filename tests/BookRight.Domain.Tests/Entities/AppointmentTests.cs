@@ -6,15 +6,13 @@ using System.Net.NetworkInformation;
 
 namespace BookRight.Domain.Tests.Entities;
 
-/// <summary>
-/// Tests for Appointment-entiteten (aggregat-rod).
-///
-/// Dækker:
-///   - Oprettelse via factory-metoden Create() inkl. overlap-validering
-///   - Opdatering af behandlingstype (UpdateTreatmentType)
-///   - Statusændringer: Cancel, Complete, NoOneShowed
-///   - IsActive-egenskaben
-/// </summary>
+// Tests for Appointment-entiteten (aggregat-rod).
+
+// Dækker:
+//   - Oprettelse via factory-metoden Create() inkl. overlap-validering
+//   - Opdatering af behandlingstype (UpdateTreatmentType)
+//   - Statusændringer: Cancel, Complete, NoOneShowed
+//   - IsActive-egenskaben
 public class AppointmentTests
 {
     // ── Hjælpe-data ───────────────────────────────────────────────────────────
@@ -28,10 +26,8 @@ public class AppointmentTests
     private static readonly Guid ExtraPatientId = Guid.NewGuid();
     private static readonly Guid ExtraPractitionerId = Guid.NewGuid();
 
-    /// <summary>
-    /// Opretter et TimeInterval på en fast testdato mellem de angivne timer.
-    /// Bruges til at holde tidsinterval-oprettelse kortfattet i tests.
-    /// </summary>
+    // Opretter et TimeInterval på en fast testdato mellem de angivne timer.
+    // Bruges til at holde tidsinterval-oprettelse kortfattet i tests.
     private static TimeInterval CreateInterval(int startTime, int endTime)
     {
         return new TimeInterval(
@@ -142,10 +138,10 @@ public class AppointmentTests
 
         // Act
         var appointment = Appointment.Create(interval, TreatmentTypeId, PatientId, PractitionerId, [], []);
-        var newAppointment = Appointment.Create(interval2, ExtraTreatmentTypeId, PatientId, PractitionerId, [appointment], []);
+        var nextAppointment = Appointment.Create(interval2, ExtraTreatmentTypeId, PatientId, PractitionerId, [appointment], []);
 
         // Assert
-        Assert.NotNull(newAppointment); // Tjek at den anden appointment blev oprettet UDEN at kaste DomainException
+        Assert.NotNull(nextAppointment); // Tjek at den anden appointment blev oprettet UDEN at kaste DomainException
     }
 
     // ── UpdateTreatmentType ───────────────────────────────────────────────────
@@ -166,10 +162,8 @@ public class AppointmentTests
         Assert.Equal(ExtraTreatmentTypeId, appointment.TreatmentTypeId);
     }
 
-    /// <summary>
-    /// Returnerer statusændringer der gør appointmenten ugyldig
-    /// for opdatering af behandlingstype.
-    /// </summary>
+    // Returnerer statusændringer der gør appointmenten ugyldig
+    // for opdatering af behandlingstype.
     public static IEnumerable<object[]> InvalidStatusActions()
     {
         yield return
@@ -214,7 +208,7 @@ public class AppointmentTests
 
     // ── Statusændringer ───────────────────────────────────────────────────────
 
-    // Tester at Cancel() ændrer appointmentens status til Cancelled.
+    // Tester at status ændres fra Booked til Cancelled/Completed/NoShow
     [Fact]
     public void StatusChanges_WorksAsExpected()
     {

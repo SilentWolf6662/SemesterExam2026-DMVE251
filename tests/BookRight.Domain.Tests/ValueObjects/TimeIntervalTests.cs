@@ -3,15 +3,13 @@ using BookRight.Domain.ValueObjects;
 
 namespace BookRight.Domain.Tests.ValueObjects;
 
-/// <summary>
-/// Tests for TimeInterval-value-objektet.
-///
-/// Dækker:
-/// - Konstruktør-validering
-/// - Varighed-beregning
-/// - Overlap-logik
-/// - Record value equality
-/// </summary>
+// Tests for TimeInterval-value-objektet.
+
+// Dækker:
+// - Konstruktør-validering
+// - Varighed-beregning
+// - Overlap-logik
+// - Record value equality
 public class TimeIntervalTests
 {
     // ── Hjælpe-metoder ────────────────────────────────────────────────────────
@@ -39,10 +37,8 @@ public class TimeIntervalTests
 
     // ── Konstruktør-validering ────────────────────────────────────────────────
 
-    /// <summary>
-    /// Verificerer at Start og End sættes korrekt
-    /// ved oprettelse af et gyldigt TimeInterval.
-    /// </summary>
+    // Verificerer at Start og End sættes korrekt
+    // ved oprettelse af et gyldigt TimeInterval.
     [Fact]
     public void Constructor_ValidDates_SetsStartAndEndCorrectly()
     {
@@ -58,10 +54,8 @@ public class TimeIntervalTests
         Assert.Equal(end, interval.End);
     }
 
-    /// <summary>
-    /// Verificerer at konstruktøren kaster DomainException
-    /// når sluttidspunktet ligger før starttidspunktet.
-    /// </summary>
+    // Verificerer at konstruktøren kaster DomainException
+    // når sluttidspunktet ligger før starttidspunktet.
     [Fact]
     public void Constructor_EndBeforeStart_ThrowsDomainException()
     {
@@ -73,10 +67,8 @@ public class TimeIntervalTests
         Assert.Throws<DomainException>(() => new TimeInterval(start, end));
     }
 
-    /// <summary>
-    /// Verificerer at konstruktøren kaster DomainException
-    /// når start- og sluttidspunkt er identiske.
-    /// </summary>
+    // Verificerer at konstruktøren kaster DomainException
+    // når start- og sluttidspunkt er identiske.
     [Fact]
     public void Constructor_StartEqualsEnd_ThrowsDomainException()
     {
@@ -87,10 +79,8 @@ public class TimeIntervalTests
         Assert.Throws<DomainException>(() => new TimeInterval(timestamp, timestamp));
     }
 
-    /// <summary>
-    /// Verificerer at et TimeInterval med præcis ét minuts varighed
-    /// accepteres som gyldigt.
-    /// </summary>
+    // Verificerer at et TimeInterval med præcis ét minuts varighed
+    // accepteres som gyldigt.
     [Fact]
     public void Constructor_OneMinuteDuration_CreatesValidInterval()
     {
@@ -107,10 +97,8 @@ public class TimeIntervalTests
 
     // ── Varighed ──────────────────────────────────────────────────────────────
 
-    /// <summary>
-    /// Verificerer at Duration returnerer én time
-    /// for et interval mellem 09:00 og 10:00.
-    /// </summary>
+    // Verificerer at Duration returnerer én time
+    // for et interval mellem 09:00 og 10:00.
     [Fact]
     public void Duration_OneHourInterval_ReturnsOneHour()
     {
@@ -121,10 +109,8 @@ public class TimeIntervalTests
         Assert.Equal(TimeSpan.FromHours(1), interval.Duration);
     }
 
-    /// <summary>
-    /// Verificerer at Duration returnerer to timer
-    /// for et interval mellem 08:00 og 10:00.
-    /// </summary>
+    // Verificerer at Duration returnerer to timer
+    // for et interval mellem 08:00 og 10:00.
     [Fact]
     public void Duration_TwoHourInterval_ReturnsTwoHours()
     {
@@ -165,10 +151,8 @@ public class TimeIntervalTests
         Assert.Equal(expectedResult, result);
     }
 
-    /// <summary>
-    /// Verificerer at overlap-logikken er symmetrisk
-    /// i begge retninger.
-    /// </summary>
+    // Verificerer at overlap-logikken er symmetrisk
+    // i begge retninger.
     [Fact]
     public void Overlapping_IsSymmetric_ReturnsTrueBothWays()
     {
@@ -181,10 +165,8 @@ public class TimeIntervalTests
         Assert.True(second.Overlapping(first));
     }
 
-    /// <summary>
-    /// Verificerer at et interval der er fuldt indeholdt
-    /// i et andet interval betragtes som overlap.
-    /// </summary>
+    // Verificerer at et interval der er fuldt indeholdt
+    // i et andet interval betragtes som overlap.
     [Fact]
     public void Overlapping_ContainedInterval_ReturnsTrue()
     {
@@ -196,10 +178,8 @@ public class TimeIntervalTests
         Assert.True(outer.Overlapping(inner));
     }
 
-    /// <summary>
-    /// Verificerer at to adskilte intervaller
-    /// ikke overlapper hinanden.
-    /// </summary>
+    // Verificerer at to adskilte intervaller
+    // ikke overlapper hinanden.
     [Fact]
     public void Overlapping_SeparatedIntervals_ReturnsFalse()
     {
@@ -211,10 +191,8 @@ public class TimeIntervalTests
         Assert.False(first.Overlapping(second));
     }
 
-    /// <summary>
-    /// Verificerer at to intervaller hvor det ene slutter
-    /// præcis når det andet starter ikke overlapper.
-    /// </summary>
+    // Verificerer at to intervaller hvor det ene slutter
+    // præcis når det andet starter ikke overlapper.
     [Fact]
     public void Overlapping_EndEqualsNextStart_ReturnsFalse()
     {
@@ -226,9 +204,7 @@ public class TimeIntervalTests
         Assert.False(first.Overlapping(second));
     }
 
-    /// <summary>
-    /// Verificerer at et interval overlapper med sig selv.
-    /// </summary>
+    // Verificerer at et interval overlapper med sig selv.
     [Fact]
     public void Overlapping_SameInterval_ReturnsTrue()
     {
@@ -242,10 +218,8 @@ public class TimeIntervalTests
 
     // ── Record value equality ─────────────────────────────────────────────────
 
-    /// <summary>
-    /// Verificerer at to TimeInterval-instancer med identiske værdier
-    /// er value-equal.
-    /// </summary>
+    // Verificerer at to TimeInterval-instancer med identiske værdier
+    // er value-equal.
     [Fact]
     public void Equals_SameValues_ReturnsTrue()
     {
@@ -257,10 +231,8 @@ public class TimeIntervalTests
         Assert.Equal(first, second);
     }
 
-    /// <summary>
-    /// Verificerer at to TimeInterval-instancer med forskellige værdier
-    /// ikke er value-equal.
-    /// </summary>
+    // Verificerer at to TimeInterval-instancer med forskellige værdier
+    // ikke er value-equal.
     [Fact]
     public void Equals_DifferentValues_ReturnsFalse()
     {

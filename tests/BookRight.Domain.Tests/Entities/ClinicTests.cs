@@ -3,31 +3,24 @@ using BookRight.Domain.ValueObjects;
 
 namespace BookRight.Domain.Tests.Entities;
 
-/// <summary>
-/// Tests for Clinic-entiteten (aggregat-root).
-///
-/// Dækker:
-///   - Oprettelse via factory-metoden Create()
-///   - At adresse, åbningstider og antal rum sættes korrekt
-///
-///</summary>
+// Tests for Clinic-entiteten (aggregat-root).
+
+// Dækker:
+//   - Oprettelse via factory-metoden Create()
+//   - At adresse, åbningstider og antal rum sættes korrekt
 public class ClinicTests
 {
     // ── Hjælpe-data ───────────────────────────────────────────────────────────
 
     private static readonly Address TestAddress = new("Klinikgade 5", 8000);
 
-    /// <summary>
-    /// Opretter en simpel liste med ét åbningstids-interval (08:00-16:00).
-    /// </summary>
+    // Opretter en simpel liste med ét åbningstids-interval (08:00-16:00).
     private static List<TimeInterval> CreateOpeningHours() =>
     [
         new(new DateTime(2026, 1, 1, 8, 0, 0), new DateTime(2026, 1, 1, 16, 0, 0))
     ];
 
-    /// <summary>
-    /// Opretter en Clinic med standardværdier der kan overskrives pr. parameter.
-    /// </summary>
+    // Opretter en Clinic med standardværdier der kan overskrives pr. parameter.
     private static Clinic CreateClinic(int rooms = 3, List<TimeInterval>? openingHours = null, Address? address = null) =>
         Clinic.Create(address ?? TestAddress, openingHours ?? CreateOpeningHours(), rooms);
 

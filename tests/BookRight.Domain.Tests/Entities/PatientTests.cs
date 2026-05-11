@@ -3,14 +3,11 @@ using BookRight.Domain.ValueObjects;
 
 namespace BookRight.Domain.Tests.Entities;
 
-/// <summary>
-/// Tests for Patient-entiteten (aggregat-rod).
-///
-/// Dækker:
-///   - Oprettelse via factory-metoden Create()
-///   - At alle felter (navn, telefon, email, fødselsdato, note, foretrukken behandler) sættes korrekt
-///
-///</summary>
+// Tests for Patient-entiteten (aggregat-rod).
+
+// Dækker:
+//   - Oprettelse via factory-metoden Create()
+//   - At alle felter (navn, telefon, email, fødselsdato, note, foretrukken behandler) sættes korrekt
 public class PatientTests
 {
     // ── Hjælpe-data ───────────────────────────────────────────────────────────
@@ -19,9 +16,7 @@ public class PatientTests
 
     private static readonly Guid PreferredPractitionerId = Guid.NewGuid();
 
-    /// <summary>
-    /// Opretter en Patient med standardværdier, der kan overskrives pr. parameter.
-    /// </summary>
+    // Opretter en Patient med standardværdier, der kan overskrives pr. parameter.
     private static Patient CreatePatient(
         string firstName = "Anders",
         string lastName = "Andersen",
@@ -66,7 +61,7 @@ public class PatientTests
         var address = new Address("Testvej 1", 1234);
         
         //Assert
-        //Tjekker at patient data er correct med det oprettet.
+        //Tjekker at patient data er correct med det oprettede data
         Assert.Equal("Anders", patient.FirstName);
         Assert.Equal("Andersen", patient.LastName);
         Assert.Equal("12345678", patient.PhoneNumber);

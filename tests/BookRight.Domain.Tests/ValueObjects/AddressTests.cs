@@ -2,15 +2,13 @@ using BookRight.Domain.ValueObjects;
 
 namespace BookRight.Domain.Tests.ValueObjects;
 
-/// <summary>
-/// Tests for Address-value-objektet.
-///
-/// Dækker:
-/// - Oprettelse af Address
-/// - At StreetName og Zipcode gemmes korrekt
-/// - Record value equality
-/// - Record reference-semantik
-/// </summary>
+// Tests for Address-value-objektet.
+
+// Dækker:
+// - Oprettelse af Address
+// - At StreetName og Zipcode gemmes korrekt
+// - Record value equality
+// - Record reference-semantik
 public class AddressTests
 {
     // ── Oprettelse og feltværdier ─────────────────────────────────────────────
@@ -83,10 +81,8 @@ public class AddressTests
 
     // ── Reference-semantik ────────────────────────────────────────────────────
 
-    /// <summary>
-    /// Verificerer at to Address-instancer med identiske værdier
-    /// ikke refererer til samme objekt i hukommelsen.
-    /// </summary>
+    // Verificerer at to Address-instancer med identiske værdier
+    // ikke refererer til samme objekt i hukommelsen.
     [Fact]
     public void Constructor_SameValues_CreatesDifferentReferences()
     {

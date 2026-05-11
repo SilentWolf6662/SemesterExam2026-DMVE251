@@ -4,22 +4,17 @@ using System.Net;
 
 namespace BookRight.Domain.Tests.Entities;
 
-/// <summary>
-/// Tests for Practitioner-entiteten (aggregat-rod).
-///
-/// Dækker:
-///   - Oprettelse via factory-metoden Create()
-///   - At alle personlige felter (fornavn, efternavn, telefon, email) sættes korrekt
-///   - At listerne Clinics og Appointments er tomme ved oprettelse
-///
-///</summary>
+// Tests for Practitioner-entiteten (aggregat-rod).
+
+// Dækker:
+//   - Oprettelse via factory-metoden Create()
+//   - At alle personlige felter (fornavn, efternavn, telefon, email) sættes korrekt
+//   - At listerne Clinics og Appointments er tomme ved oprettelse
 public class PractitionerTests
 {
     // ── Hjælpe-data ───────────────────────────────────────────────────────────
 
-    /// <summary>
-    /// Opretter en Practitioner med standardværdier, der kan overskrives pr. parameter.
-    /// </summary>
+    // Opretter en Practitioner med standardværdier, der kan overskrives pr. parameter.
     private static Practitioner CreatePractitioner(
         string firstName = "Lars",
         string lastName = "Larsen",
