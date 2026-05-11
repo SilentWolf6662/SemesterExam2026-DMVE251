@@ -1,4 +1,6 @@
 using BookRight.Domain.Entities;
+using BookRight.Domain.ValueObjects;
+using System.Net;
 
 namespace BookRight.Domain.Tests.Entities;
 
@@ -31,49 +33,37 @@ public class PractitionerTests
     [Fact]
     public void Create_Practitioner_WithValidValues_ReturnsNotNull()
     {
+        // Arrange & Act
+        var practitioner = CreatePractitioner();
+
+        Assert.NotNull(practitioner);
     }
 
-    // Tester at FirstName matcher det fornavn der gives til Create().
+    // Tester at data matcher det input data der gives til Create().
     [Fact]
-    public void Create_Practitioner_HasCorrectFirstName()
+    public void Create_Practitioner_HasCorrectData()
     {
-    }
+        // Arrange & Act
+        var practitioner = CreatePractitioner();
 
-    // Tester at LastName matcher det efternavn der gives til Create().
-    [Fact]
-    public void Create_Practitioner_HasCorrectLastName()
-    {
-    }
-
-    // Tester at PhoneNumber matcher det telefonnummer der gives til Create().
-    [Fact]
-    public void Create_Practitioner_HasCorrectPhoneNumber()
-    {
-    }
-
-    // Tester at Email matcher den e-mailadresse der gives til Create().
-    [Fact]
-    public void Create_Practitioner_HasCorrectEmail()
-    {
+        // Assert
+        Assert.Equal("Lars", practitioner.FirstName);
+        Assert.Equal("Larsen", practitioner.LastName);
+        Assert.Equal("11223344", practitioner.PhoneNumber);
+        Assert.Equal("lars@klinik.dk", practitioner.Email);
     }
 
     // ── Lister ────────────────────────────────────────────────────────────────
 
-    // Tester at en nyoprettet behandler ikke er tilknyttet nogen klinikker.
+    // Tester at en nyoprettet behandler ikke er tilknyttet nogen klinikker eller har nogen bookede aftaler.
     [Fact]
-    public void Create_Practitioner_HasEmptyClinicsList()
+    public void Create_Practitioner_HasEmptyClinicsAndAppointmentsList()
     {
-    }
+        // Arrange & Act
+        var practitioner = CreatePractitioner();
 
-    // Tester at en nyoprettet behandler ikke har nogen bookede aftaler.
-    [Fact]
-    public void Create_Practitioner_HasEmptyAppointmentsList()
-    {
-    }
-
-    // Tester at Clinics-listen for to separate behandlere ikke peger på det samme listobjekt.
-    [Fact]
-    public void Create_TwoPractitioners_DoNotShareClinicsListReference()
-    {
+        // Assert
+        Assert.Empty(practitioner.Clinics);
+        Assert.Empty(practitioner.Appointments);
     }
 }
