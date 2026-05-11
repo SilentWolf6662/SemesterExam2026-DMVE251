@@ -46,6 +46,11 @@ public class PatientTests
     [Fact]
     public void Create_Patient_WithValidValues_ReturnsNotNull()
     {
+        //Arrange & Act
+        var patient = CreatePatient();
+
+        //Assert
+        Assert.NotNull(patient);
     }
 
     // Tester at data matcher med input data der gives til Create().
@@ -53,11 +58,26 @@ public class PatientTests
     [Fact]
     public void Create_Patient_HasCorrectData()
     {
+        //Arrange & Act
+        var patient = CreatePatient();
+        var address = new Address("Testvej 1", 1234);
+        //Assert
+        Assert.Equal("Anders", patient.FirstName);
+        Assert.Equal("Andersen", patient.LastName);
+        Assert.Equal("12345678", patient.PhoneNumber);
+        Assert.Equal("anders@test.dk", patient.Email);
+        //Assert.Equal(address, patient.PatientAddress);
     }
 
     // Tester at to Patient-oprettelser giver to separate objekter i hukommelsen.
     [Fact]
-    public void Create_TwoPatients_AreNotSameReference()
+    public void Create_TwoPatients_AreNotSame()
     {
+        //Arrange & Act
+        var patient = CreatePatient();
+        var patient2 = CreatePatient("Fredde");
+
+        //Assert
+        Assert.NotEqual(patient, patient2);
     }
 }
