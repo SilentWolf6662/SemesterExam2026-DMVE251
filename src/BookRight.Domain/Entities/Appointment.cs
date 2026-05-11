@@ -35,7 +35,8 @@ public class Appointment : AggregateRoot
     {
         // Laver en ny appointment med en tid, Id for behandlingstype, patient Id og behandler Id
         var appointment = new Appointment(timeInterval, treatmentTypeId, patientId, practitionerId);
-        // Tjek overlap mellem ny appointment med eksisterende appointment, ved at kigge på den nye appointments sluttid og starttid ligger inde i tiden for den eksisterende appointment
+        // Tjek overlap mellem ny appointment med eksisterende appointment,
+        // ved at kigge på den nye appointments sluttid og starttid ligger inde i tiden for den eksisterende appointment
         ValidateNoOverlap(appointment, existingForPatient, existingForPractitioner);
         return appointment; // Returner den validerede appointment uden overlap
     }
@@ -63,9 +64,11 @@ public class Appointment : AggregateRoot
     }
 
     // Metode til at markere en appointment som gennemført
-    public void Complete()
+    public void Complete(string note)
     {
         Status = AppointmentStatus.Completed; // Opdater status til Completed
+
+        Note = note; // Gem eventuelle noter om behandlingen
     }
 
     public bool IsActive => Status == AppointmentStatus.Booked; // En appointment er aktiv hvis den er 'Booked' (IKKE 'Cancelled', 'Completed', eller 'NoShow')
