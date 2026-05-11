@@ -169,7 +169,7 @@ public class AppointmentTests
     // Tester at opdatering af behandlingstype kaster DomainException
     // når appointmenten allerede er annulleret.
     [Fact]
-    public void UpdateTreatmentType_WhenCancelled_ThrowsDomainException()
+    public void UpdateTreatmentType_WhenStatusChange_ThrowsDomainException()
     {
         // Arrange
         var interval = CreateInterval(9, 10);
@@ -182,20 +182,6 @@ public class AppointmentTests
         Assert.Throws<DomainException>(() => appointment.UpdateTreatmentType(TreatmentTypeId));
         appointment.NoOneShowed();
         Assert.Throws<DomainException>(() => appointment.UpdateTreatmentType(TreatmentTypeId));
-    }
-
-    // Tester at opdatering af behandlingstype kaster DomainException
-    // når appointmenten allerede er markeret som gennemført.
-    [Fact]
-    public void UpdateTreatmentType_WhenCompleted_ThrowsDomainException()
-    {
-    }
-
-    // Tester at opdatering af behandlingstype kaster DomainException
-    // når appointmenten er markeret som NoShow (patienten mødte ikke op).
-    [Fact]
-    public void UpdateTreatmentType_WhenNoShow_ThrowsDomainException()
-    {
     }
 
     // ── Statusændringer ───────────────────────────────────────────────────────
