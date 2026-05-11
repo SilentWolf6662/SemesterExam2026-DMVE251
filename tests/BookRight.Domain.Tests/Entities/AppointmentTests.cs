@@ -166,23 +166,51 @@ public class AppointmentTests
         Assert.Equal(ExtraTreatmentTypeId, appointment.TreatmentTypeId);
     }
 
-    // Tester at opdatering af behandlingstype kaster DomainException
-    // når appointmenten allerede er annulleret.
-    [Fact]
-    public void UpdateTreatmentType_WhenStatusChange_ThrowsDomainException()
+    /// <summary>
+    /// Returnerer statusændringer der gør appointmenten ugyldig
+    /// for opdatering af behandlingstype.
+    /// </summary>
+    public static IEnumerable<object[]> InvalidStatusActions()
+    {
+        yield return
+        [
+            new Action<Appointment>(appointment => appointment.Cancel())
+        ];
+
+        yield return
+        [
+            new Action<Appointment>(appointment => appointment.Complete("Hello World"))
+        ];
+
+        yield return
+        [
+            new Action<Appointment>(appointment => appointment.NoOneShowed())
+        ];
+    }
+
+    /// <summary>
+    /// Verificerer at UpdateTreatmentType kaster DomainException
+    /// når appointmenten har en status der ikke tillader ændringer.
+    /// </summary>
+    /// <param name="changeStatus">
+    /// Handling der ændrer appointmentens status.
+    /// </param>
+    [Theory]
+    [MemberData(nameof(InvalidStatusActions))]
+    public void UpdateTreatmentType_InvalidStatus_ThrowsDomainException(Action<Appointment> changeStatus)
     {
         // Arrange
         var interval = CreateInterval(9, 10);
+
         var appointment = Appointment.Create(interval, TreatmentTypeId, PatientId, PractitionerId, [], []);
 
-        // Act & Assert
-        appointment.Cancel();
+        // Act
+        changeStatus(appointment);
+
+        // Assert
         Assert.Throws<DomainException>(() => appointment.UpdateTreatmentType(ExtraTreatmentTypeId));
-        appointment.Complete("Hello World");
-        Assert.Throws<DomainException>(() => appointment.UpdateTreatmentType(TreatmentTypeId));
-        appointment.NoOneShowed();
-        Assert.Throws<DomainException>(() => appointment.UpdateTreatmentType(TreatmentTypeId));
     }
+
 
     // ── Statusændringer ───────────────────────────────────────────────────────
 

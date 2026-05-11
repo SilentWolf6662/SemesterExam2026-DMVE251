@@ -47,9 +47,11 @@ public class PatientTests
     public void Create_Patient_WithValidValues_ReturnsNotNull()
     {
         //Arrange & Act
+        //Oprettelse af patient.
         var patient = CreatePatient();
 
         //Assert
+        //Tjekke at patienten data ikke er Null.
         Assert.NotNull(patient);
     }
 
@@ -59,9 +61,12 @@ public class PatientTests
     public void Create_Patient_HasCorrectData()
     {
         //Arrange & Act
+        //Oprettelse af patient samt addresse
         var patient = CreatePatient();
         var address = new Address("Testvej 1", 1234);
+        
         //Assert
+        //Tjekker at patient data er correct med det oprettet.
         Assert.Equal("Anders", patient.FirstName);
         Assert.Equal("Andersen", patient.LastName);
         Assert.Equal("12345678", patient.PhoneNumber);
@@ -74,10 +79,12 @@ public class PatientTests
     public void Create_TwoPatients_AreNotSame()
     {
         //Arrange & Act
+        //Opretter 2 patienter.
         var patient = CreatePatient();
         var patient2 = CreatePatient("Fredde");
 
         //Assert
+        //Tjekker at 2 patient oprettelser ikke er de samme.
         Assert.NotEqual(patient, patient2);
     }
 }
