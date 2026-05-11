@@ -34,8 +34,10 @@ public class PractitionerTests
     public void Create_Practitioner_WithValidValues_ReturnsNotNull()
     {
         // Arrange & Act
+        // Opretter practitioner
         var practitioner = CreatePractitioner();
 
+        // Tjekker at practitioner ikke er Null
         Assert.NotNull(practitioner);
     }
 
@@ -44,9 +46,11 @@ public class PractitionerTests
     public void Create_Practitioner_HasCorrectData()
     {
         // Arrange & Act
+        // Opretter practitioner
         var practitioner = CreatePractitioner();
 
         // Assert
+        // Tjekker at practitioner data er korrekt
         Assert.Equal("Lars", practitioner.FirstName);
         Assert.Equal("Larsen", practitioner.LastName);
         Assert.Equal("11223344", practitioner.PhoneNumber);
@@ -60,9 +64,11 @@ public class PractitionerTests
     public void Create_Practitioner_HasEmptyClinicsAndAppointmentsList()
     {
         // Arrange & Act
+        // Opretter practitioner
         var practitioner = CreatePractitioner();
 
         // Assert
+        // Tjekker at nyoprettet behandler ikke er tilknyttet nogen klinikker eller bookinger
         Assert.Empty(practitioner.Clinics);
         Assert.Empty(practitioner.Appointments);
     }
