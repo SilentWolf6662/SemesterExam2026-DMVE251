@@ -48,45 +48,10 @@ public class PatientTests
     {
     }
 
-    // Tester at FirstName matcher det fornavn der gives til Create().
+    // Tester at data matcher med input data der gives til Create().
+    // Tester også Patient-oprettelser giver to separate objekter i hukommelsen.
     [Fact]
-    public void Create_Patient_HasCorrectFirstName()
-    {
-    }
-
-    // Tester at LastName matcher det efternavn der gives til Create().
-    [Fact]
-    public void Create_Patient_HasCorrectLastName()
-    {
-    }
-
-    // Tester at PhoneNumber matcher det telefonnummer der gives til Create().
-    [Fact]
-    public void Create_Patient_HasCorrectPhoneNumber()
-    {
-    }
-
-    // Tester at Email matcher den e-mailadresse der gives til Create().
-    [Fact]
-    public void Create_Patient_HasCorrectEmail()
-    {
-    }
-
-    // Tester at Birthday matcher den fødselsdato der gives til Create().
-    [Fact]
-    public void Create_Patient_HasCorrectBirthday()
-    {
-    }
-
-    // Tester at Note matcher den tekst der gives til Create().
-    [Fact]
-    public void Create_Patient_HasCorrectNote()
-    {
-    }
-
-    // Tester at PreferredPractitioner matcher det behandler-Id der gives til Create().
-    [Fact]
-    public void Create_Patient_HasCorrectPreferredPractitioner()
+    public void Create_Patient_HasCorrectData()
     {
     }
 
