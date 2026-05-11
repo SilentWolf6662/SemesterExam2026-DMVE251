@@ -125,7 +125,7 @@ public class AppointmentTests
         appointment.Cancel(); // Annuller appointment for at simulere en anullering
 
         var newAppointment = Appointment.Create(interval2, ExtraTreatmentTypeId, PatientId, PractitionerId, [appointment], []);
-        
+
         // Assert
         Assert.Equal(AppointmentStatus.Cancelled, appointment.Status); // Tjek at den første appointment er annulleret
         Assert.NotNull(newAppointment); // Tjek at den anden appointment blev oprettet UDEN at kaste DomainException
@@ -158,10 +158,10 @@ public class AppointmentTests
         // Arrange
         var interval = CreateInterval(9, 10);
         var appointment = Appointment.Create(interval, TreatmentTypeId, PatientId, PractitionerId, [], []);
-        
+
         // Act
         appointment.UpdateTreatmentType(ExtraTreatmentTypeId);
-        
+
         // Assert
         Assert.Equal(ExtraTreatmentTypeId, appointment.TreatmentTypeId);
     }
@@ -188,45 +188,18 @@ public class AppointmentTests
 
     // Tester at Cancel() ændrer appointmentens status til Cancelled.
     [Fact]
-    public void Cancel_SetsStatusToCancelled()
+    public void StatusChanges_WorksAsExpected()
     {
-    }
+        // Arrange
+        var interval = CreateInterval(9, 10);
+        var appointment = Appointment.Create(interval, TreatmentTypeId, PatientId, PractitionerId, [], []);
 
-    // Tester at Complete() ændrer appointmentens status til Completed.
-    [Fact]
-    public void Complete_SetsStatusToCompleted()
-    {
-    }
-
-    // Tester at NoOneShowed() ændrer appointmentens status til NoShow.
-    [Fact]
-    public void NoOneShowed_SetsStatusToNoShow()
-    {
-    }
-
-    // ── IsActive ──────────────────────────────────────────────────────────────
-
-    // Tester at IsActive returnerer true for en nyoprettet appointment med status Booked.
-    [Fact]
-    public void IsActive_ReturnsTrue_WhenStatusIsBooked()
-    {
-    }
-
-    // Tester at IsActive returnerer false efter at en appointment er annulleret.
-    [Fact]
-    public void IsActive_ReturnsFalse_WhenCancelled()
-    {
-    }
-
-    // Tester at IsActive returnerer false efter at en appointment er markeret som gennemført.
-    [Fact]
-    public void IsActive_ReturnsFalse_WhenCompleted()
-    {
-    }
-
-    // Tester at IsActive returnerer false efter at en appointment er markeret som NoShow.
-    [Fact]
-    public void IsActive_ReturnsFalse_WhenNoShow()
-    {
+        // Act & Assert
+        appointment.Cancel();
+        Assert.Equal(AppointmentStatus.Cancelled, appointment.Status);
+        appointment.Complete("Hello World");
+        Assert.Equal(AppointmentStatus.Completed, appointment.Status);
+        appointment.NoOneShowed();
+        Assert.Equal(AppointmentStatus.NoShow, appointment.Status);
     }
 }
