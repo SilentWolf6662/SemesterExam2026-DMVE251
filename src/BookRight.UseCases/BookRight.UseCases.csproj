@@ -7,12 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Command\" />
-    <Folder Include="Service\" />
-    <Folder Include="Repositories\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\BookRight.Domain\BookRight.Domain.csproj" />
     <ProjectReference Include="..\BookRight.Facade\BookRight.Facade.csproj" />
   </ItemGroup>
