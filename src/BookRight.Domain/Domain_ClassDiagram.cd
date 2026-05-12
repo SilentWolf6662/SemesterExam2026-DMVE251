@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="BookRight.Domain.Entities.Appointment">
+    <Position X="0.75" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAAESQAAAAIAEAAAAEAAAAAAAEAAAAAAAAEIABA=</HashCode>
+      <FileName>Entities\Appointment.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BookRight.Domain.Entities.Clinic">
+    <Position X="3" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAACAAAAIEAAAAAAAAAAAAE=</HashCode>
+      <FileName>Entities\Clinic.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BookRight.Domain.Entities.Patient">
+    <Position X="5.25" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgAEAAACAAAAAAAAAAQAAAAAAIAAAAEAAAAAEAAAg=</HashCode>
+      <FileName>Entities\Patient.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BookRight.Domain.Entities.Practitioner">
+    <Position X="7.5" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAEAAACgAAAAAIAAAQAAAQAAAAEAAAAAAAAAAAAg=</HashCode>
+      <FileName>Entities\Practitioner.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BookRight.Domain.Enums.AppointmentType" Collapsed="true">
+    <Position X="10" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Enums\AppointmentType.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BookRight.Domain.Exceptions.DomainException" Collapsed="true">
+    <Position X="10" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Exceptions\DomainException.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BookRight.Domain.Exceptions.NotFoundException" Collapsed="true">
+    <Position X="11.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Exceptions\NotFoundException.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BookRight.Domain.Entity" Collapsed="true">
+    <Position X="4" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>AggregateRoot.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BookRight.Domain.AggregateRoot" Collapsed="true">
+    <Position X="4" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>AggregateRoot.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Enum Name="BookRight.Domain.Enums.AppointmentStatus">
+    <Position X="11.75" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAAAACAAAAIAAACAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Enums\AppointmentStatus.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="BookRight.Domain.Enums.AuthorizationType">
+    <Position X="10" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQAAAAAAAAIEAAAAAIAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Enums\AuthorizationType.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
