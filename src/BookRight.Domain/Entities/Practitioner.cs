@@ -8,25 +8,27 @@ public class Practitioner : AggregateRoot
     public string LastName { get; private set; }
     public string PhoneNumber { get; private set; }
     public string Email { get; private set; }
-    public Dictionary<AuthorizationType, bool> Authorization { get; private set; }
+    public AuthorizationType Authorization { get; private set; }
+    public int AuthorizationNumber { get; private set; }
     public List<Guid> Clinics { get; private set; }
     public List<Guid> Appointments { get; private set; }
 
     // PRIVAT constructor — tvinger brug af factory-metoden Create()
     private Practitioner() { } // EF Core
-    private Practitioner(string firstName, string lastName, string phoneNumber, string email)
+    private Practitioner(string firstName, string lastName, string phoneNumber, string email, int authorizationNumber)
     {
         FirstName = firstName;
         LastName = lastName;
         PhoneNumber = phoneNumber;
         Email = email;
+        AuthorizationNumber = authorizationNumber;
         Clinics = new List<Guid>();
         Appointments = new List<Guid>();
     }
 
     // ── Factory-metode: eneste måde at oprette en behandler ──────
-    public static Practitioner Create(string firstName, string lastName, string phoneNumber, string email)
+    public static Practitioner Create(string firstName, string lastName, string phoneNumber, string email, int authorizationNumber)
     {
-        return new Practitioner(firstName, lastName, phoneNumber, email);
+        return new Practitioner(firstName, lastName, phoneNumber, email, authorizationNumber);
     }
 }

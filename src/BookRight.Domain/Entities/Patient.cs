@@ -22,6 +22,7 @@ public class Patient : AggregateRoot
         PhoneNumber = phoneNumber;
         Email = email;
         Birthday = birthDate;
+        PatientAddress = address;
         Note = note;
         PreferredPractitioner = preferredPractitioner;
     }

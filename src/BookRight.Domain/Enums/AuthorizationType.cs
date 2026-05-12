@@ -2,8 +2,8 @@
 
 public enum AuthorizationType
 {
-    Physiotherapist, 
-    Masseur, 
-    Acupuncturist, 
-    Dietician
+    Physiotherapist = 1,
+    Masseur = 2,
+    Acupuncturist = 3,
+    Dietician = 4
 }

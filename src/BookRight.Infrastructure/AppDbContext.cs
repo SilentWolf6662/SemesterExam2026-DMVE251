@@ -1,10 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
-using BookRight.Domain.Entities;
+﻿using BookRight.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace BookRight.Infrastructure;
 
 public class AppDbContext : DbContext
 {
+
+    public DbSet<Patient> Patients => Set<Patient>();
+    public DbSet<Clinic> Clinics => Set<Clinic>();
+    public DbSet<Practitioner> Practitioners => Set<Practitioner>();
+    public DbSet<Appointment> Appointments => Set<Appointment>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
@@ -14,5 +19,63 @@ public class AppDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        ConfigurePatient(modelBuilder);
+        ConfigureClinic(modelBuilder);
+        ConfigureAppointment(modelBuilder);
+        ConfigurePractitioner(modelBuilder);
+    }
+
+    private static void ConfigurePatient(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Patient>(entity =>
+        {
+            // Address er Value Object så vi bruger ComplexProperty med ToJson til map det til JSON i database
+            entity.ComplexProperty(p => p.PatientAddress, a => a.ToJson());
+
+            // Unik email
+            entity.HasIndex(p => p.Email).IsUnique();
+        });
+    }
+
+    private static void ConfigureClinic(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Clinic>(entity =>
+        {
+            // Address er Value Object så vi bruger ComplexProperty med ToJson til map det til JSON i database
+            entity.ComplexProperty(c => c.ClinicAddress, a => a.ToJson());
+
+            // List<TimeInterval> kan ikke mappes implicit, så vi bruger ComplexProperty med ToJson til map det til JSON i database
+            // Gemmes som JSON
+            entity.ComplexCollection(c => c.WorkingHours, t => t.ToJson());
+        });
+    }
+
+    private static void ConfigureAppointment(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Appointment>(entity =>
+        {
+            // TimeInterval er Value Object så vi bruger ComplexProperty med ToJson til map det til JSON i database
+            entity.ComplexProperty(c => c.TimeInterval, t => t.ToJson());
+
+            // Enum gemmes som string
+            entity.Property(a => a.Status).HasConversion<string>();
+        });
+    }
+
+    private static void ConfigurePractitioner(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Practitioner>(entity =>
+        {
+            entity.Property(p => p.Authorization).HasConversion<string>();
+
+            // List<Guid>
+            entity.PrimitiveCollection(p => p.Clinics);
+
+            entity.PrimitiveCollection(p => p.Appointments);
+
+            // Unik email
+            entity.HasIndex(p => p.Email).IsUnique();
+        });
     }
 }
