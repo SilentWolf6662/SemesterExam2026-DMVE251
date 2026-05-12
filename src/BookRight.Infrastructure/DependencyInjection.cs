@@ -18,7 +18,7 @@ public static class DependencyInjection
         // Use Cases (Scoped)
 
         // Queries (Scoped)
-
+        
         return services;
     }
 }
