@@ -12,7 +12,7 @@ public class Appointment : AggregateRoot
     public Guid PractitionerId { get; private set; }
     public string Note { get; private set; } = string.Empty;
     public AppointmentStatus Status { get; private set; }
-    
+
     // PRIVAT constructor — tvinger brug af factory-metoden Create()
     private Appointment() { } // EF Core
     private Appointment(TimeInterval timeInterval, Guid type, Guid patient, Guid practitioner)
@@ -42,7 +42,7 @@ public class Appointment : AggregateRoot
     }
 
     public void UpdateTreatmentType(Guid newType)
-    {          
+    {
         //Hvis behandlingen er aflyst, gennemført eller Noshow, kan behandlingstypen ikke opdateres
         if (Status == AppointmentStatus.Cancelled || Status == AppointmentStatus.Completed || Status == AppointmentStatus.NoShow)
         {

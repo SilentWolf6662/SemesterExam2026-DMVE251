@@ -15,7 +15,6 @@ public record TimeInterval
         Start = start;
         End = end;
     }
-
     // Beregner varigheden af tidsintervallet
     public TimeSpan Duration => End - Start;
 
