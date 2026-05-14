@@ -54,12 +54,12 @@ public class AppointmentRepository : IAppointmentRepository
     }
     Task IAppointmentRepository.UpdateAppointmentStatus_ToCancelledAsync(Appointment appointment)
     {
-        _db.Appointments.Update(appointment);
+        //_db.Appointments.Update(appointment.Cancel());
         return _db.SaveChangesAsync();
     }
     Task IAppointmentRepository.UpdateAppointmentStatus_ToNoShowAsync(Appointment appointment)
     {
-        _db.Appointments.Update(appointment);
+        //_db.Appointments.Update(appointment.NoOneShowed());
         return _db.SaveChangesAsync();
     }
 }
