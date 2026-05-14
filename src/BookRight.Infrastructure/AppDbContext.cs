@@ -67,6 +67,7 @@ public class AppDbContext : DbContext
     {
         modelBuilder.Entity<Practitioner>(entity =>
         {
+            // Enum gemmes som string
             entity.Property(p => p.Authorization).HasConversion<string>();
 
             // List<Guid>
@@ -78,4 +79,5 @@ public class AppDbContext : DbContext
             entity.HasIndex(p => p.Email).IsUnique();
         });
     }
+
 }
