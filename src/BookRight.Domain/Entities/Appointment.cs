@@ -4,7 +4,7 @@ using BookRight.Domain.ValueObjects;
 
 namespace BookRight.Domain.Entities;
 
-public class Appointment : AggregateRoot // dette er en test for at se om jeg kan comit til git
+public class Appointment : AggregateRoot
 {
     public TimeInterval TimeInterval { get; private set; }
     public Guid TreatmentTypeId { get; private set; }
