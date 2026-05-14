@@ -43,7 +43,7 @@
     </TypeIdentifier>
   </Class>
   <Class Name="BookRight.Domain.Entity" Collapsed="true">
-    <Position X="5.25" Y="1.5" Width="1.5" />
+    <Position X="5.25" Y="1.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>AggregateRoot.cs</FileName>
