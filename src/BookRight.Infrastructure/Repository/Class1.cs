@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BookRight.Infrastructure.Repository
+namespace BookRight.Infrastructure.Repository;
+
+internal class Class1
 {
-    internal class Class1
-    {
-    }
 }
