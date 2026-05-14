@@ -22,7 +22,7 @@ namespace BookRight.Domain.Entities
             MaxParticipants = maxParticipants;
         }
 
-        public static TreatmentType Create(string name, AuthorizationType authorizationType, int? maxParticipants)
+        public static TreatmentType Create(string name, AuthorizationType authorizationType, int? maxParticipants = 1)
         {
             return new TreatmentType(name, authorizationType, maxParticipants);
         }

@@ -10,6 +10,7 @@ public class AppDbContext : DbContext
     public DbSet<Clinic> Clinics => Set<Clinic>();
     public DbSet<Practitioner> Practitioners => Set<Practitioner>();
     public DbSet<Appointment> Appointments => Set<Appointment>();
+    public DbSet<TreatmentType> TreatmentTypes => Set<TreatmentType>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
@@ -24,6 +25,7 @@ public class AppDbContext : DbContext
         ConfigureClinic(modelBuilder);
         ConfigureAppointment(modelBuilder);
         ConfigurePractitioner(modelBuilder);
+        ConfigureTreatmentType(modelBuilder);
     }
 
     private static void ConfigurePatient(ModelBuilder modelBuilder)
@@ -77,6 +79,15 @@ public class AppDbContext : DbContext
 
             // Unik email
             entity.HasIndex(p => p.Email).IsUnique();
+        });
+    }
+
+    private static void ConfigureTreatmentType(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<TreatmentType>(entity =>
+        {
+            // Enum gemmes som string
+            entity.Property(t => t.AuthorizationType).HasConversion<string>();
         });
     }
 

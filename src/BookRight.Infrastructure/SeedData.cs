@@ -143,13 +143,19 @@ public class SeedData
         db.Patients.AddRange(lars, mariaPed, anders, sofieA, thomas, rasmus, ida, oliver, camilla, emmaD, henrik, lena, nadia, mikkel, metteBak);
         db.SaveChanges();
 
+        // ── TreatmentTypes ────────────────────────────────────────────────────
+        var physio       = TreatmentType.Create("Fysioterapi",    AuthorizationType.Physiotherapist);
+        var massage      = TreatmentType.Create("Massage",        AuthorizationType.Masseur);
+        var acupuncture  = TreatmentType.Create("Akupunktur",     AuthorizationType.Acupuncturist);
+        var dietitian    = TreatmentType.Create("Kostvejledning", AuthorizationType.Dietician);
+
+        const int maxGroupParticipants = 6;
+        var groupTraining = TreatmentType.Create("Holdtræning",    AuthorizationType.Physiotherapist, maxGroupParticipants);
+
+        db.TreatmentTypes.AddRange(physio, massage, acupuncture, dietitian, groupTraining);
+        db.SaveChanges();
+
         // ── Appointments ──────────────────────────────────────────────────────
-        // TreatmentType-tabellen findes ikke endnu — GUID'er fungerer som FK-pladsholdere
-        var physioId       = new Guid("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
-        var massageId      = new Guid("b2c3d4e5-f6a7-8901-bcde-f12345678901");
-        var acupunctureId  = new Guid("c3d4e5f6-a7b8-9012-cdef-012345678902");
-        var dietitianId    = new Guid("d4e5f6a7-b8c9-0123-defa-123456789003");
-        var holdTrainingId = new Guid("e5f6a7b8-c9d0-1234-efab-234567890004");
 
         // Lister pr. praktiserende læge til validering af overlap
         var annaAppts      = new List<Appointment>();
@@ -186,37 +192,37 @@ public class SeedData
 
         var a1 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 5, 20, 9, 0, 0), new DateTime(2026, 5, 20, 10, 0, 0)),
-            physioId, lars.Id, anna.Id, larsAppts, annaAppts);
+            physio.Id, lars.Id, anna.Id, larsAppts, annaAppts);
         a1.Complete("God fremgang, fortsat styrkeøvelser anbefalet.");
         larsAppts.Add(a1); annaAppts.Add(a1); anna.Appointments.Add(a1.Id);
 
         var a2 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 5, 27, 14, 0, 0), new DateTime(2026, 5, 27, 15, 0, 0)),
-            physioId, metteBak.Id, anna.Id, metteBAppts, annaAppts);
+            physio.Id, metteBak.Id, anna.Id, metteBAppts, annaAppts);
         a2.Complete("Albuen viser bedring, ny session om 2 uger.");
         metteBAppts.Add(a2); annaAppts.Add(a2); anna.Appointments.Add(a2.Id);
 
         var a3 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 5, 15, 10, 0, 0), new DateTime(2026, 5, 15, 11, 0, 0)),
-            massageId, mariaPed.Id, michael.Id, mariaPAppts, michaelAppts);
+            massage.Id, mariaPed.Id, michael.Id, mariaPAppts, michaelAppts);
         a3.Complete("Muskelspændinger i nakke og skuldre behandlet.");
         mariaPAppts.Add(a3); michaelAppts.Add(a3); michael.Appointments.Add(a3.Id);
 
         var a4 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 5, 30, 10, 0, 0), new DateTime(2026, 5, 30, 11, 0, 0)),
-            massageId, thomas.Id, frederik.Id, thomasAppts, frederikAppts);
+            massage.Id, thomas.Id, frederik.Id, thomasAppts, frederikAppts);
         a4.Complete("Nakkestivhed reduceret markant.");
         thomasAppts.Add(a4); frederikAppts.Add(a4); frederik.Appointments.Add(a4.Id);
 
         var a5 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 5, 28, 9, 0, 0), new DateTime(2026, 5, 28, 10, 0, 0)),
-            acupunctureId, sofieA.Id, sara.Id, sofieAAppts, saraAppts);
+            acupuncture.Id, sofieA.Id, sara.Id, sofieAAppts, saraAppts);
         a5.Complete("Første akupunkturbehandling gennemført.");
         sofieAAppts.Add(a5); saraAppts.Add(a5); sara.Appointments.Add(a5.Id);
 
         var a6 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 5, 26, 14, 0, 0), new DateTime(2026, 5, 26, 15, 0, 0)),
-            acupunctureId, henrik.Id, jonas.Id, henrikAppts, jonasAppts);
+            acupuncture.Id, henrik.Id, jonas.Id, henrikAppts, jonasAppts);
         a6.Complete("Rygsmerter afhjulpet med akupunktur.");
         henrikAppts.Add(a6); jonasAppts.Add(a6); jonas.Appointments.Add(a6.Id);
 
@@ -224,7 +230,7 @@ public class SeedData
 
         var a7 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 5, 22, 14, 0, 0), new DateTime(2026, 5, 22, 15, 0, 0)),
-            physioId, oliver.Id, kasper.Id, oliverAppts, kasperAppts);
+            physio.Id, oliver.Id, kasper.Id, oliverAppts, kasperAppts);
         a7.NoOneShowed();
         oliverAppts.Add(a7); kasperAppts.Add(a7); kasper.Appointments.Add(a7.Id);
 
@@ -232,13 +238,13 @@ public class SeedData
 
         var a8 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 6, 10, 0, 0), new DateTime(2026, 6, 6, 11, 0, 0)),
-            massageId, thomas.Id, frederik.Id, thomasAppts, frederikAppts);
+            massage.Id, thomas.Id, frederik.Id, thomasAppts, frederikAppts);
         a8.Cancel();
         thomasAppts.Add(a8); frederikAppts.Add(a8); frederik.Appointments.Add(a8.Id);
 
         var a9 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 2, 9, 0, 0), new DateTime(2026, 6, 2, 10, 0, 0)),
-            dietitianId, nadia.Id, louise.Id, nadiaAppts, louiseAppts);
+            dietitian.Id, nadia.Id, louise.Id, nadiaAppts, louiseAppts);
         a9.Cancel();
         nadiaAppts.Add(a9); louiseAppts.Add(a9); louise.Appointments.Add(a9.Id);
 
@@ -246,78 +252,77 @@ public class SeedData
 
         var a10 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 3, 9, 0, 0), new DateTime(2026, 6, 3, 10, 0, 0)),
-            physioId, lars.Id, anna.Id, larsAppts, annaAppts);
+            physio.Id, lars.Id, anna.Id, larsAppts, annaAppts);
         larsAppts.Add(a10); annaAppts.Add(a10); anna.Appointments.Add(a10.Id);
 
         var a11 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 3, 11, 0, 0), new DateTime(2026, 6, 3, 12, 0, 0)),
-            physioId, anders.Id, anna.Id, andersAppts, annaAppts);
+            physio.Id, anders.Id, anna.Id, andersAppts, annaAppts);
         andersAppts.Add(a11); annaAppts.Add(a11); anna.Appointments.Add(a11.Id);
 
         var a12 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 1, 14, 0, 0), new DateTime(2026, 6, 1, 15, 0, 0)),
-            physioId, camilla.Id, kasper.Id, camillaAppts, kasperAppts);
+            physio.Id, camilla.Id, kasper.Id, camillaAppts, kasperAppts);
         camillaAppts.Add(a12); kasperAppts.Add(a12); kasper.Appointments.Add(a12.Id);
 
         var a13 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 4, 9, 0, 0), new DateTime(2026, 6, 4, 10, 0, 0)),
-            acupunctureId, sofieA.Id, sara.Id, sofieAAppts, saraAppts);
+            acupuncture.Id, sofieA.Id, sara.Id, sofieAAppts, saraAppts);
         sofieAAppts.Add(a13); saraAppts.Add(a13); sara.Appointments.Add(a13.Id);
 
         var a14 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 4, 11, 0, 0), new DateTime(2026, 6, 4, 12, 0, 0)),
-            acupunctureId, nadia.Id, sara.Id, nadiaAppts, saraAppts);
+            acupuncture.Id, nadia.Id, sara.Id, nadiaAppts, saraAppts);
         nadiaAppts.Add(a14); saraAppts.Add(a14); sara.Appointments.Add(a14.Id);
 
         var a15 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 4, 13, 0, 0), new DateTime(2026, 6, 4, 14, 0, 0)),
-            massageId, mariaPed.Id, michael.Id, mariaPAppts, michaelAppts);
+            massage.Id, mariaPed.Id, michael.Id, mariaPAppts, michaelAppts);
         mariaPAppts.Add(a15); michaelAppts.Add(a15); michael.Appointments.Add(a15.Id);
 
         var a16 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 2, 10, 0, 0), new DateTime(2026, 6, 2, 11, 0, 0)),
-            dietitianId, emmaD.Id, julie.Id, emmaDAppts, julieAppts);
+            dietitian.Id, emmaD.Id, julie.Id, emmaDAppts, julieAppts);
         emmaDAppts.Add(a16); julieAppts.Add(a16); julie.Appointments.Add(a16.Id);
 
         var a17 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 3, 14, 0, 0), new DateTime(2026, 6, 3, 15, 0, 0)),
-            massageId, henrik.Id, emma.Id, henrikAppts, emmaAppts);
+            massage.Id, henrik.Id, emma.Id, henrikAppts, emmaAppts);
         henrikAppts.Add(a17); emmaAppts.Add(a17); emma.Appointments.Add(a17.Id);
 
         var a18 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 3, 14, 0, 0), new DateTime(2026, 6, 3, 15, 0, 0)),
-            acupunctureId, lena.Id, jonas.Id, lenaAppts, jonasAppts);
+            acupuncture.Id, lena.Id, jonas.Id, lenaAppts, jonasAppts);
         lenaAppts.Add(a18); jonasAppts.Add(a18); jonas.Appointments.Add(a18.Id);
 
         var a19 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 5, 9, 0, 0), new DateTime(2026, 6, 5, 10, 0, 0)),
-            physioId, rasmus.Id, peter.Id, rasmusAppts, peterAppts);
+            physio.Id, rasmus.Id, peter.Id, rasmusAppts, peterAppts);
         rasmusAppts.Add(a19); peterAppts.Add(a19); peter.Appointments.Add(a19.Id);
 
         var a20 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 5, 11, 0, 0), new DateTime(2026, 6, 5, 12, 0, 0)),
-            physioId, ida.Id, peter.Id, idaAppts, peterAppts);
+            physio.Id, ida.Id, peter.Id, idaAppts, peterAppts);
         idaAppts.Add(a20); peterAppts.Add(a20); peter.Appointments.Add(a20.Id);
 
         var a21 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 5, 13, 0, 0), new DateTime(2026, 6, 5, 14, 0, 0)),
-            physioId, mikkel.Id, metteLar.Id, mikkelAppts, metteLarAppts);
+            physio.Id, mikkel.Id, metteLar.Id, mikkelAppts, metteLarAppts);
         mikkelAppts.Add(a21); metteLarAppts.Add(a21); metteLar.Appointments.Add(a21.Id);
 
         var a22 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 10, 11, 0, 0), new DateTime(2026, 6, 10, 12, 0, 0)),
-            physioId, camilla.Id, metteLar.Id, camillaAppts, metteLarAppts);
+            physio.Id, camilla.Id, metteLar.Id, camillaAppts, metteLarAppts);
         camillaAppts.Add(a22); metteLarAppts.Add(a22); metteLar.Appointments.Add(a22.Id);
 
         var a23 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 4, 11, 0, 0), new DateTime(2026, 6, 4, 12, 0, 0)),
-            physioId, lena.Id, christian.Id, lenaAppts, christianAppts);
+            physio.Id, lena.Id, christian.Id, lenaAppts, christianAppts);
         lenaAppts.Add(a23); christianAppts.Add(a23); christian.Appointments.Add(a23.Id);
 
-        // ── Holdtræning pladsholder — skift holdTrainingId med en rigtig TreatmentType.Id, når den er klar ──
         var a24 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 8, 9, 0, 0), new DateTime(2026, 6, 8, 10, 0, 0)),
-            holdTrainingId, oliver.Id, peter.Id, oliverAppts, peterAppts);
+            groupTraining.Id, oliver.Id, peter.Id, oliverAppts, peterAppts);
         oliverAppts.Add(a24); peterAppts.Add(a24); peter.Appointments.Add(a24.Id);
 
         db.Appointments.AddRange(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24);
