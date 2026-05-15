@@ -8,7 +8,7 @@ public class AppointmentQueriesImpl : IAppointmentQueries
 {
     private readonly AppDbContext _db;
 
-    AppointmentQueriesImpl(AppDbContext db)
+    public AppointmentQueriesImpl(AppDbContext db)
     {
         _db = db;
     }

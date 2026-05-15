@@ -2,7 +2,6 @@ using BookRight.Domain.Entities;
 using BookRight.Domain.Enums;
 using BookRight.Domain.Exceptions;
 using BookRight.Domain.ValueObjects;
-using System.Net.NetworkInformation;
 
 namespace BookRight.Domain.Tests.Entities;
 
