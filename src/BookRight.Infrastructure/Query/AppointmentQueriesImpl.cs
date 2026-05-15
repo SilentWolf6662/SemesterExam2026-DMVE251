@@ -21,22 +21,24 @@ public class AppointmentQueriesImpl : IAppointmentQueries
             a.TimeInterval.Start,
             a.TimeInterval.End,
             a.TreatmentTypeId,
-            a.Status.ToString(),
-            a.Note
+            a.PractitionerId,
+            a.Status.ToString()
             )).ToListAsync();
     }
 
 
     // Henter informationer fra databasen omkring Appointment
     // Bruger AsNoTracking så EF-Core ikke tracker den
-    async Task<AppointmentDto?> IAppointmentQueries.GetAsync(Guid id)
+    async Task<AppointmentDetailedDto?> IAppointmentQueries.GetAsync(Guid id)
     {
         return await _db.Appointments.AsNoTracking()
-            .Where(a => a.Id == id).Select(a => new AppointmentDto(
+            .Where(a => a.Id == id).Select(a => new AppointmentDetailedDto(
             a.Id,
             a.TimeInterval.Start,
             a.TimeInterval.End,
             a.TreatmentTypeId,
+            a.PatientId,
+            a.PractitionerId,
             a.Status.ToString(),
             a.Note
             )).FirstOrDefaultAsync();
