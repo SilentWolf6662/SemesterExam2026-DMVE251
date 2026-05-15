@@ -10,7 +10,7 @@ namespace BookRight.Infrastructure.Query
     public class PatientQueriesImpl : IPatientQueries
     {
         private readonly AppDbContext _db;
-        PatientQueriesImpl(AppDbContext db)
+        public PatientQueriesImpl(AppDbContext db)
         {
             _db = db;
         }
