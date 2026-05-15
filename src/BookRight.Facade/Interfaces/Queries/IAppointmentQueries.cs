@@ -7,7 +7,7 @@ namespace BookRight.Facade.Interfaces.Queries
 {
     public interface IAppointmentQueries
     {
-        Task<BookAppointmentRequest?> GetAsync(Guid id);
-        Task<IReadOnlyList<BookAppointmentRequest>> GetAllAsync();
+        Task<AppointmentDetailedDto?> GetAsync(Guid id);
+        Task<IReadOnlyList<AppointmentDto>> GetAllAsync();
     }
 }
