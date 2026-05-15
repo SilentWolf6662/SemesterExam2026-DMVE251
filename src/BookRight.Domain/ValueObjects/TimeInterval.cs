@@ -20,8 +20,8 @@ public record TimeInterval
 
     // Hvis Start er mindre end other.End og End er større end other.Start, så overlapper de
     public bool Overlapping(TimeInterval other) => Start < other.End && End > other.Start;
-    // Test med minutter hvor default Interval er 9:00 - 10:00 og test imod følgende intervaller:
+    // Altså ved et tidsinterval på 9:00 - 10:00 vil følgende intervaller overlappe:
     // Interval: 9:30 - 9:45
     // Interval: 8:30 - 9:30
-    // Interval 9:30 - 10:30
+    // Interval: 9:30 - 10:30
 }

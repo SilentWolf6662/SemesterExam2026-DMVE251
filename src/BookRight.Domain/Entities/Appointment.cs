@@ -35,7 +35,7 @@ public class Appointment : AggregateRoot
     {
         // Laver en ny appointment med en tid, Id for behandlingstype, patient Id og behandler Id
         var appointment = new Appointment(timeInterval, treatmentTypeId, patientId, practitionerId);
-        // Tjek overlap mellem ny appointment med eksisterende appointment,
+        // Tjek overlap mellem ny appointment med eksisterende appointments,
         // ved at kigge på den nye appointments sluttid og starttid ligger inde i tiden for den eksisterende appointment
         ValidateNoOverlap(appointment, existingForPatient, existingForPractitioner);
         return appointment; // Returner den validerede appointment uden overlap
