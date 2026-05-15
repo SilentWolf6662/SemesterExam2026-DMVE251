@@ -17,6 +17,7 @@ namespace BookRight.Infrastructure.Query
             _db = db;
         }
 
+        //Henter alle Treatmentstypes fra databasen og returnerer dem som en read-only liste af DTO'er
         async Task<IReadOnlyList<TreatmentTypeDto>> ITreatmentTypeQueries.GetAllAsync()
         {
             return await _db.TreatmentTypes.AsNoTracking().Select(t => new TreatmentTypeDto(
@@ -27,6 +28,9 @@ namespace BookRight.Infrastructure.Query
                 )).ToListAsync();
         }
 
+
+        // Henter en enkelt Treatmenttype med detaljerede oplysninger baseret på id
+        // Returnerer null hvis Treatmenttypen ikke findes
         async Task<TreatmentTypeDto?> ITreatmentTypeQueries.GetAsync(Guid id)
         {
             return await _db.TreatmentTypes.AsNoTracking()
