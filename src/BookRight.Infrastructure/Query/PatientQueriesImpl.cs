@@ -15,6 +15,7 @@ namespace BookRight.Infrastructure.Query
             _db = db;
         }
 
+        //Henter alle patienter fra databasen og returnerer dem som en read-only liste af DTO'er
         async Task<IReadOnlyList<PatientDto>> IPatientQueries.GetAllAsync()
         {
             return await _db.Patients.AsNoTracking().Select(p => new PatientDto(
@@ -27,6 +28,8 @@ namespace BookRight.Infrastructure.Query
                 )).ToListAsync();
         }
 
+        // Henter en enkelt patient med detaljerede oplysninger baseret på id
+        // Returnerer null hvis patienten ikke findes
         async Task<PatientDetailedDto?> IPatientQueries.GetAsync(Guid id)
         {
             return await _db.Patients.AsNoTracking()
