@@ -13,7 +13,7 @@ public class AppointmentQueriesImpl : IAppointmentQueries
         _db = db;
     }
 
-    //Henter og læser kun informationer fra databasen omkring Appointment
+    //Henter alle aftaler fra databasen og returnerer dem som en read-only liste af DTO'er
     async Task<IReadOnlyList<AppointmentDto>> IAppointmentQueries.GetAllAsync()
     {
         return await _db.Appointments.AsNoTracking().Select(a => new AppointmentDto(
@@ -27,8 +27,8 @@ public class AppointmentQueriesImpl : IAppointmentQueries
     }
 
 
-    // Henter informationer fra databasen omkring Appointment
-    // Bruger AsNoTracking så EF-Core ikke tracker den
+    // Henter en enkelt aftale med detaljerede oplysninger baseret på id
+    // Returnerer null hvis aftalen ikke findes
     async Task<AppointmentDetailedDto?> IAppointmentQueries.GetAsync(Guid id)
     {
         return await _db.Appointments.AsNoTracking()
