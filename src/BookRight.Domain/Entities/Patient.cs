@@ -27,6 +27,11 @@ public class Patient : AggregateRoot
         PreferredPractitioner = preferredPractitioner;
     }
 
+    public void UpdatePreferredPractitioner(Guid newPractitionerId)
+    {
+        PreferredPractitioner = newPractitionerId;
+    }
+
     // ── Factory-metode: eneste måde at oprette en patient / kunde ──────
     public static Patient Create(string firstName, string lastName, string phoneNumber, string email, DateTime birthDate, Address address, string note, Guid preferredPractitioner)
     {

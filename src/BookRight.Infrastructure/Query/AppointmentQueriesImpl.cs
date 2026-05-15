@@ -1,5 +1,5 @@
-﻿using BookRight.Facade.Interfaces.Queries;
-using BookRight.Facade.DTO;
+﻿using BookRight.Facade.DTO;
+using BookRight.Facade.Interfaces.Queries;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookRight.Infrastructure.Query;

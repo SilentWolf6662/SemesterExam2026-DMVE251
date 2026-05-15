@@ -1,6 +1,12 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using BookRight.Facade.Interfaces.Queries;
+using BookRight.Facade.Interfaces.UseCase;
+using BookRight.Infrastructure.Query;
+using BookRight.Infrastructure.Repository;
+using BookRight.UseCases.Command;
+using BookRight.UseCases.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BookRight.Infrastructure;
 
@@ -14,11 +20,39 @@ public static class DependencyInjection
 
         // Repositories (Scoped)
         // Example: services.AddScoped<IConsultationRepository, ConsultationRepository>();
+        services.AddScoped<IAppointmentRepository, AppointmentRepository>();
+
+        services.AddScoped<IClinicRepository, ClinicRepository>();
+
+        services.AddScoped<IPatientRepository, PatientRepository>();
+
+        services.AddScoped<IPractitionerRepository, PractitionerRepository>();
 
         // Use Cases (Scoped)
+        // Clinic Use Cases
+        services.AddScoped<ICreateClinicUseCase, CreateClinicUseCase>();
+
+        // Patient Use Cases
+        services.AddScoped<ICreatePatientUseCase, CreatePatientUseCase>();
+        services.AddScoped<IUpdatePreferredPractitionerUseCase, UpdatePreferredPractitionerUseCase>();
+
+        // Practitioner Use Cases
+        services.AddScoped<ICreatePractitionerUseCase, CreatePractitionerUseCase>();
+
+        // Appointment Use Cases
+        services.AddScoped<IBookAppointment, BookAppointment>();
 
         // Queries (Scoped)
-        
+        services.AddScoped<IAppointmentQueries, AppointmentQueriesImpl>();
+
+        services.AddScoped<IClinicQueries, ClinicQueriesImpl>();
+
+        services.AddScoped<IPatientQueries, PatientQueriesImpl>();
+
+        services.AddScoped<IPractitionerQueries, PractitionerQueriesImpl>();
+
+        services.AddScoped<ITreatmentTypeQueries, TreatmentTypeQueriesImpl>();
+
         return services;
     }
 }

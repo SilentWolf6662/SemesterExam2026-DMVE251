@@ -1,12 +1,8 @@
 ﻿using BookRight.Facade.Command;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace BookRight.Facade.Interfaces.UseCase
+namespace BookRight.Facade.Interfaces.UseCase;
+
+public interface ICompleteAppointmentUseCase
 {
-    public interface ICompleteAppointmentUseCase
-    {
-        Task Execute(CompleteAppointmentRequest request);
-    }
+    Task Execute(CompleteAppointmentRequest request);
 }

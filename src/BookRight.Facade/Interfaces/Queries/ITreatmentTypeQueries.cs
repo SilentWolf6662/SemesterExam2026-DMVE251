@@ -1,7 +1,7 @@
-﻿using BookRight.Facade.DTO;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using BookRight.Facade.DTO;
 
 namespace BookRight.Facade.Interfaces.Queries
 {

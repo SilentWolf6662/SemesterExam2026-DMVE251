@@ -1,6 +1,6 @@
+using System.Net;
 using BookRight.Domain.Entities;
 using BookRight.Domain.ValueObjects;
-using System.Net;
 
 namespace BookRight.Domain.Tests.Entities;
 
