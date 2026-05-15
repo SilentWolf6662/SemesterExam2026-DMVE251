@@ -1,12 +1,8 @@
 ﻿using BookRight.Domain.Entities;
-using BookRight.Domain.Exceptions;
-using BookRight.Domain.ValueObjects;
 using BookRight.Facade.Command;
-using BookRight.Facade.Interfaces.Queries;
 using BookRight.UseCases.Repositories;
 using BookRight.UseCases.Service;
 using Moq;
-using Xunit;
 
 namespace BookRight.UseCases.Tests;
 
