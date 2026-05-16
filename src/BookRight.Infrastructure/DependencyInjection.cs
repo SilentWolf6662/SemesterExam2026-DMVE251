@@ -1,9 +1,11 @@
-﻿using BookRight.Facade.Interfaces.Queries;
+﻿using BookRight.Domain.Entities;
+using BookRight.Facade.Interfaces.Queries;
 using BookRight.Facade.Interfaces.UseCase;
 using BookRight.Infrastructure.Query;
 using BookRight.Infrastructure.Repository;
 using BookRight.UseCases.Command;
 using BookRight.UseCases.Repositories;
+using BookRight.UseCases.Service;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,14 +21,11 @@ public static class DependencyInjection
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
         // Repositories (Scoped)
-        // Example: services.AddScoped<IConsultationRepository, ConsultationRepository>();
         services.AddScoped<IAppointmentRepository, AppointmentRepository>();
-
         services.AddScoped<IClinicRepository, ClinicRepository>();
-
         services.AddScoped<IPatientRepository, PatientRepository>();
-
         services.AddScoped<IPractitionerRepository, PractitionerRepository>();
+        services.AddScoped<ITreatmentTypeRepository, TreatmentTypeRepository>();
 
         // Use Cases (Scoped)
         // Clinic Use Cases
@@ -44,13 +43,9 @@ public static class DependencyInjection
 
         // Queries (Scoped)
         services.AddScoped<IAppointmentQueries, AppointmentQueriesImpl>();
-
         services.AddScoped<IClinicQueries, ClinicQueriesImpl>();
-
         services.AddScoped<IPatientQueries, PatientQueriesImpl>();
-
         services.AddScoped<IPractitionerQueries, PractitionerQueriesImpl>();
-
         services.AddScoped<ITreatmentTypeQueries, TreatmentTypeQueriesImpl>();
 
         return services;

@@ -2,11 +2,12 @@
 using BookRight.Domain.Exceptions;
 using BookRight.Domain.ValueObjects;
 using BookRight.Facade.Command;
+using BookRight.Facade.Interfaces.UseCase;
 using BookRight.UseCases.Repositories;
 
 namespace BookRight.UseCases.Service;
 
-public class BookAppointment
+public class BookAppointment : IBookAppointment
 {
     private readonly IAppointmentRepository _appointmentRepo;
     private readonly IPractitionerRepository _practitionerRepo;
