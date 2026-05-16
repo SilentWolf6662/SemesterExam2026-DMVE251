@@ -1,5 +1,4 @@
-﻿using BookRight.Domain.Entities;
-using BookRight.Facade.Interfaces.Queries;
+﻿using BookRight.Facade.Interfaces.Queries;
 using BookRight.Facade.Interfaces.UseCase;
 using BookRight.Infrastructure.Query;
 using BookRight.Infrastructure.Repository;

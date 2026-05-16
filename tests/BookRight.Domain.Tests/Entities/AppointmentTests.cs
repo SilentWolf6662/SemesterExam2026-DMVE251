@@ -1,4 +1,3 @@
-using System.Net.NetworkInformation;
 using BookRight.Domain.Entities;
 using BookRight.Domain.Enums;
 using BookRight.Domain.Exceptions;

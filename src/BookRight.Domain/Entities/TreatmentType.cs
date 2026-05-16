@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using BookRight.Domain.Enums;
+﻿using BookRight.Domain.Enums;
 
 namespace BookRight.Domain.Entities;
 

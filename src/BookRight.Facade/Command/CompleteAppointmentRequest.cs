@@ -1,8 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace BookRight.Facade.Command;
 
-namespace BookRight.Facade.Command
-{
-    public record CompleteAppointmentRequest(Guid AppointmentId, string Note);
-}
+public record CompleteAppointmentRequest(Guid AppointmentId, string Note);

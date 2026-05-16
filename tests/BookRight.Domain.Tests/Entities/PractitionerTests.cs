@@ -1,6 +1,4 @@
-using System.Net;
 using BookRight.Domain.Entities;
-using BookRight.Domain.ValueObjects;
 
 namespace BookRight.Domain.Tests.Entities;
 
@@ -20,7 +18,7 @@ public class PractitionerTests
         string lastName = "Larsen",
         string phoneNumber = "11223344",
         string email = "lars@klinik.dk") =>
-        Practitioner.Create(firstName, lastName, phoneNumber, email);
+        Practitioner.Create(firstName, lastName, phoneNumber, email, Enums.AuthorizationType.Physiotherapist, 10007);
 
     // ── Oprettelse ────────────────────────────────────────────────────────────
 

@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using BookRight.Facade.DTO;
+﻿using BookRight.Facade.DTO;
 
-namespace BookRight.Facade.Interfaces.Queries
+namespace BookRight.Facade.Interfaces.Queries;
+
+public interface ITreatmentTypeQueries
 {
-    public interface ITreatmentTypeQueries
-    {
-        Task<TreatmentTypeDto?> GetAsync(Guid id);
-        Task<IReadOnlyList<TreatmentTypeDto>> GetAllAsync();
+    Task<TreatmentTypeDto?> GetAsync(Guid id);
+    Task<IReadOnlyList<TreatmentTypeDto>> GetAllAsync();
         
-    }
 }

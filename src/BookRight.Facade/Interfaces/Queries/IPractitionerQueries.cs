@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using BookRight.Facade.DTO;
+﻿using BookRight.Facade.DTO;
 
-namespace BookRight.Facade.Interfaces.Queries
+namespace BookRight.Facade.Interfaces.Queries;
+
+public interface IPractitionerQueries
 {
-    public interface IPractitionerQueries
-    {
-        Task<PractitionerDto?> GetAsync(Guid id);
-        Task<IReadOnlyList<PractitionerDto>> GetAllAsync();
+    Task<PractitionerDto?> GetAsync(Guid id);
+    Task<IReadOnlyList<PractitionerDto>> GetAllAsync();
         
-    }
 }
