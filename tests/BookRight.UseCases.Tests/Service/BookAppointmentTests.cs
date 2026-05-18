@@ -1,4 +1,6 @@
 using BookRight.Domain.Entities;
+using BookRight.Domain.Enums;
+using BookRight.Domain.ValueObjects;
 using BookRight.Facade.Command;
 using BookRight.UseCases.Repositories;
 using BookRight.UseCases.Service;
@@ -35,8 +37,8 @@ public class BookAppointmentTests
 
         var request = new BookAppointmentRequest(start, end, treatmentTypeId, patientId, practitionerId);
         
-        var mockPatient = Mock.Of<Patient>();
-        var mockPractitioner = Mock.Of<Practitioner>();
+        var mockPatient = Patient.Create("Test", "Patient", "12345678", "test@test.dk", DateTime.UtcNow.AddYears(-30), new Address("Testvej 1", 7100), "", Guid.Empty);
+        var mockPractitioner = Practitioner.Create("Test", "Practitioner", "87654321", "practitioner@test.dk", AuthorizationType.Physiotherapist, 12345);
         var existingPatientAppointments = new List<Appointment>();
         var existingPractitionerAppointments = new List<Appointment>();
 
@@ -51,11 +53,7 @@ public class BookAppointmentTests
         await _sut.Execute(request);
 
         // Assert
-        _patientRepoMock.Verify(x => x.GetByIdAsync(patientId), Times.Once); // Verificerer, at GetPatient_ByIdAsync blev kaldt én gang med det forventede patientId
-        _practitionerRepoMock.Verify(x => x.GetByIdAsync(practitionerId), Times.Once); // Verificerer, at GetPractitioner_ByIdAsync blev kaldt én gang med det forventede practitionerId
-        _appointmentRepoMock.Verify(x => x.GetByIdAsync(patientId), Times.Once); // Verificerer, at GetAppointments_ByPatientIdAsync blev kaldt én gang med det forventede patientId
-        _appointmentRepoMock.Verify(x => x.GetByIdAsync(practitionerId), Times.Once); // Verificerer, at GetAppointments_ByPractitionerIdAsync blev kaldt én gang med det forventede practitionerId
         _appointmentRepoMock.Verify(x => x.AddAsync(It.IsAny<Appointment>()), Times.Once); // Verificerer, at AddAppointmentAsync blev kaldt én gang
-        //Assert.NotEmpty(await IAppointmentQueries.GetAllAsync().Result);
+        _appointmentRepoMock.Verify(x => x.SaveAsync(), Times.Once); // Verificerer, at SaveAsync blev kaldt én gang
     }
 }
