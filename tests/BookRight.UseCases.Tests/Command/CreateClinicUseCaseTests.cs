@@ -43,7 +43,7 @@ public class CreateClinicUseCaseTests
 
     // ── Persistering ──────────────────────────────────────────────────────────
 
-    // Tester at AddAsync kaldes præcis én gang med en Clinic-instans.
+    // Tester at AddAsync og SaveAsync kaldes præcis én gang med en Clinic-instans.
     [Fact]
     public async Task Execute_WithValidRequest_CallsAddAndSaveAsync()
     {
