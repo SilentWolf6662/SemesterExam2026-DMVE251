@@ -5,7 +5,7 @@ using BookRight.Facade.Command;
 using BookRight.Facade.Interfaces.UseCase;
 using BookRight.UseCases.Repositories;
 
-namespace BookRight.UseCases.Service;
+namespace BookRight.UseCases.Command;
 
 public class BookAppointment : IBookAppointment
 {

@@ -1,7 +1,7 @@
 using BookRight.Domain.Entities;
 using BookRight.Facade.Command;
+using BookRight.UseCases.Command;
 using BookRight.UseCases.Repositories;
-using BookRight.UseCases.Service;
 using Moq;
 
 namespace BookRight.UseCases.Tests;

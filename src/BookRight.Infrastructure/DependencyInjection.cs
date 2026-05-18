@@ -4,7 +4,6 @@ using BookRight.Infrastructure.Query;
 using BookRight.Infrastructure.Repository;
 using BookRight.UseCases.Command;
 using BookRight.UseCases.Repositories;
-using BookRight.UseCases.Service;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

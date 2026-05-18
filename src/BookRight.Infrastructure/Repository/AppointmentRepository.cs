@@ -51,21 +51,4 @@ public class AppointmentRepository : IAppointmentRepository
         await _db.Appointments
             .AddAsync(appointment);
     }
-
-    // Opdaterer en eksisterende appointment i databasen
-    //Task IAppointmentRepository.UpdateAppointmentStatus_ToCompletedAsync(Appointment appointment)
-    //{
-    //    //_db.Appointments.Update(appointment.Complete());
-    //    return _db.SaveChangesAsync();
-    //}
-    //Task IAppointmentRepository.UpdateAppointmentStatus_ToCancelledAsync(Appointment appointment)
-    //{
-    //    //_db.Appointments.Update(appointment.Cancel());
-    //    return _db.SaveChangesAsync();
-    //}
-    //Task IAppointmentRepository.UpdateAppointmentStatus_ToNoShowAsync(Appointment appointment)
-    //{
-    //    //_db.Appointments.Update(appointment.NoOneShowed());
-    //    return _db.SaveChangesAsync();
-    //}
 }

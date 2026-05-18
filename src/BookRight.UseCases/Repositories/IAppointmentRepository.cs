@@ -9,7 +9,4 @@ public interface IAppointmentRepository
     Task<IReadOnlyList<Appointment>> GetAllByPatientIdAsync(Guid patientId);
     Task AddAsync(Appointment appointment);
     Task SaveAsync();
-    //Task UpdateAppointmentStatus_ToCompletedAsync(Appointment appointment);
-    //Task UpdateAppointmentStatus_ToCancelledAsync(Appointment appointment);
-    //Task UpdateAppointmentStatus_ToNoShowAsync(Appointment appointment);
 }
