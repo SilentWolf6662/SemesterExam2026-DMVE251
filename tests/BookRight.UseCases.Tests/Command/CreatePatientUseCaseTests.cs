@@ -14,6 +14,15 @@ namespace BookRight.UseCases.Tests.Command;
 
 public class CreatePatientUseCaseTests
 {
+    private readonly Mock<IPatientRepository> _patientRepoMock;
+    private readonly ICreatePatientUseCase _sut; // _sut står for "System Under Test", og er en konvention for at navngive den klasse, som vi tester
+
+    public CreatePatientUseCaseTests()
+    {
+        _patientRepoMock = new Mock<IPatientRepository>();
+        _sut = new CreatePatientUseCase(_patientRepoMock.Object);
+    }
+
     // ── Hjælpe-data ───────────────────────────────────────────────────────────
 
     private static CreatePatientRequest CreateRequest(
@@ -36,14 +45,6 @@ public class CreatePatientUseCaseTests
             note,
             preferredPractitioner);
 
-    private static (ICreatePatientUseCase UseCase, Mock<IPatientRepository> MockRepo) CreateUseCase()
-    {
-        var mockRepo = new Mock<IPatientRepository>();
-        mockRepo.Setup(r => r.AddAsync(It.IsAny<Patient>())).Returns(Task.CompletedTask);
-        mockRepo.Setup(r => r.SaveAsync()).Returns(Task.CompletedTask);
-        return (new CreatePatientUseCase(mockRepo.Object), mockRepo);
-    }
-
     // ── Persistering ──────────────────────────────────────────────────────────
 
     // Tester at AddAsync kaldes præcis én gang med en Patient-instans.
@@ -51,17 +52,14 @@ public class CreatePatientUseCaseTests
     public async Task Execute_WithValidRequest_CallsAddAsync()
     {
         // Arrange
-        // Opretter use case med mock repository og et gyldigt request
-        var (useCase, mockRepo) = CreateUseCase();
         var request = CreateRequest();
+        _patientRepoMock.Setup(r => r.AddAsync(It.IsAny<Patient>())).Returns(Task.CompletedTask); // Simulerer, at tilføjelsen af en patient lykkes
 
         // Act
-        // Udfører oprettelsen af patienten
-        await useCase.Execute(request);
+        await _sut.Execute(request);
 
         // Assert
-        // Verificerer at patienten blev sendt til repository præcis én gang
-        mockRepo.Verify(r => r.AddAsync(It.IsAny<Patient>()), Times.Once);
+        _patientRepoMock.Verify(r => r.AddAsync(It.IsAny<Patient>()), Times.Once); // Verificerer at patienten blev sendt til repository præcis én gang
     }
 
     // Tester at SaveAsync kaldes præcis én gang efter patienten er tilføjet.
@@ -69,15 +67,13 @@ public class CreatePatientUseCaseTests
     public async Task Execute_WithValidRequest_CallsSaveAsync()
     {
         // Arrange
-        var (useCase, mockRepo) = CreateUseCase();
         var request = CreateRequest();
 
         // Act
-        await useCase.Execute(request);
+        await _sut.Execute(request);
 
         // Assert
-        // Verificerer at ændringerne blev gemt præcis én gang
-        mockRepo.Verify(r => r.SaveAsync(), Times.Once);
+        _patientRepoMock.Verify(r => r.SaveAsync(), Times.Once); // Verificerer at ændringerne blev gemt præcis én gang
     }
 
     // ── Foretrukken behandler ─────────────────────────────────────────────────
@@ -87,23 +83,18 @@ public class CreatePatientUseCaseTests
     public async Task Execute_WithNullPreferredPractitioner_UsesEmptyGuid()
     {
         // Arrange
-        // Opretter request uden foretrukken behandler
         Patient? capturedPatient = null;
-        var mockRepo = new Mock<IPatientRepository>();
-        mockRepo.Setup(r => r.AddAsync(It.IsAny<Patient>()))
+        _patientRepoMock.Setup(r => r.AddAsync(It.IsAny<Patient>()))
             .Callback<Patient>(p => capturedPatient = p)
             .Returns(Task.CompletedTask);
-        mockRepo.Setup(r => r.SaveAsync()).Returns(Task.CompletedTask);
 
-        ICreatePatientUseCase useCase = new CreatePatientUseCase(mockRepo.Object);
         var request = CreateRequest(preferredPractitioner: null);
 
         // Act
-        await useCase.Execute(request);
+        await _sut.Execute(request);
 
         // Assert
-        // Verificerer at Guid.Empty bruges som foretrukken behandler når ingen er angivet
         Assert.NotNull(capturedPatient);
-        Assert.Equal(Guid.Empty, capturedPatient.PreferredPractitioner);
+        Assert.Equal(Guid.Empty, capturedPatient.PreferredPractitioner); // Verificerer at Guid.Empty bruges som foretrukken behandler når ingen er angivet
     }
 }

@@ -16,6 +16,15 @@ namespace BookRight.UseCases.Tests.Command;
 
 public class CreatePractitionerUseCaseTests
 {
+    private readonly Mock<IPractitionerRepository> _practitionerRepoMock;
+    private readonly ICreatePractitionerUseCase _sut; // _sut står for "System Under Test", og er en konvention for at navngive den klasse, som vi tester
+
+    public CreatePractitionerUseCaseTests()
+    {
+        _practitionerRepoMock = new Mock<IPractitionerRepository>();
+        _sut = new CreatePractitionerUseCase(_practitionerRepoMock.Object);
+    }
+
     // ── Hjælpe-data ───────────────────────────────────────────────────────────
 
     private static CreatePractitionerRequest CreateRequest(
@@ -33,14 +42,6 @@ public class CreatePractitionerUseCaseTests
             authorization,
             authorizationNumber);
 
-    private static (ICreatePractitionerUseCase UseCase, Mock<IPractitionerRepository> MockRepo) CreateUseCase()
-    {
-        var mockRepo = new Mock<IPractitionerRepository>();
-        mockRepo.Setup(r => r.AddAsync(It.IsAny<Practitioner>())).Returns(Task.CompletedTask);
-        mockRepo.Setup(r => r.SaveAsync()).Returns(Task.CompletedTask);
-        return (new CreatePractitionerUseCase(mockRepo.Object), mockRepo);
-    }
-
     // ── Persistering ──────────────────────────────────────────────────────────
 
     // Tester at AddAsync kaldes præcis én gang med en Practitioner-instans.
@@ -48,17 +49,14 @@ public class CreatePractitionerUseCaseTests
     public async Task Execute_WithValidRequest_CallsAddAsync()
     {
         // Arrange
-        // Opretter use case med mock repository og et gyldigt request
-        var (useCase, mockRepo) = CreateUseCase();
         var request = CreateRequest();
+        _practitionerRepoMock.Setup(r => r.AddAsync(It.IsAny<Practitioner>())).Returns(Task.CompletedTask); // Simulerer, at tilføjelsen af en behandler lykkes
 
         // Act
-        // Udfører oprettelsen af behandleren
-        await useCase.Execute(request);
+        await _sut.Execute(request);
 
         // Assert
-        // Verificerer at behandleren blev sendt til repository præcis én gang
-        mockRepo.Verify(r => r.AddAsync(It.IsAny<Practitioner>()), Times.Once);
+        _practitionerRepoMock.Verify(r => r.AddAsync(It.IsAny<Practitioner>()), Times.Once); // Verificerer at behandleren blev sendt til repository præcis én gang
     }
 
     // Tester at SaveAsync kaldes præcis én gang efter behandleren er tilføjet.
@@ -66,15 +64,13 @@ public class CreatePractitionerUseCaseTests
     public async Task Execute_WithValidRequest_CallsSaveAsync()
     {
         // Arrange
-        var (useCase, mockRepo) = CreateUseCase();
         var request = CreateRequest();
 
         // Act
-        await useCase.Execute(request);
+        await _sut.Execute(request);
 
         // Assert
-        // Verificerer at ændringerne blev gemt præcis én gang
-        mockRepo.Verify(r => r.SaveAsync(), Times.Once);
+        _practitionerRepoMock.Verify(r => r.SaveAsync(), Times.Once); // Verificerer at ændringerne blev gemt præcis én gang
     }
 
     // ── Autorisationstype ─────────────────────────────────────────────────────
@@ -88,24 +84,19 @@ public class CreatePractitionerUseCaseTests
     public async Task Execute_WithValidAuthorization_ParsesCorrectly(string input, AuthorizationType expected)
     {
         // Arrange
-        // Fanger den oprettede behandler for at verificere autorisationstypen
         Practitioner? capturedPractitioner = null;
-        var mockRepo = new Mock<IPractitionerRepository>();
-        mockRepo.Setup(r => r.AddAsync(It.IsAny<Practitioner>()))
+        _practitionerRepoMock.Setup(r => r.AddAsync(It.IsAny<Practitioner>()))
             .Callback<Practitioner>(p => capturedPractitioner = p)
             .Returns(Task.CompletedTask);
-        mockRepo.Setup(r => r.SaveAsync()).Returns(Task.CompletedTask);
 
-        ICreatePractitionerUseCase useCase = new CreatePractitionerUseCase(mockRepo.Object);
         var request = CreateRequest(authorization: input);
 
         // Act
-        await useCase.Execute(request);
+        await _sut.Execute(request);
 
         // Assert
-        // Verificerer at autorisationstypen er parset korrekt
         Assert.NotNull(capturedPractitioner);
-        Assert.Equal(expected, capturedPractitioner.Authorization);
+        Assert.Equal(expected, capturedPractitioner.Authorization); // Verificerer at autorisationstypen er parset korrekt
     }
 
     // Tester at en ugyldig autorisationstype kaster en ArgumentException.
@@ -113,12 +104,9 @@ public class CreatePractitionerUseCaseTests
     public async Task Execute_WithInvalidAuthorization_ThrowsArgumentException()
     {
         // Arrange
-        // Opretter request med en ugyldig autorisationstype
-        var (useCase, _) = CreateUseCase();
         var request = CreateRequest(authorization: "UgyldigType");
 
         // Act & Assert
-        // Verificerer at en ugyldig type resulterer i en undtagelse
-        await Assert.ThrowsAnyAsync<ArgumentException>(() => useCase.Execute(request));
+        await Assert.ThrowsAnyAsync<ArgumentException>(() => _sut.Execute(request)); // Verificerer at en ugyldig type resulterer i en undtagelse
     }
 }

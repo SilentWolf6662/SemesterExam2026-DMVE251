@@ -6,7 +6,7 @@ using BookRight.UseCases.Command;
 using BookRight.UseCases.Repositories;
 using Moq;
 
-namespace BookRight.UseCases.Tests;
+namespace BookRight.UseCases.Tests.Command;
 
 public class BookAppointmentTests
 {

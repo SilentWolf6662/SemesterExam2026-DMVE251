@@ -15,6 +15,15 @@ namespace BookRight.UseCases.Tests.Command;
 
 public class CreateClinicUseCaseTests
 {
+    private readonly Mock<IClinicRepository> _clinicRepoMock;
+    private readonly ICreateClinicUseCase _sut; // _sut står for "System Under Test", og er en konvention for at navngive den klasse, som vi tester
+
+    public CreateClinicUseCaseTests()
+    {
+        _clinicRepoMock = new Mock<IClinicRepository>();
+        _sut = new CreateClinicUseCase(_clinicRepoMock.Object);
+    }
+
     // ── Hjælpe-data ───────────────────────────────────────────────────────────
 
     private static readonly List<TimeIntervalDto> TestWorkingHours =
@@ -33,14 +42,6 @@ public class CreateClinicUseCaseTests
             workingHours ?? TestWorkingHours,
             rooms);
 
-    private static (ICreateClinicUseCase UseCase, Mock<IClinicRepository> MockRepo) CreateUseCase()
-    {
-        var mockRepo = new Mock<IClinicRepository>();
-        mockRepo.Setup(r => r.AddAsync(It.IsAny<Clinic>())).Returns(Task.CompletedTask);
-        mockRepo.Setup(r => r.SaveAsync()).Returns(Task.CompletedTask);
-        return (new CreateClinicUseCase(mockRepo.Object), mockRepo);
-    }
-
     // ── Persistering ──────────────────────────────────────────────────────────
 
     // Tester at AddAsync og SaveAsync kaldes præcis én gang med en Clinic-instans.
@@ -48,19 +49,15 @@ public class CreateClinicUseCaseTests
     public async Task Execute_WithValidRequest_CallsAddAndSaveAsync()
     {
         // Arrange
-        // Opretter use case med mock repository og et gyldigt request
-        var (useCase, mockRepo) = CreateUseCase();
         var request = CreateRequest();
+        _clinicRepoMock.Setup(r => r.AddAsync(It.IsAny<Clinic>())).Returns(Task.CompletedTask); // Simulerer, at tilføjelsen af en klinik lykkes
 
         // Act
-        // Udfører oprettelsen af klinikken
-        await useCase.Execute(request);
+        await _sut.Execute(request);
 
         // Assert
-        // Verificerer at klinikken blev sendt til repository præcis én gang
-        mockRepo.Verify(r => r.AddAsync(It.IsAny<Clinic>()), Times.Once);
-        // Verificerer at ændringerne blev gemt præcis én gang
-        mockRepo.Verify(r => r.SaveAsync(), Times.Once);
+        _clinicRepoMock.Verify(r => r.AddAsync(It.IsAny<Clinic>()), Times.Once); // Verificerer at klinikken blev sendt til repository præcis én gang
+        _clinicRepoMock.Verify(r => r.SaveAsync(), Times.Once); // Verificerer at ændringerne blev gemt præcis én gang
     }
 
     // ── Mapping ───────────────────────────────────────────────────────────────
@@ -70,7 +67,6 @@ public class CreateClinicUseCaseTests
     public async Task Execute_WithMultipleWorkingHours_MapsAllIntervals()
     {
         // Arrange
-        // Opretter request med to åbningstidsintervaller
         var workingHours = new List<TimeIntervalDto>
         {
             new TimeIntervalDto(new DateTime(2026, 6, 1, 8, 0, 0), new DateTime(2026, 6, 1, 17, 0, 0)),
@@ -78,21 +74,17 @@ public class CreateClinicUseCaseTests
         };
 
         Clinic? capturedClinic = null;
-        var mockRepo = new Mock<IClinicRepository>();
-        mockRepo.Setup(r => r.AddAsync(It.IsAny<Clinic>()))
+        _clinicRepoMock.Setup(r => r.AddAsync(It.IsAny<Clinic>()))
             .Callback<Clinic>(c => capturedClinic = c)
             .Returns(Task.CompletedTask);
-        mockRepo.Setup(r => r.SaveAsync()).Returns(Task.CompletedTask);
 
-        ICreateClinicUseCase useCase = new CreateClinicUseCase(mockRepo.Object);
         var request = CreateRequest(workingHours: workingHours);
 
         // Act
-        await useCase.Execute(request);
+        await _sut.Execute(request);
 
         // Assert
-        // Verificerer at begge intervaller er bevaret i den oprettede klinik
         Assert.NotNull(capturedClinic);
-        Assert.Equal(2, capturedClinic.WorkingHours.Count);
+        Assert.Equal(2, capturedClinic.WorkingHours.Count); // Verificerer at begge intervaller er bevaret i den oprettede klinik
     }
 }
