@@ -45,7 +45,7 @@ public class CreateClinicUseCaseTests
 
     // Tester at AddAsync kaldes præcis én gang med en Clinic-instans.
     [Fact]
-    public async Task Execute_WithValidRequest_CallsAddAsync()
+    public async Task Execute_WithValidRequest_CallsAddAndSaveAsync()
     {
         // Arrange
         // Opretter use case med mock repository og et gyldigt request
@@ -59,20 +59,6 @@ public class CreateClinicUseCaseTests
         // Assert
         // Verificerer at klinikken blev sendt til repository præcis én gang
         mockRepo.Verify(r => r.AddAsync(It.IsAny<Clinic>()), Times.Once);
-    }
-
-    // Tester at SaveAsync kaldes præcis én gang efter klinikken er tilføjet.
-    [Fact]
-    public async Task Execute_WithValidRequest_CallsSaveAsync()
-    {
-        // Arrange
-        var (useCase, mockRepo) = CreateUseCase();
-        var request = CreateRequest();
-
-        // Act
-        await useCase.Execute(request);
-
-        // Assert
         // Verificerer at ændringerne blev gemt præcis én gang
         mockRepo.Verify(r => r.SaveAsync(), Times.Once);
     }
