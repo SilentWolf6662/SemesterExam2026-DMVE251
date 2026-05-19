@@ -14,7 +14,7 @@ public class BookAppointmentTests
     private readonly Mock<IPractitionerRepository> _practitionerRepoMock;
     private readonly Mock<IPatientRepository> _patientRepoMock;
     private readonly Mock<IClinicRepository> _clinicRepoMock;
-    private readonly BookAppointment _sut; // _sut står for "System Under Test", og er en konvention for at navngive den klasse, som vi tester
+    private readonly BookAppointmentUseCase _sut; // _sut står for "System Under Test", og er en konvention for at navngive den klasse, som vi tester
 
     public BookAppointmentTests()
     {
@@ -22,7 +22,7 @@ public class BookAppointmentTests
         _practitionerRepoMock = new Mock<IPractitionerRepository>();
         _patientRepoMock = new Mock<IPatientRepository>();
         _clinicRepoMock = new Mock<IClinicRepository>();
-        _sut = new BookAppointment(_appointmentRepoMock.Object, _practitionerRepoMock.Object, _patientRepoMock.Object, _clinicRepoMock.Object);
+        _sut = new BookAppointmentUseCase(_appointmentRepoMock.Object, _practitionerRepoMock.Object, _patientRepoMock.Object, _clinicRepoMock.Object);
     }
 
     [Fact]

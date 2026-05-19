@@ -5,11 +5,11 @@ using BookRight.UseCases.Repositories;
 
 namespace BookRight.UseCases.Command;
 
-public class ChangeStatus : IChangeStatus
+public class ChangeStatusUseCase : IChangeStatus
 {
     private readonly IAppointmentRepository _appointmentRepo;
 
-    public ChangeStatus(IAppointmentRepository appointmentRepo)
+    public ChangeStatusUseCase(IAppointmentRepository appointmentRepo)
     {
         _appointmentRepo = appointmentRepo;
     }
