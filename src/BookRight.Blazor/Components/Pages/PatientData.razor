@@ -1,6 +1,90 @@
 ﻿@page "/patientinfo"
-<h3>Patient info</h3>
+@using BookRight.Facade.DTO
+@using BookRight.Facade.Interfaces.Queries
+
+@inject ITreatmentTypeQueries TreatmentTypeQueries
+@inject IPatientQueries PatientQueries
+@inject IPractitionerQueries PractitionerQueries
+
+<PageTitle>Patient info</PageTitle>
+
+<h2>Patient info</h2>
+
+@if (_fail is not null)
+{
+	<p class="text-danger">@_fail</p>
+}
+else if (_loading)
+{
+	<p>Loading patient data</p>
+}
+else
+{
+	<section>
+		<h3> Patienter</h3>
+		<table>
+			<thead>
+			<tr>
+				<th>
+					Navn
+				</th>
+				<th>
+					Alder
+				</th>
+				<th>
+					Mail
+				</th>
+				<th>
+					Telefon.nr
+				</th>
+			</tr>
+			</thead>
+			
+			<tbody>
+			@foreach (var patient in Patients ?? [])
+			{
+				<tr>
+					<td>
+						@patient.FirstName @patient.LastName
+					</td>
+					<td>
+						@patient.Birthday
+					</td>
+					<td>
+						@patient.Email
+					</td>
+					<td>
+						@patient.PhoneNumber
+					</td>
+				</tr>
+			}
+			</tbody>
+
+		</table>
+
+	</section>
+}
+
 
 @code {
-	
+	private bool _loading = true;
+	private string? _fail;
+	[PersistentState]
+	public IReadOnlyList<PatientDto>? Patients { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		try
+		{
+			Patients ??= await PatientQueries.GetAllAsync();
+		}
+		catch (Exception ex)
+		{
+			_fail = ex.Message;
+		}
+		finally
+		{
+			_loading = false;
+		}
+	}
 }
