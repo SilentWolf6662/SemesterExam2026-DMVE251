@@ -1,0 +1,52 @@
+﻿.calendar-grid-wrapper {
+
+}
+
+.calendar-toolbar {
+
+}
+
+.calendar-table {
+    table-layout: fixed;
+    min-width: 700px;
+}
+
+.calendar-time-col {
+    width: 56px;
+    min-width: 56px;
+}
+
+.calendar-cell {
+    vertical-align: top;
+}
+
+.calendar-apt {
+    margin: 2px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: .78rem;
+    line-height: 1.3;
+    cursor: default;
+}
+
+.apt-booked {
+    background: #cce5ff;
+    border-left: 3px solid #0d6efd;
+}
+
+.apt-completed {
+    background: #d4edda;
+    border-left: 3px solid #198754;
+}
+
+.apt-cancelled {
+    background: #f8d7da;
+    border-left: 3px solid #dc3545;
+    opacity: .7;
+}
+
+.apt-noshow {
+    background: #fff3cd;
+    border-left: 3px solid #ffc107;
+    opacity: .8;
+}
