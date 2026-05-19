@@ -1,5 +1,6 @@
 using BookRight.Blazor.Components;
 using BookRight.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 namespace BookRight.Blazor
 {
@@ -16,6 +17,21 @@ namespace BookRight.Blazor
             builder.Services.AddInfrastructure(builder.Configuration);
 
             var app = builder.Build();
+
+            if (app.Configuration.GetValue<bool>("SeedData"))
+            {
+                using var scope = app.Services.CreateScope();
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                if (db.Clinics.Any())
+                {
+                    db.Appointments.ExecuteDelete();
+                    db.Patients.ExecuteDelete();
+                    db.Practitioners.ExecuteDelete();
+                    db.TreatmentTypes.ExecuteDelete();
+                    db.Clinics.ExecuteDelete();
+                }
+                new SeedData().Initialize(db);
+            }
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
