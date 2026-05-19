@@ -130,4 +130,5 @@ PublishScripts/
 # Blazor Envoirmental Settings
 # =========================
 
-*.Blazor/appsettings.json
+**/appsettings.json
+**/appsettings.Development.json
