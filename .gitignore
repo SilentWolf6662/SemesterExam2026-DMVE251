@@ -34,7 +34,6 @@ Log/
 
 # Publish output
 publish/
-wwwroot/
 
 # =========================
 # .NET / NuGet / SDK
@@ -132,3 +131,12 @@ PublishScripts/
 
 **/appsettings.json
 **/appsettings.Development.json
+
+# =========================
+# Fixes til blazor
+# =========================
+
+!src/BookRight.Blazor/wwwroot/lib/bootstrap/dist/
+!src/BookRight.Blazor/wwwroot/lib/bootstrap/dist/**
+!wwwroot/
+!wwwroot/**/*.*

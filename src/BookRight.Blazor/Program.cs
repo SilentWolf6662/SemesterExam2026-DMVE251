@@ -32,6 +32,12 @@ namespace BookRight.Blazor
                 }
                 new SeedData().Initialize(db);
             }
+            else
+            {
+                using var scope = app.Services.CreateScope();
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                new SeedData().Initialize(db);
+            }
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
