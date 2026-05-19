@@ -7,14 +7,14 @@ using BookRight.UseCases.Repositories;
 
 namespace BookRight.UseCases.Command;
 
-public class BookAppointment : IBookAppointment
+public class BookAppointmentUseCase : IBookAppointment
 {
     private readonly IAppointmentRepository _appointmentRepo;
     private readonly IPractitionerRepository _practitionerRepo;
     private readonly IPatientRepository _patientRepo;
     private readonly IClinicRepository _clinicRepo;
 
-    public BookAppointment(IAppointmentRepository appointmentRepo, IPractitionerRepository practitionerRepo, IPatientRepository patientRepo, IClinicRepository clinicRepo)
+    public BookAppointmentUseCase(IAppointmentRepository appointmentRepo, IPractitionerRepository practitionerRepo, IPatientRepository patientRepo, IClinicRepository clinicRepo)
     {
         _appointmentRepo = appointmentRepo;
         _practitionerRepo = practitionerRepo;

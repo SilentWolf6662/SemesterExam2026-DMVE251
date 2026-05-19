@@ -19,15 +19,16 @@ public class CreateClinicUseCase : ICreateClinicUseCase
     {
         // Opbyg de value objects der er nødvendige for at oprette en klinik
         var address = new Address(request.StreetName, request.Zipcode); // Pak adressedata ind i et Address value object
+
+        // Tilføj åbningstider og lukketider som TimeInterval value objects
         var workingHours = request.WorkingHours
             .Select(w => new TimeInterval(w.Start, w.End)) // Konverter hver åbningstid til et TimeInterval value object
-            .ToList();
+            .ToList(); // Lig dem i en liste, da Clinic forventer en liste af TimeInterval for åbningstider
 
         // Opret klinikken via factory-metoden på Clinic, som sørger for validering af data
         var clinic = Clinic.Create(address, workingHours, request.Rooms);
 
-        // Tilføj den nye klinik til repository og gem ændringerne i databasen
-        await _clinicRepo.AddAsync(clinic);
-        await _clinicRepo.SaveAsync();
+        await _clinicRepo.AddAsync(clinic); // Tilføj den nye klinik til repository
+        await _clinicRepo.SaveAsync(); // Gem ændringerne i databasen
     }
 }

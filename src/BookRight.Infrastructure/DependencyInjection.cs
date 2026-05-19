@@ -37,7 +37,7 @@ public static class DependencyInjection
         services.AddScoped<ICreatePractitionerUseCase, CreatePractitionerUseCase>();
 
         // Appointment Use Cases
-        services.AddScoped<IBookAppointment, BookAppointment>();
+        services.AddScoped<IBookAppointment, BookAppointmentUseCase>();
 
         // Queries (Scoped)
         services.AddScoped<IAppointmentQueries, AppointmentQueriesImpl>();

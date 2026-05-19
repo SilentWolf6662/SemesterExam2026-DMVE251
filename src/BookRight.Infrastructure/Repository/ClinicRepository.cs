@@ -18,6 +18,11 @@ public class ClinicRepository : IClinicRepository
         return await _db.Clinics
             .FirstOrDefaultAsync(b => b.Id == clinicId);
     }
+    async Task IClinicRepository.AddAsync(Clinic clinic)
+    {
+        await _db.Clinics
+            .AddAsync(clinic);
+    }
 
     Task IClinicRepository.SaveAsync()
     {
@@ -25,9 +30,4 @@ public class ClinicRepository : IClinicRepository
             .SaveChangesAsync();
     }
 
-    async Task IClinicRepository.AddAsync(Clinic clinic)
-    {
-        await _db.Clinics
-            .AddAsync(clinic);
-    }
 }

@@ -2,8 +2,4 @@
 
 namespace BookRight.Facade.Command;
 
-public record CreateClinicRequest(
-    string StreetName,
-    int Zipcode, 
-    List<TimeIntervalDto> WorkingHours, 
-    int Rooms);
+public record CreateClinicRequest(string StreetName, int Zipcode, List<TimeIntervalDto> WorkingHours, int Rooms);
