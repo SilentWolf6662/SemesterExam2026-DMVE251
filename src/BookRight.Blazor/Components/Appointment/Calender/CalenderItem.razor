@@ -1,19 +1,16 @@
 @using BookRight.Facade.DTO
 
-<article class="calendar-apt @StatusClass" @onclick="OpenModal" role="button" aria-haspopup="dialog" title="@Tooltip">
-    <time datetime="@Appointment.Start.ToString("yyyy-MM-ddTHH:mm")" class="small fw-semibold">
+<button class="calendar-apt @StatusClass" type="button" @onclick="OpenModal" aria-haspopup="dialog" title="@Tooltip">
+    <time datetime="@Appointment.Start.ToString("yyyy-MM-ddTHH:mm")" class="small fw-semibold d-block">
         @Appointment.Start.ToString("HH:mm")–@Appointment.End.ToString("HH:mm")
     </time>
-    <br />
-    <span class="small">@PractitionerName</span>
-</article>
+    <span class="small d-block">@PractitionerName</span>
+    <span class="visually-hidden">, @StatusLabel</span>
+</button>
 
 @if (_showModal)
 {
-    <AppointmentModal AppointmentId="@Appointment.Id"
-                      PractitionerName="@PractitionerName"
-                      OnClose="CloseModal"
-                      OnStatusChanged="@OnStatusChanged" />
+    <AppointmentModal AppointmentId="@Appointment.Id" PractitionerName="@PractitionerName" OnClose="CloseModal" OnStatusChanged="@OnStatusChanged" />
 }
 
 @code {

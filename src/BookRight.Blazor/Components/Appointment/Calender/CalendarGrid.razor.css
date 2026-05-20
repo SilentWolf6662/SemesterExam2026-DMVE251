@@ -2,10 +2,6 @@ abbr {
     text-decoration: none;
 }
 
-.calendar-grid-wrapper {
-
-}
-
 .calendar-table {
     table-layout: fixed;
     min-width: 700px;

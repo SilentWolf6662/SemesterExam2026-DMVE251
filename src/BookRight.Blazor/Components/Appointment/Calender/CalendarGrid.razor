@@ -2,6 +2,9 @@
 
 <section class="calendar-grid-wrapper overflow-auto" aria-label="Kalender">
     <table class="calendar-table table table-bordered mb-0">
+        <caption class="visually-hidden">
+            Kalender @WeekDays.First().ToString("dd. MMM") – @WeekDays.Last().ToString("dd. MMM yyyy")
+        </caption>
         <thead class="table-light">
             <tr>
                 <th class="calendar-time-col"><span class="visually-hidden">Tid</span></th>
@@ -27,9 +30,7 @@
                         <td class="calendar-cell p-0 align-top position-relative">
                             @foreach (var apt in slots)
                             {
-                                <CalenderItem Appointment="apt"
-                                              PractitionerName="@GetPractitionerName(apt.PractitionerId)"
-                                              OnStatusChanged="OnStatusChanged" />
+                                <CalenderItem Appointment="apt" PractitionerName="@GetPractitionerName(apt.PractitionerId)" OnStatusChanged="OnStatusChanged" />
                             }
                         </td>
                     }
@@ -47,8 +48,7 @@
     [Parameter, EditorRequired] public IReadOnlyList<PractitionerDto> Practitioners { get; set; } = [];
     [Parameter] public EventCallback OnStatusChanged { get; set; }
 
-    private IEnumerable<AppointmentDto> GetAppointmentsForSlot(DateTime day, int hour) =>
-        Appointments.Where(a => a.Start.Date == day.Date && a.Start.Hour == hour);
+    private IEnumerable<AppointmentDto> GetAppointmentsForSlot(DateTime day, int hour) => Appointments.Where(a => a.Start.Date == day.Date && a.Start.Hour == hour);
 
     private string GetPractitionerName(Guid id)
     {

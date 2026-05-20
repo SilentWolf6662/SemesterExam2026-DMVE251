@@ -6,14 +6,16 @@
 @inject IPatientQueries PatientQueries
 @inject ITreatmentTypeQueries TreatmentTypeQueries
 @inject IChangeStatus ChangeStatusUseCase
+@inject IJSRuntime JS
+@implements IAsyncDisposable
 
 <div class="modal-backdrop fade show"></div>
-<div class="modal fade show d-block" role="dialog" aria-modal="true" aria-labelledby="apt-modal-title" @onclick="OnClose">
-    <div class="modal-dialog modal-dialog-centered" @onclick:stopPropagation>
+<div class="modal fade show d-block" role="dialog" aria-modal="true" aria-labelledby="apt-modal-title" @onclick="OnClose" @onkeydown="HandleKeyDown">
+    <div class="modal-dialog modal-dialog-centered" @ref="_dialogRef" tabindex="-1" @onclick:stopPropagation>
         <article class="modal-content">
             <header class="modal-header">
                 <h5 class="modal-title" id="apt-modal-title">Aftaledetaljer</h5>
-                <button type="button" class="btn-close" @onclick="OnClose" aria-label="Luk" disabled="@_saving"></button>
+                <button type="button" class="btn-close" @onclick="OnClose" aria-label="Luk dialog" disabled="@_saving"></button>
             </header>
             <section class="modal-body">
                 @if (_loading)
@@ -118,6 +120,8 @@
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback OnStatusChanged { get; set; }
 
+    private ElementReference _dialogRef;
+
     private bool _loading = true;
     private bool _saving;
     private string? _pendingStatus;
@@ -127,6 +131,20 @@
 
     private bool IsTerminalStatus =>
         _details?.Status.ToLower() is "completed" or "cancelled" or "noshow";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _dialogRef.FocusAsync();
+            await JS.InvokeVoidAsync("accessibility.trapFocus", _dialogRef);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await JS.InvokeVoidAsync("accessibility.releaseFocus", _dialogRef);
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -141,23 +159,23 @@
         _loading = false;
     }
 
-    private string StatusBadgeClass => _details?.Status.ToLower() switch
+    private string StatusBadgeClass => (_details?.Status ?? "").ToLower() switch
     {
         "booked"    => "bg-primary",
         "completed" => "bg-success",
         "cancelled" => "bg-danger",
         "noshow"    => "bg-warning text-dark",
         _           => "bg-secondary"
-    } ?? "bg-secondary";
+    };
 
-    private string StatusLabel => _details?.Status.ToLower() switch
+    private string StatusLabel => (_details?.Status ?? "").ToLower() switch
     {
         "booked"    => "Booket",
         "completed" => "Afsluttet",
         "cancelled" => "Aflyst",
         "noshow"    => "Udeblevet",
         _           => _details?.Status ?? ""
-    } ?? "";
+    };
 
     private string PendingStatusLabel => _pendingStatus switch
     {
@@ -166,6 +184,12 @@
         "noshow"    => "Udeblevet",
         _           => _pendingStatus ?? ""
     };
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape" && !_saving)
+            await OnClose.InvokeAsync();
+    }
 
     private void RequestStatusChange(string status) => _pendingStatus = status;
     private void CancelStatusChange() => _pendingStatus = null;

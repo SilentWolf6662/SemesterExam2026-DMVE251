@@ -3,26 +3,20 @@
 @inject IAppointmentQueries AppointmentQueries
 @inject IPractitionerQueries PractitionerQueries
 
-<CalendarToolbar WeekStart="_weekStart"
-                 WeekEnd="WeekEnd"
-                 Practitioners="_practitioners"
-                 @bind-SelectedPractitionerId="_selectedPractitionerId"
-                 OnPreviousWeek="PreviousWeek"
-                 OnNextWeek="NextWeek"
-                 OnGoToToday="GoToToday" />
+<CalendarToolbar WeekStart="_weekStart" WeekEnd="WeekEnd" Practitioners="_practitioners" @bind-SelectedPractitionerId="_selectedPractitionerId" OnPreviousWeek="PreviousWeek" OnNextWeek="NextWeek" OnGoToToday="GoToToday" />
 
 @if (_loading)
 {
-    <p class="text-muted">Indlæser kalender…</p>
+    <p class="text-muted" role="status" aria-live="polite">Indlæser kalender…</p>
 }
 else
 {
-    <CalendarGrid WeekDays="WeekDays"
-                  StartHour="StartHour"
-                  EndHour="EndHour"
-                  Appointments="FilteredAppointments"
-                  Practitioners="_practitioners"
-                  OnStatusChanged="RefreshAppointments" />
+    <CalendarGrid WeekDays="WeekDays" StartHour="StartHour" EndHour="EndHour" Appointments="FilteredAppointments" Practitioners="_practitioners" OnStatusChanged="RefreshAppointments" />
+
+    @if (!string.IsNullOrEmpty(_selectedPractitionerId))
+    {
+        <UpcomingAppointments Appointments="FilteredAppointments" PractitionerName="@SelectedPractitionerName" OnStatusChanged="RefreshAppointments" />
+    }
 }
 
 @code {
@@ -38,6 +32,15 @@ else
     private DateTime WeekEnd => _weekStart.AddDays(6);
     private IEnumerable<DateTime> WeekDays => Enumerable.Range(0, 7).Select(i => _weekStart.AddDays(i));
 
+    private string SelectedPractitionerName
+    {
+        get
+        {
+            var p = _practitioners.FirstOrDefault(p => p.Id.ToString() == _selectedPractitionerId);
+            return p is null ? "" : $"{p.FirstName} {p.LastName}";
+        }
+    }
+
     private IEnumerable<AppointmentDto> FilteredAppointments =>
         string.IsNullOrEmpty(_selectedPractitionerId)
             ? _allAppointments
@@ -45,10 +48,8 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var appointments = await AppointmentQueries.GetAllAsync();
-        var practitioners = await PractitionerQueries.GetAllAsync();
-        _allAppointments = appointments;
-        _practitioners = practitioners;
+        _allAppointments = await AppointmentQueries.GetAllAsync();
+        _practitioners = await PractitionerQueries.GetAllAsync();
         _loading = false;
     }
 
