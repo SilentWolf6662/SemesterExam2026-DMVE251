@@ -140,3 +140,4 @@ PublishScripts/
 !src/BookRight.Blazor/wwwroot/lib/bootstrap/dist/**
 !wwwroot/
 !wwwroot/**/*.*
+/src/BookRight.Blazor/appsettings.Development.json
