@@ -1,0 +1,69 @@
+@using BookRight.Facade.DTO
+@using BookRight.Facade.Interfaces.Queries
+@inject IAppointmentQueries AppointmentQueries
+@inject IPractitionerQueries PractitionerQueries
+
+<CalendarToolbar WeekStart="_weekStart"
+                 WeekEnd="WeekEnd"
+                 Practitioners="_practitioners"
+                 @bind-SelectedPractitionerId="_selectedPractitionerId"
+                 OnPreviousWeek="PreviousWeek"
+                 OnNextWeek="NextWeek"
+                 OnGoToToday="GoToToday" />
+
+@if (_loading)
+{
+    <p class="text-muted">Indlæser kalender…</p>
+}
+else
+{
+    <CalendarGrid WeekDays="WeekDays"
+                  StartHour="StartHour"
+                  EndHour="EndHour"
+                  Appointments="FilteredAppointments"
+                  Practitioners="_practitioners"
+                  OnStatusChanged="RefreshAppointments" />
+}
+
+@code {
+    private const int StartHour = 8;
+    private const int EndHour = 18;
+
+    private bool _loading = true;
+    private IReadOnlyList<AppointmentDto> _allAppointments = [];
+    private IReadOnlyList<PractitionerDto> _practitioners = [];
+    private DateTime _weekStart = GetMonday(DateTime.Today);
+    private string _selectedPractitionerId = "";
+
+    private DateTime WeekEnd => _weekStart.AddDays(6);
+    private IEnumerable<DateTime> WeekDays => Enumerable.Range(0, 7).Select(i => _weekStart.AddDays(i));
+
+    private IEnumerable<AppointmentDto> FilteredAppointments =>
+        string.IsNullOrEmpty(_selectedPractitionerId)
+            ? _allAppointments
+            : _allAppointments.Where(a => a.PractitionerId.ToString() == _selectedPractitionerId);
+
+    protected override async Task OnInitializedAsync()
+    {
+        var appointments = await AppointmentQueries.GetAllAsync();
+        var practitioners = await PractitionerQueries.GetAllAsync();
+        _allAppointments = appointments;
+        _practitioners = practitioners;
+        _loading = false;
+    }
+
+    private async Task RefreshAppointments()
+    {
+        _allAppointments = await AppointmentQueries.GetAllAsync();
+    }
+
+    private void PreviousWeek() => _weekStart = _weekStart.AddDays(-7);
+    private void NextWeek() => _weekStart = _weekStart.AddDays(7);
+    private void GoToToday() => _weekStart = GetMonday(DateTime.Today);
+
+    private static DateTime GetMonday(DateTime date)
+    {
+        int diff = (7 + (date.DayOfWeek - DayOfWeek.Monday)) % 7;
+        return date.AddDays(-diff).Date;
+    }
+}

@@ -1,0 +1,49 @@
+@using BookRight.Facade.DTO
+
+<article class="calendar-apt @StatusClass" @onclick="OpenModal" role="button" aria-haspopup="dialog" title="@Tooltip">
+    <time datetime="@Appointment.Start.ToString("yyyy-MM-ddTHH:mm")" class="small fw-semibold">
+        @Appointment.Start.ToString("HH:mm")–@Appointment.End.ToString("HH:mm")
+    </time>
+    <br />
+    <span class="small">@PractitionerName</span>
+</article>
+
+@if (_showModal)
+{
+    <AppointmentModal AppointmentId="@Appointment.Id"
+                      PractitionerName="@PractitionerName"
+                      OnClose="CloseModal"
+                      OnStatusChanged="@OnStatusChanged" />
+}
+
+@code {
+    [Parameter, EditorRequired] public AppointmentDto Appointment { get; set; } = null!;
+    [Parameter, EditorRequired] public string PractitionerName { get; set; } = null!;
+    [Parameter] public EventCallback OnStatusChanged { get; set; }
+
+    private bool _showModal;
+
+    private string StatusClass => Appointment.Status.ToLower() switch
+    {
+        "booked"    => "apt-booked",
+        "completed" => "apt-completed",
+        "cancelled" => "apt-cancelled",
+        "noshow"    => "apt-noshow",
+        _           => "apt-booked"
+    };
+
+    private string Tooltip =>
+        $"{Appointment.Start:HH:mm}–{Appointment.End:HH:mm} | {PractitionerName} | {StatusLabel}";
+
+    private string StatusLabel => Appointment.Status.ToLower() switch
+    {
+        "booked"    => "Booket",
+        "completed" => "Afsluttet",
+        "cancelled" => "Aflyst",
+        "noshow"    => "Udeblevet",
+        _           => Appointment.Status
+    };
+
+    private void OpenModal() => _showModal = true;
+    private void CloseModal() => _showModal = false;
+}

@@ -38,6 +38,7 @@ public static class DependencyInjection
 
         // Appointment Use Cases
         services.AddScoped<IBookAppointment, BookAppointmentUseCase>();
+        services.AddScoped<IChangeStatus, ChangeStatusUseCase>();
 
         // Queries (Scoped)
         services.AddScoped<IAppointmentQueries, AppointmentQueriesImpl>();

@@ -1,0 +1,58 @@
+@using BookRight.Facade.DTO
+
+<section class="calendar-grid-wrapper overflow-auto" aria-label="Kalender">
+    <table class="calendar-table table table-bordered mb-0">
+        <thead class="table-light">
+            <tr>
+                <th class="calendar-time-col"><span class="visually-hidden">Tid</span></th>
+                @foreach (var day in WeekDays)
+                {
+                    <th class="text-center @(day.Date == DateTime.Today.Date ? "table-primary" : "")">
+                        <abbr title="@day.ToString("dddd")">@day.ToString("ddd")</abbr>
+                        <time datetime="@day.ToString("yyyy-MM-dd")" class="fw-bold d-block">@day.ToString("dd/MM")</time>
+                    </th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @for (int hour = StartHour; hour < EndHour; hour++)
+            {
+                <tr style="height:48px">
+                    <td class="calendar-time-col text-muted small align-top pe-2">
+                        <time datetime="@(hour.ToString("00")):00">@hour.ToString("00"):00</time>
+                    </td>
+                    @foreach (var day in WeekDays)
+                    {
+                        var slots = GetAppointmentsForSlot(day, hour);
+                        <td class="calendar-cell p-0 align-top position-relative">
+                            @foreach (var apt in slots)
+                            {
+                                <CalenderItem Appointment="apt"
+                                              PractitionerName="@GetPractitionerName(apt.PractitionerId)"
+                                              OnStatusChanged="OnStatusChanged" />
+                            }
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</section>
+
+@code {
+    [Parameter, EditorRequired] public IEnumerable<DateTime> WeekDays { get; set; } = [];
+    [Parameter, EditorRequired] public int StartHour { get; set; }
+    [Parameter, EditorRequired] public int EndHour { get; set; }
+    [Parameter, EditorRequired] public IEnumerable<AppointmentDto> Appointments { get; set; } = [];
+    [Parameter, EditorRequired] public IReadOnlyList<PractitionerDto> Practitioners { get; set; } = [];
+    [Parameter] public EventCallback OnStatusChanged { get; set; }
+
+    private IEnumerable<AppointmentDto> GetAppointmentsForSlot(DateTime day, int hour) =>
+        Appointments.Where(a => a.Start.Date == day.Date && a.Start.Hour == hour);
+
+    private string GetPractitionerName(Guid id)
+    {
+        var p = Practitioners.FirstOrDefault(x => x.Id == id);
+        return p is null ? "Ukendt" : $"{p.FirstName} {p.LastName}";
+    }
+}

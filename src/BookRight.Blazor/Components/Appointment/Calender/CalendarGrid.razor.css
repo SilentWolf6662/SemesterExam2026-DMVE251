@@ -1,0 +1,21 @@
+abbr {
+    text-decoration: none;
+}
+
+.calendar-grid-wrapper {
+
+}
+
+.calendar-table {
+    table-layout: fixed;
+    min-width: 700px;
+}
+
+.calendar-time-col {
+    width: 56px;
+    min-width: 56px;
+}
+
+.calendar-cell {
+    vertical-align: top;
+}

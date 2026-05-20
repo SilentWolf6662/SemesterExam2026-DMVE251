@@ -29,7 +29,7 @@ public class ChangeStatusUseCase : IChangeStatus
             case "completed":
                 booking.Complete(request.Note); // Sæt status til "completed" og opdater noten
                 break;
-            case "nooneshowed":
+            case "noshow":
                 booking.NoOneShowed(); // Sæt status til "nooneshowed" og fjern eventuelle noter
                 break;
             default:

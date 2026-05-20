@@ -1,0 +1,27 @@
+@using BookRight.Facade.DTO
+
+<nav class="calendar-toolbar mb-3 d-flex align-items-center gap-3" aria-label="Ugenavigation">
+    <button class="btn btn-outline-dark btn-sm" @onclick="OnPreviousWeek">&lsaquo; Forrige</button>
+    <span class="fw-semibold">@WeekStart.ToString("dd. MMM") &ndash; @WeekEnd.ToString("dd. MMM yyyy")</span>
+    <button class="btn btn-outline-dark btn-sm" @onclick="OnNextWeek">Næste &rsaquo;</button>
+    <button class="btn btn-outline-primary btn-sm ms-2" @onclick="OnGoToToday">I dag</button>
+
+    <select class="form-select form-select-sm ms-auto" style="max-width:220px" value="@SelectedPractitionerId" @onchange="e => SelectedPractitionerIdChanged.InvokeAsync(e.Value?.ToString() ?? string.Empty)">
+        <option value="">— Alle behandlere —</option>
+        @foreach (var practitioner in Practitioners)
+        {
+            <option value="@practitioner.Id">@practitioner.FirstName @practitioner.LastName</option>
+        }
+    </select>
+</nav>
+
+@code {
+    [Parameter, EditorRequired] public DateTime WeekStart { get; set; }
+    [Parameter, EditorRequired] public DateTime WeekEnd { get; set; }
+    [Parameter, EditorRequired] public IReadOnlyList<PractitionerDto> Practitioners { get; set; } = [];
+    [Parameter] public string SelectedPractitionerId { get; set; } = "";
+    [Parameter] public EventCallback<string> SelectedPractitionerIdChanged { get; set; }
+    [Parameter] public EventCallback OnPreviousWeek { get; set; }
+    [Parameter] public EventCallback OnNextWeek { get; set; }
+    [Parameter] public EventCallback OnGoToToday { get; set; }
+}

@@ -1,0 +1,184 @@
+@using BookRight.Facade.DTO
+@using BookRight.Facade.Command
+@using BookRight.Facade.Interfaces.Queries
+@using BookRight.Facade.Interfaces.UseCase
+@inject IAppointmentQueries AppointmentQueries
+@inject IPatientQueries PatientQueries
+@inject ITreatmentTypeQueries TreatmentTypeQueries
+@inject IChangeStatus ChangeStatusUseCase
+
+<div class="modal-backdrop fade show"></div>
+<div class="modal fade show d-block" role="dialog" aria-modal="true" aria-labelledby="apt-modal-title" @onclick="OnClose">
+    <div class="modal-dialog modal-dialog-centered" @onclick:stopPropagation>
+        <article class="modal-content">
+            <header class="modal-header">
+                <h5 class="modal-title" id="apt-modal-title">Aftaledetaljer</h5>
+                <button type="button" class="btn-close" @onclick="OnClose" aria-label="Luk" disabled="@_saving"></button>
+            </header>
+            <section class="modal-body">
+                @if (_loading)
+                {
+                    <p class="text-center text-muted my-3">
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Indlæser detaljer…
+                    </p>
+                }
+                else if (_details is null)
+                {
+                    <p class="text-danger">Kunne ikke hente aftaledetaljer.</p>
+                }
+                else
+                {
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Dato</dt>
+                        <dd class="col-sm-7">
+                            <time datetime="@_details.Start.ToString("yyyy-MM-dd")">
+                                @_details.Start.ToString("dd. MMMM yyyy")
+                            </time>
+                        </dd>
+
+                        <dt class="col-sm-5">Tidspunkt</dt>
+                        <dd class="col-sm-7">
+                            <time datetime="@_details.Start.ToString("yyyy-MM-ddTHH:mm")">
+                                @_details.Start.ToString("HH:mm") – @_details.End.ToString("HH:mm")
+                            </time>
+                        </dd>
+
+                        <dt class="col-sm-5">Status</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge @StatusBadgeClass">@StatusLabel</span>
+                        </dd>
+
+                        <dt class="col-sm-5">Patient</dt>
+                        <dd class="col-sm-7">@(_patient is null ? "Ukendt" : $"{_patient.FirstName} {_patient.LastName}")</dd>
+
+                        <dt class="col-sm-5">Behandler</dt>
+                        <dd class="col-sm-7">@PractitionerName</dd>
+
+                        <dt class="col-sm-5">Behandlingstype</dt>
+                        <dd class="col-sm-7">@(_treatmentType?.Name ?? "Ukendt")</dd>
+
+                        @if (!string.IsNullOrWhiteSpace(_details.Note))
+                        {
+                            <dt class="col-sm-5">Note</dt>
+                            <dd class="col-sm-7">@_details.Note</dd>
+                        }
+                    </dl>
+                }
+            </section>
+            <footer class="modal-footer d-flex gap-2">
+                @if (_saving)
+                {
+                    <span class="text-muted small me-auto">
+                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                        Gemmer…
+                    </span>
+                    <button type="button" class="btn btn-secondary btn-sm" disabled>Luk</button>
+                }
+                else if (_pendingStatus is not null)
+                {
+                    <span class="me-auto">
+                        Skift status til <strong>@PendingStatusLabel</strong>?
+                    </span>
+                    <button class="btn btn-primary btn-sm" @onclick="ConfirmStatusChange">Bekræft</button>
+                    <button class="btn btn-secondary btn-sm" @onclick="CancelStatusChange">Annuller</button>
+                }
+                else if (_details is not null && IsTerminalStatus)
+                {
+                    <span class="text-muted fst-italic small me-auto">Aftalen kan ikke ændres</span>
+                    <button type="button" class="btn btn-secondary btn-sm" @onclick="OnClose">Luk</button>
+                }
+                else if (_details is not null)
+                {
+                    <div class="d-flex gap-2 flex-wrap me-auto">
+                        <button class="btn btn-success btn-sm" @onclick='() => RequestStatusChange("completed")'>
+                            Gennemført
+                        </button>
+                        <button class="btn btn-danger btn-sm" @onclick='() => RequestStatusChange("cancelled")'>
+                            Aflys
+                        </button>
+                        <button class="btn btn-warning btn-sm" @onclick='() => RequestStatusChange("noshow")'>
+                            Udeblevet
+                        </button>
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-sm" @onclick="OnClose">Luk</button>
+                }
+                else
+                {
+                    <button type="button" class="btn btn-secondary btn-sm ms-auto" @onclick="OnClose">Luk</button>
+                }
+            </footer>
+        </article>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public Guid AppointmentId { get; set; }
+    [Parameter, EditorRequired] public string PractitionerName { get; set; } = null!;
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnStatusChanged { get; set; }
+
+    private bool _loading = true;
+    private bool _saving;
+    private string? _pendingStatus;
+    private AppointmentDetailedDto? _details;
+    private PatientDetailedDto? _patient;
+    private TreatmentTypeDto? _treatmentType;
+
+    private bool IsTerminalStatus =>
+        _details?.Status.ToLower() is "completed" or "cancelled" or "noshow";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _details = await AppointmentQueries.GetAsync(AppointmentId);
+
+        if (_details is not null)
+        {
+            _patient = await PatientQueries.GetAsync(_details.PatientId);
+            _treatmentType = await TreatmentTypeQueries.GetAsync(_details.TreatmentTypeId);
+        }
+
+        _loading = false;
+    }
+
+    private string StatusBadgeClass => _details?.Status.ToLower() switch
+    {
+        "booked"    => "bg-primary",
+        "completed" => "bg-success",
+        "cancelled" => "bg-danger",
+        "noshow"    => "bg-warning text-dark",
+        _           => "bg-secondary"
+    } ?? "bg-secondary";
+
+    private string StatusLabel => _details?.Status.ToLower() switch
+    {
+        "booked"    => "Booket",
+        "completed" => "Afsluttet",
+        "cancelled" => "Aflyst",
+        "noshow"    => "Udeblevet",
+        _           => _details?.Status ?? ""
+    } ?? "";
+
+    private string PendingStatusLabel => _pendingStatus switch
+    {
+        "completed" => "Gennemført",
+        "cancelled" => "Aflyst",
+        "noshow"    => "Udeblevet",
+        _           => _pendingStatus ?? ""
+    };
+
+    private void RequestStatusChange(string status) => _pendingStatus = status;
+    private void CancelStatusChange() => _pendingStatus = null;
+
+    private async Task ConfirmStatusChange()
+    {
+        if (_details is null || _pendingStatus is null) return;
+        _saving = true;
+        var statusToApply = _pendingStatus;
+        _pendingStatus = null;
+        await ChangeStatusUseCase.Execute(new ChangeStatusRequest(_details.Id, _details.Note, statusToApply));
+        _details = await AppointmentQueries.GetAsync(AppointmentId);
+        _saving = false;
+        await OnStatusChanged.InvokeAsync();
+    }
+}
