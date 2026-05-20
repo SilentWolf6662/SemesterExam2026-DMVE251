@@ -1,15 +1,9 @@
 @using BookRight.Facade.DTO
-@using BookRight.Facade.Interfaces.Queries
-@inject ITreatmentTypeQueries TreatmentTypeQueries
 
 <section class="upcoming-bookings mt-4" aria-labelledby="upcoming-heading">
     <h3 class="h5 mb-3" id="upcoming-heading">Kommende aftaler – @PractitionerName</h3>
 
-    @if (_loading)
-    {
-        <p class="text-muted small">Indlæser…</p>
-    }
-    else if (!_upcoming.Any())
+    @if (!_upcoming.Any())
     {
         <p class="text-muted small fst-italic">Ingen kommende aftaler.</p>
     }
@@ -63,20 +57,12 @@
 
     [Parameter, EditorRequired] public IEnumerable<AppointmentDto> Appointments { get; set; } = [];
     [Parameter, EditorRequired] public string PractitionerName { get; set; } = null!;
+    [Parameter, EditorRequired] public IReadOnlyList<TreatmentTypeDto> TreatmentTypes { get; set; } = [];
     [Parameter] public EventCallback OnStatusChanged { get; set; }
 
-    private bool _loading = true;
-    private IReadOnlyList<TreatmentTypeDto> _treatmentTypes = [];
     private List<AppointmentDto> _upcoming = [];
     private int _totalUpcoming;
     private Guid? _selectedAppointmentId;
-
-    protected override async Task OnInitializedAsync()
-    {
-        _treatmentTypes = await TreatmentTypeQueries.GetAllAsync();
-        _loading = false;
-        RecomputeUpcoming();
-    }
 
     protected override void OnParametersSet() => RecomputeUpcoming();
 
@@ -100,7 +86,7 @@
     }
 
     private string GetTreatmentTypeName(Guid id) =>
-        _treatmentTypes.FirstOrDefault(t => t.Id == id)?.Name ?? "Ukendt";
+        TreatmentTypes.FirstOrDefault(t => t.Id == id)?.Name ?? "Ukendt";
 
     private static string GetStatusBadgeClass(string status) => status.ToLower() switch
     {
