@@ -1,4 +1,6 @@
 .navbar-toggler {
+    -webkit-appearance: none;
+    -moz-appearance: none;
     appearance: none;
     cursor: pointer;
     width: 3.5rem;
@@ -63,6 +65,9 @@
         color: #d7d7d7;
         background: none;
         border: none;
+        -webkit-border-radius: 4px;
+        -moz-border-radius: 4px;
+        -ms-border-radius: 4px;
         border-radius: 4px;
         height: 3rem;
         display: flex;
