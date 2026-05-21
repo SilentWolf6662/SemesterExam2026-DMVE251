@@ -1,0 +1,33 @@
+﻿@using BookRight.Facade.DTO
+@using BookRight.Facade.Command
+@using BookRight.Facade.Interfaces.Queries
+@using BookRight.Facade.Interfaces.UseCase
+@inject IPatientQueries PatientQueries
+
+<article class="modal fade show d-block" @ref = "_dialogRef">
+
+<header class="modal-header">
+	<h5 class="modal-title" id="patient-modal-title">Patientdetaljer</h5>
+	<button type="button" class="btn-close" @onclick="OnClose" aria-label="Luk dialog"></button>
+</header>
+</article>
+
+@code {
+	[Parameter, EditorRequired] public Guid PatientId { get; set; }
+	[Parameter] public EventCallback OnClose { get; set; }
+
+	private ElementReference _dialogRef;
+
+	private PatientDetailedDto? _patient;
+
+	private bool _loading = true;
+
+	protected override async Task OnInitializedAsync()
+	{
+		_patient = await PatientQueries.GetAsync(PatientId);
+
+		_loading = false;
+
+	}
+
+}
