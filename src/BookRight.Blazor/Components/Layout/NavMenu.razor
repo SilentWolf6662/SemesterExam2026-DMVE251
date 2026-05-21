@@ -1,36 +1,37 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+<header class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">BookRight Booking</a>
     </div>
-</div>
+</header>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+<input type="checkbox" id="navbar-toggle" title="Navigation menu" class="navbar-toggler" />
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                Forside
-            </NavLink>
-        </div>
+    <nav aria-label="Primær navigation">
+        <ul class="nav flex-column">
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                    Forside
+                </NavLink>
+            </li>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="oversigt">
-                Oversigt
-            </NavLink>
-        </div>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="oversigt">
+                    Oversigt
+                </NavLink>
+            </li>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="opretbehandling">
-                Opret Booking
-            </NavLink>
-        </div>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="opretbehandling">
+                    Opret Booking
+                </NavLink>
+            </li>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="patientinfo">
-                Patient info
-            </NavLink>
-        </div>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="patientinfo">
+                    Patient info
+                </NavLink>
+            </li>
+        </ul>
     </nav>
 </div>
-

@@ -1,33 +1,114 @@
-﻿@using BookRight.Facade.DTO
-@using BookRight.Facade.Command
+@using BookRight.Facade.DTO
 @using BookRight.Facade.Interfaces.Queries
-@using BookRight.Facade.Interfaces.UseCase
 @inject IPatientQueries PatientQueries
+@inject IPractitionerQueries PractitionerQueries
+@inject IJSRuntime JS
+@implements IAsyncDisposable
 
-<article class="modal fade show d-block" @ref = "_dialogRef">
+<div class="modal-backdrop fade show"></div>
 
-<header class="modal-header">
-	<h5 class="modal-title" id="patient-modal-title">Patientdetaljer</h5>
-	<button type="button" class="btn-close" @onclick="OnClose" aria-label="Luk dialog"></button>
-</header>
-</article>
+<div class="modal fade show d-block" role="dialog" aria-modal="true" aria-labelledby="patient-modal-title" @onclick="OnClose" @onkeydown="HandleKeyDown">
+
+    <div class="modal-dialog modal-dialog-centered" @ref="_dialogRef" tabindex="-1" @onclick:stopPropagation>
+
+        <article class="modal-content">
+
+            <header class="modal-header">
+                <h5 class="modal-title" id="patient-modal-title">Patientdetaljer</h5>
+                <button type="button" class="btn-close" @onclick="OnClose" aria-label="Luk dialog"></button>
+            </header>
+
+            <section class="modal-body">
+                @if (_loading)
+                {
+                    <p class="text-center text-muted my-3">
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Indlæser detaljer…
+                    </p>
+                }
+                else if (_patient is null)
+                {
+                    <p class="text-danger">Kunne ikke hente patientoplysninger.</p>
+                }
+                else
+                {
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Navn</dt>
+                        <dd class="col-sm-7">@_patient.FirstName @_patient.LastName</dd>
+
+                        <dt class="col-sm-5">Alder</dt>
+                        <dd class="col-sm-7">
+                            <time datetime="@_patient.Birthday.ToString("yyyy-MM-dd")">
+                                <CalculateAge Birthday="@_patient.Birthday" /> år
+                            </time>
+                        </dd>
+
+                        <dt class="col-sm-5">Mail</dt>
+                        <dd class="col-sm-7">@_patient.Email</dd>
+
+                        <dt class="col-sm-5">Telefon</dt>
+                        <dd class="col-sm-7">@_patient.PhoneNumber</dd>
+
+                        <dt class="col-sm-5">Adresse</dt>
+                        <dd class="col-sm-7">@_patient.StreetName, @_patient.Zipcode</dd>
+
+                        <dt class="col-sm-5">Foretrukken behandler</dt>
+                        <dd class="col-sm-7">@(_practitioner is null ? "Ukendt" : $"{_practitioner.FirstName} {_practitioner.LastName}")</dd>
+
+                        @if (!string.IsNullOrWhiteSpace(_patient.Note))
+                        {
+                            <dt class="col-sm-5">Note</dt>
+                            <dd class="col-sm-7">@_patient.Note</dd>
+                        }
+                    </dl>
+                }
+            </section>
+
+            <footer class="modal-footer d-flex gap-2">
+                <button type="button" class="btn btn-secondary btn-sm ms-auto" @onclick="OnClose">Luk</button>
+            </footer>
+
+        </article>
+    </div>
+</div>
 
 @code {
-	[Parameter, EditorRequired] public Guid PatientId { get; set; }
-	[Parameter] public EventCallback OnClose { get; set; }
+    [Parameter, EditorRequired] public Guid PatientId { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
 
-	private ElementReference _dialogRef;
+    private ElementReference _dialogRef;
 
-	private PatientDetailedDto? _patient;
+    private bool _loading = true;
+    private PatientDetailedDto? _patient;
+    private PractitionerDto? _practitioner;
 
-	private bool _loading = true;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _dialogRef.FocusAsync();
+            await JS.InvokeVoidAsync("accessibility.trapFocus", _dialogRef);
+        }
+    }
 
-	protected override async Task OnInitializedAsync()
-	{
-		_patient = await PatientQueries.GetAsync(PatientId);
+    public async ValueTask DisposeAsync()
+    {
+        await JS.InvokeVoidAsync("accessibility.releaseFocus", _dialogRef);
+    }
 
-		_loading = false;
+    protected override async Task OnInitializedAsync()
+    {
+        _patient = await PatientQueries.GetAsync(PatientId);
 
-	}
+        if (_patient is not null)
+            _practitioner = await PractitionerQueries.GetAsync(_patient.PreferredPractitionerId);
 
+        _loading = false;
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+            await OnClose.InvokeAsync();
+    }
 }
