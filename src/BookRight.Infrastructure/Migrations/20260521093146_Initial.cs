@@ -21,6 +21,7 @@ namespace BookRight.Infrastructure.Migrations
                     PractitionerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Note = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     TimeInterval = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
@@ -80,6 +81,21 @@ namespace BookRight.Infrastructure.Migrations
                     table.PrimaryKey("PK_Practitioners", x => x.Id);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "TreatmentTypes",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AuthorizationType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MaxParticipants = table.Column<int>(type: "int", nullable: true),
+                    Prices = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TreatmentTypes", x => x.Id);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Patients_Email",
                 table: "Patients",
@@ -107,6 +123,9 @@ namespace BookRight.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Practitioners");
+
+            migrationBuilder.DropTable(
+                name: "TreatmentTypes");
         }
     }
 }

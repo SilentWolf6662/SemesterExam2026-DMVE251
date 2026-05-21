@@ -141,3 +141,4 @@ PublishScripts/
 !wwwroot/
 !wwwroot/**/*.*
 /src/BookRight.Blazor/appsettings.Development.json
+src/BookRight.Infrastructure/AppDbContextFactory.cs
