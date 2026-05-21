@@ -1,14 +1,41 @@
 @using BookRight.Facade.DTO
 
+@* ── Navigationsbjælke ───────────────────────────────────────────────────────
+   <nav> er et semantisk HTML5-landmark der signalerer navigationselementer.
+   d-flex og gap-3 er Bootstrap-klasser der placerer børne-elementer i en
+   vandret række med mellemrum imellem (Flexbox-layout).
+   aria-label skelner denne <nav> fra andre <nav>-elementer på siden.
+*@
 <nav class="calendar-toolbar mb-3 d-flex align-items-center gap-3" aria-label="Ugenavigation">
+
+    @* Navigationsknapper – @onclick binder knappen til en C#-metode i @code-blokken.
+       &lsaquo; og &rsaquo; er HTML-entiteter for ‹ og › (enkle vinkelcitationstegn). *@
     <button class="btn btn-outline-dark btn-sm" @onclick="OnPreviousWeek">&lsaquo; Forrige</button>
+
+    @* Viser den aktuelle ugespænding, f.eks. "12. maj – 18. maj 2025".
+       &ndash; er HTML-entiteten for en halv tankestreg (–). *@
     <span class="fw-semibold">@WeekStart.ToString("dd. MMM") &ndash; @WeekEnd.ToString("dd. MMM yyyy")</span>
+
     <button class="btn btn-outline-dark btn-sm" @onclick="OnNextWeek">Næste &rsaquo;</button>
+
+    @* "I dag"-knappen nulstiller visningen til den aktuelle uge *@
     <button class="btn btn-outline-primary btn-sm ms-2" @onclick="OnGoToToday">I dag</button>
 
+    @* ── Behandler-filter ────────────────────────────────────────────────────
+       <label> er forbundet til <select> via for/id-par ("practitioner-select").
+       Det er vigtigt for tilgængelighed – skærmlæsere læser labelens tekst op
+       når fokus flyttes til dropdown-menuen.
+       visually-hidden skjuler labelen visuelt da konteksten er tydelig grafisk.
+       ms-auto (margin-start: auto) skubber dropdown-menuen mod højre siden.
+    *@
     <label for="practitioner-select" class="visually-hidden">Filtrer efter behandler</label>
     <select id="practitioner-select" class="form-select form-select-sm ms-auto" style="max-width:220px" value="@SelectedPractitionerId" @onchange="OnPractitionerChanged">
+
+        @* Standard-option med tom value = "vis alle behandlere" *@
         <option value="">— Alle behandlere —</option>
+
+        @* @foreach opretter én <option> pr. behandler med behandlerens Id som value,
+           så vi ved hvilken behandler brugeren har valgt. *@
         @foreach (var practitioner in Practitioners)
         {
             <option value="@practitioner.Id">@practitioner.FirstName @practitioner.LastName</option>
@@ -20,6 +47,8 @@
     [Parameter, EditorRequired] public DateTime WeekStart { get; set; }
     [Parameter, EditorRequired] public DateTime WeekEnd { get; set; }
     [Parameter, EditorRequired] public IReadOnlyList<PractitionerDto> Practitioners { get; set; } = [];
+    // SelectedPractitionerId + SelectedPractitionerIdChanged følger Blazors to-vejs binding-konvention
+    // så forælderen (CalenderView) ejer tilstanden og vi blot sender ændringen op
     [Parameter] public string SelectedPractitionerId { get; set; } = "";
     [Parameter] public EventCallback<string> SelectedPractitionerIdChanged { get; set; }
     [Parameter] public EventCallback OnPreviousWeek { get; set; }

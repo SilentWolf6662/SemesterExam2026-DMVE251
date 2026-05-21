@@ -1,13 +1,34 @@
 @using BookRight.Facade.DTO
 
+@* ── Aftaleknap ─────────────────────────────────────────────────────────────
+   Vi bruger et <button>-element (i stedet for f.eks. <div>) fordi det automatisk
+   er fokusérbart med Tab-tasten og kan aktiveres med Enter/mellemrum.
+   @StatusClass tilføjer en ekstra CSS-klasse baseret på aftalens status,
+   fx "apt-booked" eller "apt-cancelled" (se CalenderItem.razor.css).
+   aria-haspopup="dialog" fortæller skærmlæsere at klik åbner en dialog.
+   title="@Tooltip" viser en hover-tekst med alle detaljer i ét.
+*@
 <button class="calendar-apt @StatusClass" type="button" @onclick="OpenModal" aria-haspopup="dialog" title="@Tooltip">
+
+    @* <time> er et semantisk HTML-element til dato/tidspunkt.
+       datetime-attributten giver maskinlæsbar ISO-8601 format (bruges af søgemaskiner
+       og hjælpeteknologier), mens det synlige indhold er et læservenligt format. *@
     <time datetime="@Appointment.Start.ToString("yyyy-MM-ddTHH:mm")" class="small fw-semibold d-block">
         @Appointment.Start.ToString("HH:mm")–@Appointment.End.ToString("HH:mm")
     </time>
+
+    @* Behandlerens navn vises som en blok under tidspunktet *@
     <span class="small d-block">@PractitionerName</span>
+
+    @* visually-hidden skjuler teksten visuelt men lader skærmlæsere læse den,
+       så status (f.eks. "Booket") er tilgængeligt uden at fylde i layoutet. *@
     <span class="visually-hidden">, @StatusLabel</span>
 </button>
 
+@* ── Detalje-modal ───────────────────────────────────────────────────────────
+   @if sikrer at AppointmentModal kun renderes i DOM'en når den skal være åben.
+   Når _showModal er false eksisterer modalens HTML slet ikke på siden.
+*@
 @if (_showModal)
 {
     <AppointmentModal AppointmentId="@Appointment.Id" PractitionerName="@PractitionerName" OnClose="CloseModal" OnStatusChanged="@OnStatusChanged" />
@@ -20,6 +41,7 @@
 
     private bool _showModal;
 
+    // CSS-klassen styrer baggrundsfarven i CalenderItem.razor.css – én klasse pr. status
     private string StatusClass => Appointment.Status.ToLower() switch
     {
         "booked"    => "apt-booked",
@@ -29,6 +51,7 @@
         _           => "apt-booked"
     };
 
+    // Tooltip gentager de synlige oplysninger for mus-hover og skærmlæsere der ikke læser børne-elementer
     private string Tooltip =>
         $"{Appointment.Start:HH:mm}–{Appointment.End:HH:mm} | {PractitionerName} | {StatusLabel}";
 
@@ -41,6 +64,7 @@
         _           => Appointment.Status
     };
 
+    // Modalen renderes inline i stedet for via en portal for at beholde komponent-scoped CSS og EventCallback-kæden
     private void OpenModal() => _showModal = true;
     private void CloseModal() => _showModal = false;
 }

@@ -1,16 +1,37 @@
 @using BookRight.Facade.DTO
 
+@* ── Sektion for kommende aftaler ────────────────────────────────────────────
+   <section> med aria-labelledby forbinder sektionen til sin overskrift via id.
+   Det giver skærmlæsere mulighed for at annoncere sektionens navn når brugeren
+   navigerer med landmarktaster (typisk "D" i NVDA / VoiceOver).
+*@
 <section class="upcoming-bookings mt-4" aria-labelledby="upcoming-heading">
+
+    @* id="upcoming-heading" matcher aria-labelledby på <section> ovenfor *@
     <h3 class="h5 mb-3" id="upcoming-heading">Kommende aftaler – @PractitionerName</h3>
 
+    @* ── Tom-tilstand ────────────────────────────────────────────────────────
+       Hvis der ingen kommende aftaler er, vises en diskret besked i stedet
+       for en tom tabel med kun overskriftsrækken.
+    *@
     @if (!_upcoming.Any())
     {
         <p class="text-muted small fst-italic">Ingen kommende aftaler.</p>
     }
     else
     {
+        @* ── Aftaletabel ─────────────────────────────────────────────────────
+           table-hover tilføjer Bootstrap-markering når musen er over en række.
+        *@
         <table class="table table-sm table-hover mb-1">
+
+            @* Tilgængelig billedtekst til skærmlæsere – usynlig i layoutet *@
             <caption class="visually-hidden">Kommende aftaler for @PractitionerName</caption>
+
+            @* ── Kolonneoverskrifter ──────────────────────────────────────────
+               scope="col" fortæller skærmlæsere at disse <th>-celler er
+               overskrifter for hele kolonnen nedenunder.
+            *@
             <thead class="table-light">
                 <tr>
                     <th scope="col">Dato</th>
@@ -19,10 +40,20 @@
                     <th scope="col">Status</th>
                 </tr>
             </thead>
+
             <tbody>
+                @* @foreach opretter én tabelrække pr. kommende aftale *@
                 @foreach (var apt in _upcoming)
                 {
+                    @* role="button" + tabindex="0" gør rækken klikbar og
+                       fokusérbar med tastaturet (som om den var en knap).
+                       @onclick åbner detalje-modalen for den pågældende aftale.
+                       @onkeydown håndterer Enter/mellemrum for tastaturbrugere.
+                       aria-label giver skærmlæsere en komplet beskrivelse af rækken
+                       i stedet for at læse de individuelle celler op. *@
                     <tr class="upcoming-row" role="button" tabindex="0" @onclick="() => OpenModal(apt.Id)" @onkeydown="e => HandleRowKeyDown(e, apt.Id)" title="@($"{apt.Start:HH:mm}–{apt.End:HH:mm} | {GetTreatmentTypeName(apt.TreatmentTypeId)}")" aria-label="@($"{apt.Start:dd. MMM HH:mm}–{apt.End:HH:mm}, {GetTreatmentTypeName(apt.TreatmentTypeId)}, {GetStatusLabel(apt.Status)}")">
+
+                        @* <time> med maskinlæsbar datetime og visuelt format *@
                         <td>
                             <time datetime="@apt.Start.ToString("yyyy-MM-dd")">
                                 @apt.Start.ToString("dd. MMM yyyy")
@@ -34,12 +65,15 @@
                             </time>
                         </td>
                         <td>@GetTreatmentTypeName(apt.TreatmentTypeId)</td>
+
+                        @* Badge med dynamisk farve baseret på status *@
                         <td><span class="badge @GetStatusBadgeClass(apt.Status)">@GetStatusLabel(apt.Status)</span></td>
                     </tr>
                 }
             </tbody>
         </table>
 
+        @* Vises kun når listen er afskåret – informerer brugeren om at der er flere *@
         @if (_totalUpcoming > _upcoming.Count)
         {
             <p class="text-muted small mb-0">Viser @_upcoming.Count af @_totalUpcoming kommende aftaler.</p>
@@ -47,12 +81,17 @@
     }
 </section>
 
+@* ── Detalje-modal ───────────────────────────────────────────────────────────
+   Modalen renderes kun når en aftale er valgt (_selectedAppointmentId er ikke null).
+   .Value er nødvendig fordi _selectedAppointmentId er en Guid? (nullable).
+*@
 @if (_selectedAppointmentId is not null)
 {
     <AppointmentModal AppointmentId="@_selectedAppointmentId.Value" PractitionerName="@PractitionerName" OnClose="CloseModal" OnStatusChanged="OnStatusChanged" />
 }
 
 @code {
+    // Begrænser tabellen til de næste 5 aftaler for at undgå en uoverskuelig liste
     private const int MaxRows = 5;
 
     [Parameter, EditorRequired] public IEnumerable<AppointmentDto> Appointments { get; set; } = [];
@@ -64,6 +103,8 @@
     private int _totalUpcoming;
     private Guid? _selectedAppointmentId;
 
+    // OnParametersSet frem for OnInitializedAsync fordi Appointments ændrer sig
+    // hver gang behandlerfiltret eller ugen skiftes i CalenderView
     protected override void OnParametersSet() => RecomputeUpcoming();
 
     private void RecomputeUpcoming()
@@ -73,6 +114,7 @@
             .OrderBy(a => a.Start)
             .ToList();
 
+        // _totalUpcoming gemmes før Take() så vi kan vise "X af Y" når listen er afskåret
         _totalUpcoming = upcoming.Count;
         _upcoming = upcoming.Take(MaxRows).ToList();
     }
@@ -82,6 +124,7 @@
 
     private void HandleRowKeyDown(KeyboardEventArgs e, Guid id)
     {
+        // Rækken agerer som knap (role=button) og skal kunne aktiveres med Enter og mellemrum
         if (e.Key is "Enter" or " ") OpenModal(id);
     }
 

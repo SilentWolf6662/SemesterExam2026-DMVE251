@@ -4,16 +4,35 @@
 @inject IPractitionerQueries PractitionerQueries
 @inject ITreatmentTypeQueries TreatmentTypeQueries
 
+@* ── Værktøjslinje ──────────────────────────────────────────────────────────
+   CalendarToolbar er en selvstændig Blazor-komponent (se CalendarToolbar.razor).
+   Vi sender de nødvendige data ned som "Parameters" og modtager hændelser (f.eks.
+   OnPreviousWeek) tilbage så denne komponent kan opdatere sin tilstand.
+*@
 <CalendarToolbar WeekStart="_weekStart" WeekEnd="WeekEnd" Practitioners="_practitioners" SelectedPractitionerId="_selectedPractitionerId" SelectedPractitionerIdChanged="OnPractitionerChanged" OnPreviousWeek="PreviousWeek" OnNextWeek="NextWeek" OnGoToToday="GoToToday" />
 
+@* ── Indlæsningsindikator ────────────────────────────────────────────────────
+   @if er Blazors måde at vise/skjule HTML på ud fra en C#-betingelse.
+   role="status" og aria-live="polite" fortæller skærmlæsere at teksten
+   er en statusmeddelelse der opdateres dynamisk.
+*@
 @if (_loading)
 {
     <p class="text-muted" role="status" aria-live="polite">Indlæser kalender…</p>
 }
 else
 {
+    @* ── Kalender-gitter ─────────────────────────────────────────────────────
+       CalendarGrid tegner selve uge-tabellen med tidspunkter og aftaler.
+       OnStatusChanged er en EventCallback – når en aftale ændres inde i gitteret,
+       bobler hændelsen op hertil og RefreshAppointments henter ny data fra serveren.
+    *@
     <CalendarGrid WeekDays="WeekDays" StartHour="StartHour" EndHour="EndHour" Appointments="_filteredAppointments" Practitioners="_practitioners" OnStatusChanged="RefreshAppointments" />
 
+    @* ── Kommende aftaler (kun synlig når en behandler er valgt) ─────────────
+       Vi viser kun listen over kommende aftaler, når brugeren har filtreret på
+       én bestemt behandler – ellers giver det ingen mening at liste "kommende".
+    *@
     @if (!string.IsNullOrEmpty(_selectedPractitionerId))
     {
         <UpcomingAppointments Appointments="_filteredAppointments" PractitionerName="@SelectedPractitionerName" TreatmentTypes="_treatmentTypes" OnStatusChanged="RefreshAppointments" />
@@ -21,6 +40,7 @@ else
 }
 
 @code {
+    // Kalenderens synlige tidsinterval – aftaler uden for dette interval vises ikke
     private const int StartHour = 8;
     private const int EndHour = 18;
 
@@ -46,6 +66,8 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        // Blazor Server prerenderer kører denne metode uden interaktivitet – vi springer over
+        // for at undgå dobbelt databasekald ved den første rigtige render
         if (!RendererInfo.IsInteractive) return;
 
         _allAppointments = await AppointmentQueries.GetAllAsync();
@@ -57,6 +79,8 @@ else
 
     private async Task RefreshAppointments()
     {
+        // Kaldes af underkomponenter (CalenderItem, UpcomingAppointments) efter statusskift,
+        // så kalenderen altid viser den seneste data uden fuld sideopdatering
         _allAppointments = await AppointmentQueries.GetAllAsync();
         RecomputeFiltered();
     }
@@ -70,6 +94,7 @@ else
 
     private void RecomputeFiltered()
     {
+        // Tom streng betyder "vis alle behandlere" – ingen server-roundtrip nødvendig
         _filteredAppointments = string.IsNullOrEmpty(_selectedPractitionerId)
             ? [.. _allAppointments]
             : [.. _allAppointments.Where(a => a.PractitionerId.ToString() == _selectedPractitionerId)];
@@ -81,6 +106,7 @@ else
 
     private static DateTime GetMonday(DateTime date)
     {
+        // Sikrer at ugen altid starter mandag uanset brugerens lokale ugestartsindstilling
         int diff = (7 + (date.DayOfWeek - DayOfWeek.Monday)) % 7;
         return date.AddDays(-diff).Date;
     }
