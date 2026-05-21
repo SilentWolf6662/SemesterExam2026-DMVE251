@@ -5,6 +5,7 @@ using BookRight.Domain.ValueObjects;
 using BookRight.Facade.Command;
 using BookRight.Facade.Interfaces.UseCase;
 using BookRight.UseCases.Repositories;
+using BookRight.UseCases.Services;
 
 namespace BookRight.UseCases.Command;
 
