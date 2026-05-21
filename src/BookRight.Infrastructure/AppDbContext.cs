@@ -1,5 +1,6 @@
 ﻿using BookRight.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Data.SqlTypes;
 
 namespace BookRight.Infrastructure;
 
@@ -62,6 +63,9 @@ public class AppDbContext : DbContext
 
             // Enum gemmes som string
             entity.Property(a => a.Status).HasConversion<string>();
+
+            // Laver decimal precision med max 2 decimaler og 18 cifre
+            entity.Property(a => a.Price).HasColumnType("decimal(18,2)");
         });
     }
 
