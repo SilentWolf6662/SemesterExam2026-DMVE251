@@ -1,6 +1,5 @@
 ﻿using BookRight.Domain.Enums;
 using BookRight.Domain.ValueObjects;
-using System.Diagnostics;
 using BookRight.Domain.Exceptions;
 
 namespace BookRight.Domain.Entities;
@@ -13,7 +12,7 @@ public class TreatmentType : AggregateRoot
 
     // Listen af gyldige prisvarianter for denne behandlingstype.
     // Hver TreatmentPrice indeholder en varighed i minutter og en tilhørende basispris.
-    public IReadOnlyList<TreatmentPrice> Prices { get; private set; } = [];
+    public List<TreatmentPrice> Prices { get; private set; } = [];
 
     private TreatmentType() { } // EF-Core kræver en parameterløs konstruktør
 

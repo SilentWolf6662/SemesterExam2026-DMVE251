@@ -42,7 +42,7 @@ else
 @code {
     // Kalenderens synlige tidsinterval – aftaler uden for dette interval vises ikke
     private const int StartHour = 8;
-    private const int EndHour = 18;
+    private const int EndHour = 17;
 
     private bool _loading = true;
     private IReadOnlyList<AppointmentDto> _allAppointments = [];
@@ -70,6 +70,7 @@ else
         // for at undgå dobbelt databasekald ved den første rigtige render
         if (!RendererInfo.IsInteractive) return;
 
+        // Henter nødvendig data fra databasen
         _allAppointments = await AppointmentQueries.GetAllAsync();
         _practitioners = await PractitionerQueries.GetAllAsync();
         _treatmentTypes = await TreatmentTypeQueries.GetAllAsync();

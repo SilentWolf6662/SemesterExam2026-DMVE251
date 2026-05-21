@@ -22,7 +22,8 @@ public class AppointmentQueriesImpl : IAppointmentQueries
             a.TimeInterval.End,
             a.TreatmentTypeId,
             a.PractitionerId,
-            a.Status.ToString()
+            a.Status.ToString(),
+            a.Price
             )).ToListAsync();
     }
 
@@ -40,7 +41,8 @@ public class AppointmentQueriesImpl : IAppointmentQueries
             a.PatientId,
             a.PractitionerId,
             a.Status.ToString(),
-            a.Note
+            a.Note,
+            a.Price
             )).FirstOrDefaultAsync();
     }
 }
