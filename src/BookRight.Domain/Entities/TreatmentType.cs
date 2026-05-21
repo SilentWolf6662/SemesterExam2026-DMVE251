@@ -8,17 +8,11 @@ namespace BookRight.Domain.Entities;
 public class TreatmentType : AggregateRoot
 {
     public string Name { get; private set; }
-
-    // Bestemmer hvilken type behandler der må udføre behandlingen (fx kun fysioterapeut)
     public AuthorizationType AuthorizationType { get; private set; }
-
-    // Null betyder at behandlingen er individuel (én patient).
-    // En værdi (fx 6) betyder at det er holdtræning med et maksimalt deltagerantal.
     public int? MaxParticipants { get; private set; }
 
     // Listen af gyldige prisvarianter for denne behandlingstype.
     // Hver TreatmentPrice indeholder en varighed i minutter og en tilhørende basispris.
-    // Gemmes som JSON i databasen via EF Core ComplexCollection.
     public IReadOnlyList<TreatmentPrice> Prices { get; private set; } = [];
 
     private TreatmentType() { } // EF-Core kræver en parameterløs konstruktør
@@ -28,7 +22,6 @@ public class TreatmentType : AggregateRoot
         Name = name;
         AuthorizationType = authorizationType;
         MaxParticipants = maxParticipants;
-        // ToList() laver en konkret liste fra IEnumerable så vi ikke evaluerer den løvent flere gange
         Prices = prices.ToList();
     }
 
