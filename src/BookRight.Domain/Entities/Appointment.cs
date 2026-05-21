@@ -12,15 +12,20 @@ public class Appointment : AggregateRoot
     public Guid PractitionerId { get; private set; }
     public string Note { get; private set; } = string.Empty;
     public AppointmentStatus Status { get; private set; }
+    // Prisen låses fast ved oprettelsen via PricingService og TreatmentType.GetBasePrice().
+    // Den gemmes på bookingen så en fremtidig prisændring på behandlingstypen
+    // ikke påvirker allerede oprettede bookinger.
+    public decimal Price { get; private set; }
 
     // PRIVAT constructor — tvinger brug af factory-metoden Create()
-    private Appointment() { } // EF Core
+    private Appointment() { } // EF Core kræver en parameterløs konstruktør
     private Appointment(TimeInterval timeInterval, Guid type, Guid patient, Guid practitioner)
     {
         TimeInterval = timeInterval;
         TreatmentTypeId = type;
         PatientId = patient;
         PractitionerId = practitioner;
+        // Alle nye bookinger starter med status Booked
         Status = AppointmentStatus.Booked;
     }
 
@@ -30,15 +35,20 @@ public class Appointment : AggregateRoot
         Guid treatmentTypeId,
         Guid patientId,
         Guid practitionerId,
+        decimal price,           // Beregnet endeligt beløb inkl. evt. aftens/weekend-tillæg
         IEnumerable<Appointment> existingForPatient,
         IEnumerable<Appointment> existingForPractitioner)
     {
-        // Laver en ny appointment med en tid, Id for behandlingstype, patient Id og behandler Id
+        // Opret den nye booking — status sættes automatisk til Booked i konstruktøren
         var appointment = new Appointment(timeInterval, treatmentTypeId, patientId, practitionerId);
-        // Tjek overlap mellem ny appointment med eksisterende appointments,
-        // ved at kigge på den nye appointments sluttid og starttid ligger inde i tiden for den eksisterende appointment
+
+        // Prisen tildeles efter objektet er oprettet fordi Price har private set
+        appointment.Price = price;
+
+        // Tjek at den nye booking ikke overlapper med eksisterende aktive bookinger
+        // for hverken patienten eller behandleren
         ValidateNoOverlap(appointment, existingForPatient, existingForPractitioner);
-        return appointment; // Returner den validerede appointment uden overlap
+        return appointment;
     }
 
     public void UpdateTreatmentType(Guid newType)

@@ -86,7 +86,13 @@ public class AppDbContext : DbContext
     {
         modelBuilder.Entity<TreatmentType>(entity =>
         {
+            // Enum gemmes som læsbar streng i databasen frem for et tal
             entity.Property(t => t.AuthorizationType).HasConversion<string>();
+
+            // Prices er en List<TreatmentPrice> (value objects).
+            // ComplexCollection med ToJson gemmer listen som én JSON-kolonne i TreatmentTypes-tabellen —
+            // samme mønster som WorkingHours på Clinic. Ingen separat pristeabel er nødvendig.
+            entity.ComplexCollection(t => t.Prices, p => p.ToJson());
         });
     }
 

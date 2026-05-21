@@ -1,5 +1,6 @@
 ﻿using BookRight.Domain.Entities;
 using BookRight.Domain.Exceptions;
+using BookRight.Domain.Services;
 using BookRight.Domain.ValueObjects;
 using BookRight.Facade.Command;
 using BookRight.Facade.Interfaces.UseCase;
@@ -12,42 +13,53 @@ public class BookAppointmentUseCase : IBookAppointment
     private readonly IAppointmentRepository _appointmentRepo;
     private readonly IPractitionerRepository _practitionerRepo;
     private readonly IPatientRepository _patientRepo;
-    private readonly IClinicRepository _clinicRepo;
+    private readonly ITreatmentTypeRepository _treatmentTypeRepo;
 
-    public BookAppointmentUseCase(IAppointmentRepository appointmentRepo, IPractitionerRepository practitionerRepo, IPatientRepository patientRepo, IClinicRepository clinicRepo)
+    public BookAppointmentUseCase(IAppointmentRepository appointmentRepo, IPractitionerRepository practitionerRepo, IPatientRepository patientRepo, ITreatmentTypeRepository treatmentTypeRepo)
     {
         _appointmentRepo = appointmentRepo;
         _practitionerRepo = practitionerRepo;
         _patientRepo = patientRepo;
-        _clinicRepo = clinicRepo;
+        _treatmentTypeRepo = treatmentTypeRepo;
     }
 
     public async Task Execute(BookAppointmentRequest request)
     {
-        // Tjek om vores patient og practitioner findes, hvis de ikke findes skal vi stoppe processen og kaste en NotFoundException
-        _ = await _patientRepo.GetByIdAsync(request.PatientId) // Tjek om patient findes
-            ?? throw new NotFoundException("Patient not found"); // Hvis ikke, kast en NotFoundException
+        // Validér at patient og behandler eksisterer inden vi gør mere.
+        // ?? throw stopper udførelsen med det samme hvis entiteten ikke findes.
+        _ = await _patientRepo.GetByIdAsync(request.PatientId)
+            ?? throw new NotFoundException("Patient not found");
 
-        _ = await _practitionerRepo.GetByIdAsync(request.PractitionerId) // Tjek om practitioner findes
-            ?? throw new NotFoundException("Practitioner not found"); // Hvis ikke, kast en NotFoundException
+        _ = await _practitionerRepo.GetByIdAsync(request.PractitionerId)
+            ?? throw new NotFoundException("Practitioner not found");
 
-        // Lig tidsintervallet ind i en variable, så den er nemmere at arbejde med og nemmere at læse
+        // Vi henter behandlingstypen fordi vi skal bruge dens prisliste til at beregne bookingprisen
+        var treatmentType = await _treatmentTypeRepo.GetByIdAsync(request.TreatmentTypeId)
+            ?? throw new NotFoundException("Behandlingstype not found");
+
         var timeInterval = new TimeInterval(request.From, request.To);
 
-        // Hent alle eksisterende bookinger for både patient og practitioner, så vi kan tjekke for overlap
+        // Trin 1: slå basisprisen op for den valgte varighed (kaster DomainException hvis varighed er ugyldig)
+        decimal basePrice = treatmentType.GetBasePrice(request.DurationMinutes);
+
+        // Trin 2: anvend evt. aftens/weekend-tillæg på 15 % via PricingService
+        decimal finalPrice = PricingService.Calculate(basePrice, request.From);
+
+        // Hent eksisterende bookinger for begge parter så domænet kan tjekke for tidsoverlap
         var patientBookinger = await _appointmentRepo.GetAllByPatientIdAsync(request.PatientId);
         var practitionerBookinger = await _appointmentRepo.GetAllByPractitionerIdAsync(request.PractitionerId);
 
-        // Opret en ny appointment ved at kalde Create-factory metoden på Appointment.cs, og send alle nødvendige informationer med
+        // Domænet (Appointment.Create) står for al validering — use casen orkestrerer kun
         var appointment = Appointment.Create(
-            timeInterval, 
-            request.TreatmentTypeId, 
-            request.PatientId, 
-            request.PractitionerId, 
-            patientBookinger, 
+            timeInterval,
+            request.TreatmentTypeId,
+            request.PatientId,
+            request.PractitionerId,
+            finalPrice,          // Den beregnede endelige pris gemmes på bookingen
+            patientBookinger,
             practitionerBookinger);
 
-        // Tilføj den nye appointment til vores repository, så den bliver gemt i databasen
+        // Gem den nye booking i databasen — AddAsync stager den, SaveAsync sender SQL
         await _appointmentRepo.AddAsync(appointment);
         await _appointmentRepo.SaveAsync();
     }
