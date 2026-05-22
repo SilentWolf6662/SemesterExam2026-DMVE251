@@ -8,7 +8,7 @@
 
 <PageTitle>Patient info</PageTitle>
 
-<h2 id="patient-table-heading">Patient info</h2>
+
 
 @if (_fail is not null)
 {
@@ -21,29 +21,39 @@ else if (_loading)
 else
 {
 	<section aria-labelledby="patient-table-heading">
+		<h2 id="patient-table-heading">Patient info</h2>
 		<table>
 			<thead>
-				<tr>
-					<th scope="col">Navn</th>
-					<th scope="col">Alder</th>
-					<th scope="col">Mail</th>
-					<th scope="col">Telefon.nr</th>
-				</tr>
+			<tr>
+				<th>  @*Får søgefeltet til at følge tabel fra start af med den ekstra tr og th*@
+						@*Laver søgefelt visuelt og til at skrive i (UI)*@
+					<input class="søgefelt" type="search" 
+					       placeholder="Søg på navn eller telefonnummer"
+					       @oninput="e => _søgeTekst = e.Value?.ToString() ?? string.Empty"/>
+				</th>
+			</tr>
+			<tr>
+				<th scope="col">Navn</th>
+				<th scope="col">Alder</th>
+				<th scope="col">Mail</th>
+				<th scope="col">Telefon.nr</th>
+			</tr>
 			</thead>
 
 			<tbody>
-				@foreach (var patient in Patients ?? [])
-				{
-					<tr class="upcoming-row" role="button" tabindex="0" @onclick="() => OpenModal(patient.Id)" @onkeydown="(e) => HandleRowKeyDown(e, patient.Id)">
-						<td>@patient.FirstName @patient.LastName</td>
-						<td><CalculateAge Birthday="@patient.Birthday" /></td>
-						<td>@patient.Email</td>
-						<td>@patient.PhoneNumber</td>
-					</tr>
-				}
+			@foreach (var patient in FiltreretePatienter)
+			{
+				<tr class="upcoming-row" role="button" tabindex="0" @onclick="() => OpenModal(patient.Id)" @onkeydown="(e) => HandleRowKeyDown(e, patient.Id)">
+					<td>@patient.FirstName @patient.LastName</td>
+					<td><CalculateAge Birthday="@patient.Birthday"/></td>
+					<td>@patient.Email</td>
+					<td>@patient.PhoneNumber</td>
+				</tr>
+			}
 			</tbody>
 		</table>
 	</section>
+	
 }
 
 @if (_selectedPatientId is not null)
@@ -73,6 +83,11 @@ else
 			_loading = false;
 		}
 	}
+
+	private string _søgeTekst = "";
+	@*Laver en filtrering af patienter*@
+	private IEnumerable<PatientDto> FiltreretePatienter => Patients?
+		.Where(p => string.IsNullOrEmpty(_søgeTekst) || $"{p.FirstName} {p.LastName}".Contains(_søgeTekst, StringComparison.OrdinalIgnoreCase) || p.PhoneNumber.Contains(_søgeTekst, StringComparison.OrdinalIgnoreCase)) ?? Enumerable.Empty<PatientDto>();
 
 	private void OpenModal(Guid id) => _selectedPatientId = id;
 	private void CloseModal() => _selectedPatientId = null;
