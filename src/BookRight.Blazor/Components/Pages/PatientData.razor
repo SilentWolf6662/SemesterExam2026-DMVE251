@@ -29,7 +29,7 @@ else
 						@*Laver søgefelt visuelt og til at skrive i (UI)*@
 					<input class="søgefelt" type="search" 
 					       placeholder="Søg på navn eller telefonnummer"
-					       @oninput="e => _søgeTekst = e.Value?.ToString() ?? string.Empty"/>
+					       @oninput="e => _searchText = e.Value?.ToString() ?? string.Empty"/>
 				</th>
 			</tr>
 			<tr>
@@ -41,7 +41,7 @@ else
 			</thead>
 
 			<tbody>
-			@foreach (var patient in FiltreretePatienter)
+				@foreach (var patient in FilteredPatients)
 			{
 				<tr class="upcoming-row" role="button" tabindex="0" @onclick="() => OpenModal(patient.Id)" @onkeydown="(e) => HandleRowKeyDown(e, patient.Id)">
 					<td>@patient.FirstName @patient.LastName</td>
@@ -84,10 +84,10 @@ else
 		}
 	}
 
-	private string _søgeTekst = "";
+	private string _searchText = "";
 	@*Laver en filtrering af patienter*@
-	private IEnumerable<PatientDto> FiltreretePatienter => Patients?
-		.Where(p => string.IsNullOrEmpty(_søgeTekst) || $"{p.FirstName} {p.LastName}".Contains(_søgeTekst, StringComparison.OrdinalIgnoreCase) || p.PhoneNumber.Contains(_søgeTekst, StringComparison.OrdinalIgnoreCase)) ?? Enumerable.Empty<PatientDto>();
+	private IEnumerable<PatientDto> FilteredPatients => Patients?
+		.Where(p => string.IsNullOrEmpty(_searchText) || $"{p.FirstName} {p.LastName}".Contains(_searchText, StringComparison.OrdinalIgnoreCase) || p.PhoneNumber.Contains(_searchText, StringComparison.OrdinalIgnoreCase)) ?? Enumerable.Empty<PatientDto>();
 
 	private void OpenModal(Guid id) => _selectedPatientId = id;
 	private void CloseModal() => _selectedPatientId = null;
