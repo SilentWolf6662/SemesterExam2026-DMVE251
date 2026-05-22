@@ -1,4 +1,5 @@
-﻿@page "/patientinfo"
+@page "/patientinfo"
+@rendermode InteractiveServer
 @using BookRight.Blazor.Components.Patient
 @using BookRight.Facade.DTO
 @using BookRight.Facade.Interfaces.Queries
@@ -7,64 +8,47 @@
 
 <PageTitle>Patient info</PageTitle>
 
-<h2>Patient info</h2>
+<h2 id="patient-table-heading">Patient info</h2>
 
 @if (_fail is not null)
 {
-	<p class="text-danger">@_fail</p>
+	<p class="text-danger" role="alert">@_fail</p>
 }
 else if (_loading)
 {
-	<p>Loading patient data</p>
+	<p role="status">Loading patient data</p>
 }
 else
 {
-	<section>
+	<section aria-labelledby="patient-table-heading">
 		<table>
 			<thead>
-			<tr>
-				<th>
-					Navn
-				</th>
-				<th>
-					Alder
-				</th>
-				<th>
-					Mail
-				</th>
-				<th>
-					Telefon.nr
-				</th>
-			</tr>
-			</thead>
-			
-			<tbody>
-			@foreach (var patient in Patients ?? [])
-			{
-				<tr class="upcoming-row" role="button" tabindex="0" @onclick="() => OpenModal(patient.Id)">
-					<td>
-						@patient.FirstName @patient.LastName
-					</td>
-					<td>
-						<CalculateAge Birthday="@patient.Birthday"/>
-					</td>
-					<td>
-						@patient.Email
-					</td>
-					<td>
-						@patient.PhoneNumber
-					</td>
+				<tr>
+					<th scope="col">Navn</th>
+					<th scope="col">Alder</th>
+					<th scope="col">Mail</th>
+					<th scope="col">Telefon.nr</th>
 				</tr>
-			}
+			</thead>
+
+			<tbody>
+				@foreach (var patient in Patients ?? [])
+				{
+					<tr class="upcoming-row" role="button" tabindex="0" @onclick="() => OpenModal(patient.Id)" @onkeydown="(e) => HandleRowKeyDown(e, patient.Id)">
+						<td>@patient.FirstName @patient.LastName</td>
+						<td><CalculateAge Birthday="@patient.Birthday" /></td>
+						<td>@patient.Email</td>
+						<td>@patient.PhoneNumber</td>
+					</tr>
+				}
 			</tbody>
-
 		</table>
-
 	</section>
 }
+
 @if (_selectedPatientId is not null)
 {
-	<PatientModal PatientId="@_selectedPatientId.Value"  OnClose="CloseModal"/>
+	<PatientModal PatientId="@_selectedPatientId.Value" OnClose="CloseModal" />
 }
 
 @code {
@@ -92,4 +76,9 @@ else
 
 	private void OpenModal(Guid id) => _selectedPatientId = id;
 	private void CloseModal() => _selectedPatientId = null;
+
+	private void HandleRowKeyDown(KeyboardEventArgs e, Guid id)
+	{
+		if (e.Key is "Enter" or " ") OpenModal(id);
+	}
 }

@@ -1,6 +1,5 @@
 ﻿using BookRight.Domain.Entities;
 using BookRight.Domain.Exceptions;
-using BookRight.Domain.Services;
 using BookRight.Domain.ValueObjects;
 using BookRight.Facade.Command;
 using BookRight.Facade.Interfaces.UseCase;
@@ -15,13 +14,15 @@ public class BookAppointmentUseCase : IBookAppointment
     private readonly IPractitionerRepository _practitionerRepo;
     private readonly IPatientRepository _patientRepo;
     private readonly ITreatmentTypeRepository _treatmentTypeRepo;
+    private readonly PricingService _pricingService;
 
-    public BookAppointmentUseCase(IAppointmentRepository appointmentRepo, IPractitionerRepository practitionerRepo, IPatientRepository patientRepo, ITreatmentTypeRepository treatmentTypeRepo)
+    public BookAppointmentUseCase(IAppointmentRepository appointmentRepo, IPractitionerRepository practitionerRepo, IPatientRepository patientRepo, ITreatmentTypeRepository treatmentTypeRepo, PricingService pricingService)
     {
         _appointmentRepo = appointmentRepo;
         _practitionerRepo = practitionerRepo;
         _patientRepo = patientRepo;
         _treatmentTypeRepo = treatmentTypeRepo;
+        _pricingService = pricingService;
     }
 
     public async Task Execute(BookAppointmentRequest request)
@@ -43,22 +44,23 @@ public class BookAppointmentUseCase : IBookAppointment
         // Trin 1: slå basisprisen op for den valgte varighed (kaster DomainException hvis varighed er ugyldig)
         decimal basePrice = treatmentType.GetBasePrice(request.DurationMinutes);
 
-        // Trin 2: anvend evt. aftens/weekend-tillæg på 15 % via PricingService
-        decimal finalPrice = PricingService.Calculate(basePrice, request.From);
-
         // Hent eksisterende bookinger for begge parter så domænet kan tjekke for tidsoverlap
         var patientBookinger = await _appointmentRepo.GetAllByPatientIdAsync(request.PatientId);
         var practitionerBookinger = await _appointmentRepo.GetAllByPractitionerIdAsync(request.PractitionerId);
 
-        // Domænet (Appointment.Create) står for al validering — use casen orkestrerer kun
+        // Opret appointment med basisprisen — validerer overlap og sætter Price så PricingService kan læse den
         var appointment = Appointment.Create(
             timeInterval,
             request.TreatmentTypeId,
             request.PatientId,
             request.PractitionerId,
-            finalPrice,          // Den beregnede endelige pris gemmes på bookingen
+            basePrice,
             patientBookinger,
             practitionerBookinger);
+
+        // Trin 2: anvend evt. aftens/weekend-tillæg og rabatter via PricingService
+        decimal finalPrice = _pricingService.Calculate(appointment, timeInterval);
+        appointment.ApplyFinalPrice(finalPrice);
 
         // Gem den nye booking i databasen — AddAsync stager den, SaveAsync sender SQL
         await _appointmentRepo.AddAsync(appointment);

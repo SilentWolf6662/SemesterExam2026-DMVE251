@@ -84,6 +84,12 @@ public class Appointment : AggregateRoot
     // En appointment har en pris hvis den er større end 0
     public bool HasPrice => Price > 0;
 
+    // Opdaterer prisen med den endelige beregnede pris fra PricingService.
+    public void ApplyFinalPrice(decimal finalPrice)
+    {
+        Price = finalPrice;
+    }
+
     public bool IsActive => Status == AppointmentStatus.Booked; // En appointment er aktiv hvis den er 'Booked' (IKKE 'Cancelled', 'Completed', eller 'NoShow')
 
     // Metode til at validere at en oprettet appointment ikke overlapper med en eksisterende appoinment

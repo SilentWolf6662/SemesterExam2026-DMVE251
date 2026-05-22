@@ -1,9 +1,11 @@
-﻿using BookRight.Facade.Interfaces.Queries;
+﻿using BookRight.Domain.Discount;
+using BookRight.Facade.Interfaces.Queries;
 using BookRight.Facade.Interfaces.UseCase;
 using BookRight.Infrastructure.Query;
 using BookRight.Infrastructure.Repository;
 using BookRight.UseCases.Command;
 using BookRight.UseCases.Repositories;
+using BookRight.UseCases.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,6 +37,10 @@ public static class DependencyInjection
 
         // Practitioner Use Cases
         services.AddScoped<ICreatePractitionerUseCase, CreatePractitionerUseCase>();
+
+        // Pricing
+        services.AddScoped<IDiscountStrategy, BlackFridayDiscount>();
+        services.AddScoped<PricingService>();
 
         // Appointment Use Cases
         services.AddScoped<IBookAppointment, BookAppointmentUseCase>();
