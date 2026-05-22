@@ -34,9 +34,7 @@ else
 			<tbody>
 				@foreach (var patient in Patients ?? [])
 				{
-					<tr class="upcoming-row" role="button" tabindex="0"
-						@onclick="() => OpenModal(patient.Id)"
-						@onkeydown="(e) => HandleRowKeyDown(e, patient.Id)">
+					<tr class="upcoming-row" role="button" tabindex="0" @onclick="() => OpenModal(patient.Id)" @onkeydown="(e) => HandleRowKeyDown(e, patient.Id)">
 						<td>@patient.FirstName @patient.LastName</td>
 						<td><CalculateAge Birthday="@patient.Birthday" /></td>
 						<td>@patient.Email</td>
