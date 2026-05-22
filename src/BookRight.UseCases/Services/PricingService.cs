@@ -1,7 +1,6 @@
 ﻿using BookRight.Domain.Discount;
 using BookRight.Domain.Entities;
 using BookRight.Domain.Exceptions;
-using BookRight.Domain.ValueObjects;
 
 namespace BookRight.UseCases.Services;
 
@@ -19,18 +18,19 @@ public class PricingService
 
     // Beregner den endelige pris for en booking.
     
-    public decimal Calculate(Appointment appointment, TimeInterval timeInterval)
+    public async Task<decimal> Calculate(Appointment appointment)
     {
         // Hvis bookingen ikke har en pris defineret, kastes en Exception
         if (!appointment.HasPrice) throw new DomainException("Appointment skal have en pris for at kunne beregnes.");
 
         // Beregn basisprisen baseret på BookRight-reglerne, ved at ligge overtidsgebyret oveni,
         // hvis bookingen er om aftenen eller i weekenden
-        decimal currentPrice = OvertimeCharge.Calculate(appointment, timeInterval);
+        decimal currentPrice = OvertimeChargeService.Calculate(appointment);
 
         // Hent alle rabatter fra de forskellige strategier og find den bedste (højeste) rabat.
-        var discounts = _discountStrategies.Select(a => a.Calculate(appointment, timeInterval));
-        var bestDiscount = discounts.MaxBy(a => a.DiscountAmount) ?? new CalculatedDiscount(0);
+        // SKAL KØRES CPU-BOUND PARALLELT (meget gerne tjekke om det er sandt... please... i need help)
+        var discounts = await Task.WhenAll(_discountStrategies.Select(a => a.Calculate(currentPrice, appointment)));
+        var bestDiscount = discounts.MaxBy(a => a.DiscountAmount) ?? new CalculatedDiscount("Ingen rabat", 0, currentPrice);
 
         // Beregn den endelige pris ved at trække den højeste rabat fra basisprisen
         decimal finalPrice = currentPrice - bestDiscount.DiscountAmount;

@@ -1,24 +1,33 @@
 ﻿using BookRight.Domain.Entities;
-using BookRight.Domain.ValueObjects;
 
 namespace BookRight.Domain.Discount;
 
-public class BlackFridayDiscount : IDiscountStrategy
+public class BlackFridayDiscountStrategy : IDiscountStrategy
 {
     public string Name => "Black Friday Rabat";
-    private const decimal _discountRate = 0.25m; // 25% discount
-    public CalculatedDiscount Calculate(Appointment appointment, TimeInterval timeInterval)
-    {
-        // Hvis sluttiden for appointment ligger på black friday kan der gives rabat ellers retuneres der ingen rabat (0)
-        if (IsBlackFriday(timeInterval.End))
-        {
-            return new CalculatedDiscount(Math.Round(appointment.Price * _discountRate, 2));
-        }
-        else
-        {
-            return new CalculatedDiscount(0);
-        }
+    private const decimal _discountRate = 0.25m; // 25% rabat
 
+    private BlackFridayDiscountStrategy() { }
+
+    async Task<CalculatedDiscount> IDiscountStrategy.Calculate(decimal currentPrice, Appointment appointment)
+    {
+        // Hvis sluttiden for appointment ligger på black friday kan der gives rabat
+        if (IsBlackFriday(appointment.TimeInterval.End))
+        {
+            return new CalculatedDiscount(
+                Name,
+                Math.Round(currentPrice * _discountRate, 2),
+                currentPrice
+                );
+        }
+        else // ellers retuneres der ingen rabat (0)
+        {
+            return new CalculatedDiscount(
+                Name,
+                0,
+                currentPrice
+                );
+        }
     }
 
     private bool IsBlackFriday(DateTime date)
