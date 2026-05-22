@@ -30,11 +30,9 @@ public class PricingService
         // Hent alle rabatter fra de forskellige strategier og find den bedste (højeste) rabat.
         // SKAL KØRES CPU-BOUND PARALLELT (meget gerne tjekke om det er sandt... please... i need help)
         var discounts = await Task.WhenAll(_discountStrategies.Select(a => a.Calculate(currentPrice, appointment)));
-        var bestDiscount = discounts.MaxBy(a => a.DiscountAmount) ?? new CalculatedDiscount("Ingen rabat", 0, currentPrice);
+        var bestDiscount = discounts.MaxBy(a => a.DiscountAmount) ?? new CalculatedDiscount("Ingen rabat", 0);
 
         // Beregn den endelige pris ved at trække den højeste rabat fra basisprisen
-        decimal finalPrice = currentPrice - bestDiscount.DiscountAmount;
-
-        return finalPrice;
+        return currentPrice - bestDiscount.DiscountAmount;
     }
 }

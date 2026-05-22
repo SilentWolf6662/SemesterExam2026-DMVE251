@@ -22,16 +22,14 @@ public class BirthdayDiscountStrategy : IDiscountStrategy
         {
             return new CalculatedDiscount(
                 Name,
-                Math.Round(currentPrice * DiscountRate, 2),
-                currentPrice
+                Math.Round(currentPrice * DiscountRate, 2)
             );
         }
         else
         {
             return new CalculatedDiscount(
                 Name,
-                0,
-                currentPrice
+                0
             );
         }
     }

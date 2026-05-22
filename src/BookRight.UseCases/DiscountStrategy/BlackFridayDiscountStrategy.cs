@@ -16,16 +16,14 @@ public class BlackFridayDiscountStrategy : IDiscountStrategy
         {
             return new CalculatedDiscount(
                 Name,
-                Math.Round(currentPrice * _discountRate, 2),
-                currentPrice
+                Math.Round(currentPrice * _discountRate, 2)
                 );
         }
         else // ellers retuneres der ingen rabat (0)
         {
             return new CalculatedDiscount(
                 Name,
-                0,
-                currentPrice
+                0
                 );
         }
     }
