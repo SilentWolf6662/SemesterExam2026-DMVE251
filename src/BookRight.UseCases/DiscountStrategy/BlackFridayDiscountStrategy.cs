@@ -7,7 +7,7 @@ public class BlackFridayDiscountStrategy : IDiscountStrategy
     public string Name => "Black Friday Rabat";
     private const decimal _discountRate = 0.25m; // 25% rabat
 
-    private BlackFridayDiscountStrategy() { }
+    public BlackFridayDiscountStrategy() { }
 
     async Task<CalculatedDiscount> IDiscountStrategy.Calculate(decimal currentPrice, Appointment appointment)
     {

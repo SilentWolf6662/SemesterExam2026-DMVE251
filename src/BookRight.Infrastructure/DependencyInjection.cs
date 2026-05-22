@@ -39,11 +39,13 @@ public static class DependencyInjection
         services.AddScoped<ICreatePractitionerUseCase, CreatePractitionerUseCase>();
 
         // Pricing
-        services.AddScoped<IDiscountStrategy, BlackFridayDiscount>();
+        services.AddScoped<IDiscountStrategy, BlackFridayDiscountStrategy>();
+        services.AddScoped<IDiscountStrategy, BirthdayDiscountStrategy>();
         services.AddScoped<PricingService>();
 
         // Appointment Use Cases
         services.AddScoped<IBookAppointment, BookAppointmentUseCase>();
+        services.AddScoped<IBookCombinedAppointment, BookCombinedAppointmentUseCase>();
         services.AddScoped<IChangeStatus, ChangeStatusUseCase>();
 
         // Queries (Scoped)

@@ -59,7 +59,7 @@ public class BookAppointmentUseCase : IBookAppointment
             practitionerBookinger);
 
         // Trin 2: anvend evt. aftens/weekend-tillæg og rabatter via PricingService
-        decimal finalPrice = _pricingService.Calculate(appointment, timeInterval);
+        decimal finalPrice = await _pricingService.Calculate(appointment);
         appointment.ApplyFinalPrice(finalPrice);
 
         // Gem den nye booking i databasen — AddAsync stager den, SaveAsync sender SQL

@@ -1,5 +1,45 @@
-﻿<h3>Behandlingstype</h3>
+@using BookRight.Facade.DTO
+
+<div class="mb-3">
+    <label class="form-label" for="@SelectId">
+        Behandlingstype <span aria-hidden="true">*</span>
+    </label>
+    <select id="@SelectId"
+            class="form-select"
+            value="@SelectedTreatmentTypeId"
+            @onchange="OnChanged"
+            disabled="@(PractitionerAuthorization == null)"
+            aria-required="true"
+            aria-describedby="@HintId">
+        <option value="">-- Vælg behandlingstype --</option>
+        @foreach (var t in Filtered)
+        {
+            <option value="@t.Id">@t.Name</option>
+        }
+    </select>
+    <small id="@HintId" class="text-muted">
+        @(PractitionerAuthorization == null ? "Vælg en behandler for at se behandlingstyper" : "")
+    </small>
+</div>
 
 @code {
+    [Parameter] public string SelectId { get; set; } = "treatment-select";
+    [Parameter, EditorRequired] public IReadOnlyList<TreatmentTypeDto> AllTreatmentTypes { get; set; } = [];
+    [Parameter] public string? PractitionerAuthorization { get; set; }
+    [Parameter] public Guid? SelectedTreatmentTypeId { get; set; }
+    [Parameter] public EventCallback<Guid?> SelectedTreatmentTypeIdChanged { get; set; }
 
+    private string HintId => $"{SelectId}-hint";
+
+    private IEnumerable<TreatmentTypeDto> Filtered =>
+        PractitionerAuthorization is null
+            ? []
+            : AllTreatmentTypes.Where(t => t.AuthorizationType == PractitionerAuthorization);
+
+    private async Task OnChanged(ChangeEventArgs e)
+    {
+        var val = e.Value?.ToString();
+        var id = string.IsNullOrEmpty(val) ? (Guid?)null : Guid.Parse(val);
+        await SelectedTreatmentTypeIdChanged.InvokeAsync(id);
+    }
 }

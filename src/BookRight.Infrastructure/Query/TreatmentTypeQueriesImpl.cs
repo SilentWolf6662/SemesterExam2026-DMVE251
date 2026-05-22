@@ -20,7 +20,8 @@ public class TreatmentTypeQueriesImpl : ITreatmentTypeQueries
             t.Id,
             t.Name,
             t.AuthorizationType.ToString(),
-            t.MaxParticipants
+            t.MaxParticipants,
+            t.Prices.Select(p => p.DurationMinutes).ToList()
         )).ToListAsync();
     }
 
@@ -34,7 +35,8 @@ public class TreatmentTypeQueriesImpl : ITreatmentTypeQueries
                 t.Id,
                 t.Name,
                 t.AuthorizationType.ToString(),
-                t.MaxParticipants
+                t.MaxParticipants,
+                t.Prices.Select(p => p.DurationMinutes).ToList()
             )).FirstOrDefaultAsync();
     }
 

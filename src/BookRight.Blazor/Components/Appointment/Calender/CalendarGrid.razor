@@ -1,4 +1,5 @@
 @using BookRight.Facade.DTO
+@inject NavigationManager Nav
 
 @* ── Ydre wrapper ────────────────────────────────────────────────────────────
    <section> er et semantisk HTML5-landmark-element der grupperer relateret indhold.
@@ -53,6 +54,7 @@
         <tbody>
             @for (int hour = StartHour; hour < EndHour; hour++)
             {
+                var h = hour;
                 @* Hver række har en fast højde så gitteret ser ensartet ud
                    uanset om der er aftaler i tidsslottet eller ej. *@
                 <tr style="height:48px">
@@ -66,17 +68,26 @@
                        der starter på præcis denne dag og time. *@
                     @foreach (var day in WeekDays)
                     {
-                        var slots = GetAppointmentsForSlot(day, hour);
+                        var slots = GetAppointmentsForSlot(day, h);
 
                         @* position-relative er nødvendigt fordi CalenderItem
                            bruger absolut positionering indeni cellen. *@
                         <td class="calendar-cell p-0 align-top position-relative">
-
+                            
                             @* For hver aftale i dette tidsslot renderes en CalenderItem-komponent
                                der viser aftalen som en farvet knap man kan klikke på. *@
                             @foreach (var apt in slots)
                             {
                                 <CalenderItem Appointment="apt" PractitionerName="@GetPractitionerName(apt.PractitionerId)" OnStatusChanged="OnStatusChanged" />
+                            }
+
+                            @* Tom tidsslot — klik navigerer til booking-formularen med dato og tid pre-udfyldt *@
+                            @if (!slots.Any())
+                            {
+                                <button class="slot-btn" type="button"
+                                        @onclick="() => GoToBooking(day, h)"
+                                        aria-label="Opret booking @day.ToString("dd/MM") kl. @(h.ToString("00")):00">
+                                </button>
                             }
                         </td>
                     }
@@ -103,4 +114,7 @@
         var p = Practitioners.FirstOrDefault(x => x.Id == id);
         return p is null ? "Ukendt" : $"{p.FirstName} {p.LastName}";
     }
+
+    private void GoToBooking(DateTime day, int hour) =>
+        Nav.NavigateTo($"/opretbehandling?date={day:yyyy-MM-dd}&time={hour:00}:00");
 }

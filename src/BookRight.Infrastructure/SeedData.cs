@@ -147,8 +147,8 @@ public class SeedData
         List<TreatmentPrice> pyshioPrices = [new TreatmentPrice(30, 395), new TreatmentPrice(45, 589), new TreatmentPrice(60, 745)];
         var physio = TreatmentType.Create("Fysioterapi", AuthorizationType.Physiotherapist, 1, pyshioPrices);
         
-        List<TreatmentPrice> massagePrices = [new TreatmentPrice(30, 395), new TreatmentPrice(60, 745)];
-        var massage = TreatmentType.Create("Massage", AuthorizationType.Masseur, 1, massagePrices);
+        List<TreatmentPrice> massagePrices = [new TreatmentPrice(30, 350), new TreatmentPrice(60, 699)];
+        var massage = TreatmentType.Create("Sportsmassage", AuthorizationType.Masseur, 1, massagePrices);
         
         List<TreatmentPrice> acupuncturePrices = [new TreatmentPrice(45, 550)];
         var acupuncture = TreatmentType.Create("Akupunktur", AuthorizationType.Acupuncturist, 1, acupuncturePrices);
