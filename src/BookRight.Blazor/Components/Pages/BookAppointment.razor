@@ -149,12 +149,19 @@ else
                     aria-required="true"
                     aria-describedby="duration-1-hint">
                 <option value="">-- Vælg varighed --</option>
+
+                @* @foreach generer et <option>-element for hver varighed i listen.
+                   AvailableDurations er en computed property i @code der returnerer
+                   de varigheder den valgte behandlingstype tilbyder. *@
                 @foreach (var duration in AvailableDurations)
                 {
                     <option value="@duration">@duration minutter</option>
                 }
             </select>
 
+            @* <small> er HTML til fin/supplerende tekst.
+               d-block gør den til et blokelement (fylder hele bredden).
+               mb-3 er Bootstrap for margin-bottom: 1rem — luft under feltet. *@
             <small id="duration-1-hint" class="@(_submitted && _selectedDuration is null && _selectedTreatmentTypeId is not null ? "invalid-feedback d-block mb-3" : "d-block text-muted mb-3")">
                 @if (_submitted && _selectedDuration is null && _selectedTreatmentTypeId is not null)
                 {
@@ -351,6 +358,9 @@ else
                min="@TimeMin"
                aria-required="true" />
 
+        @* Fejlteksten vises kun hvis starttidspunktet er i fortiden.
+           invalid-feedback er Bootstraps klasse til valideringsfejl under et felt.
+           d-block tilsidesætter Bootstraps display:none, og mb-3 giver luft nedenunder. *@
         @if (_submitted && !_time.HasValue)
         {
             <small class="invalid-feedback d-block mb-3">Vælg venligst et starttidspunkt.</small>
