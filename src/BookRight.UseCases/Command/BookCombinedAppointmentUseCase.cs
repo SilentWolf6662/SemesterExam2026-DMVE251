@@ -75,8 +75,6 @@ public class BookCombinedAppointmentUseCase : IBookCombinedAppointment
             patientBookinger,
             firstPractBookinger);
 
-        first.ApplyFinalPrice(await _pricingService.Calculate(first));
-
         // Tilføj til lokale lister så anden aftale kan validere mod den
         patientBookinger.Add(first);
         firstPractBookinger.Add(first);
@@ -93,7 +91,12 @@ public class BookCombinedAppointmentUseCase : IBookCombinedAppointment
             patientBookinger,
             secondPractBookinger);
 
-        second.ApplyFinalPrice(await _pricingService.Calculate(second));
+        // Beregn priser som én enhed — én rabat på den samlede pris, ikke én rabat per behandling
+        var combined = await _pricingService.CalculateCombined(first, second);
+        first.ApplyFinalPrice(combined.FirstFinalPrice);
+        first.ApplyDiscountType(combined.DiscountType);
+        second.ApplyFinalPrice(combined.SecondFinalPrice);
+        second.ApplyDiscountType(combined.DiscountType);
 
         await _appointmentRepo.AddAsync(first);
         await _appointmentRepo.AddAsync(second);
