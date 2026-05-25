@@ -1,28 +1,27 @@
 @using BookRight.Facade.DTO
 
-<div class="mb-3">
-    <label class="form-label" for="@SelectId">
-        Behandler <span aria-hidden="true">*</span>
-    </label>
-    <select id="@SelectId"
-            class="form-select"
-            value="@SelectedPractitionerId"
-            @onchange="OnChanged"
-            disabled="@(SelectedClinicId is null)"
-            aria-required="true"
-            aria-describedby="@HintId">
-        <option value="">-- Vælg behandler --</option>
-        @foreach (var p in Filtered)
-        {
-            <option value="@p.Id">@p.FirstName @p.LastName (@TranslatedAuthorizationName(p.Authorization))</option>
-        }
-    </select>
-    <small id="@HintId" class="text-muted">
-        @(SelectedClinicId is null ? "Vælg en klinik for at se tilgængelige behandlere" : "")
-    </small>
-</div>
+<label class="form-label" for="@SelectId">
+    Behandler <span aria-hidden="true">*</span>
+</label>
+<select id="@SelectId"
+        class="form-select"
+        value="@SelectedPractitionerId"
+        @onchange="OnChanged"
+        disabled="@(SelectedClinicId is null)"
+        aria-required="true"
+        aria-describedby="@HintId">
+    <option value="">-- Vælg behandler --</option>
+    @foreach (var p in Filtered)
+    {
+        <option value="@p.Id">@p.FirstName @p.LastName (@TranslatedAuthorizationName(p.Authorization))</option>
+    }
+</select>
+<small id="@HintId" class="d-block text-muted mb-3">
+    @(SelectedClinicId is null ? "Vælg en klinik for at se tilgængelige behandlere" : "")
+</small>
 
 @code {
+    [Parameter] public bool FilterByClinic { get; set; } = false;
     [Parameter] public string SelectId { get; set; } = "practitioner-select";
     [Parameter, EditorRequired] public IReadOnlyList<PractitionerDto> AllPractitioners { get; set; } = [];
     [Parameter] public Guid? SelectedClinicId { get; set; }
@@ -31,10 +30,17 @@
 
     private string HintId => $"{SelectId}-hint";
 
-    private IEnumerable<PractitionerDto> Filtered =>
-        SelectedClinicId is null
-            ? []
-            : AllPractitioners.Where(p => p.ClinicIds.Contains(SelectedClinicId.Value));
+    private IEnumerable<PractitionerDto> Filtered
+    {
+        get
+        {
+            if (SelectedClinicId == null)
+                return [];
+            if (FilterByClinic)
+                return AllPractitioners.Where(p => p.ClinicIds.Contains(SelectedClinicId.Value));
+            return AllPractitioners;
+        }
+    }
 
     private async Task OnChanged(ChangeEventArgs e)
     {

@@ -26,16 +26,16 @@
 else
 {
     @* Fejl- og statusbeskeder annonceres automatisk af skærmlæsere via role *@
-    <div aria-live="polite" aria-atomic="true">
+    <output aria-atomic="true" class="d-block">
         @if (_error is not null)
         {
-            <div class="alert alert-danger" role="alert">@_error</div>
+            <p class="alert alert-danger" role="alert">@_error</p>
         }
         @if (_success)
         {
-            <div class="alert alert-success" role="status">Booking oprettet!</div>
+            <p class="alert alert-success" role="status">Booking oprettet!</p>
         }
-    </div>
+    </output>
 
     <p class="text-muted small mb-3">Felter markeret med <span aria-hidden="true">*</span> er påkrævet.</p>
 
@@ -50,6 +50,7 @@ else
             <legend class="fs-6 fw-semibold mb-2">1. behandling</legend>
 
             <PractitionerSelect SelectId="practitioner-1"
+                                FilterByClinic="true"
                                 AllPractitioners="@_practitioners"
                                 SelectedClinicId="@_selectedClinicId"
                                 SelectedPractitionerId="@_selectedPractitionerId"
@@ -61,30 +62,28 @@ else
                                  SelectedTreatmentTypeId="@_selectedTreatmentTypeId"
                                  SelectedTreatmentTypeIdChanged="OnTreatmentTypeChanged" />
 
-            <div class="mb-3">
-                <label class="form-label" for="duration-1">
-                    Varighed <span aria-hidden="true">*</span>
-                </label>
-                <select id="duration-1"
-                        class="form-select"
-                        value="@_selectedDuration"
-                        @onchange="e => _selectedDuration = string.IsNullOrEmpty(e.Value?.ToString()) ? null : int.Parse(e.Value!.ToString()!)"
-                        disabled="@(_selectedTreatmentTypeId is null)"
-                        aria-required="true"
-                        aria-describedby="duration-1-hint">
-                    <option value="">-- Vælg varighed --</option>
-                    @foreach (var dur in AvailableDurations)
-                    {
-                        <option value="@dur">@dur minutter</option>
-                    }
-                </select>
-                <small id="duration-1-hint" class="text-muted">
-                    @(_selectedTreatmentTypeId is null ? "Vælg en behandlingstype for at se varighed" : "")
-                </small>
-            </div>
+            <label class="form-label" for="duration-1">
+                Varighed <span aria-hidden="true">*</span>
+            </label>
+            <select id="duration-1"
+                    class="form-select"
+                    value="@_selectedDuration"
+                    @onchange="e => _selectedDuration = string.IsNullOrEmpty(e.Value?.ToString()) ? null : int.Parse(e.Value!.ToString()!)"
+                    disabled="@(_selectedTreatmentTypeId is null)"
+                    aria-required="true"
+                    aria-describedby="duration-1-hint">
+                <option value="">-- Vælg varighed --</option>
+                @foreach (var dur in AvailableDurations)
+                {
+                    <option value="@dur">@dur minutter</option>
+                }
+            </select>
+            <small id="duration-1-hint" class="d-block text-muted mb-3">
+                @(_selectedTreatmentTypeId is null ? "Vælg en behandlingstype for at se varighed" : "")
+            </small>
         </fieldset>
 
-        <div class="mb-3 form-check">
+        <p class="mb-3 form-check">
             <input class="form-check-input" type="checkbox" id="combined-check"
                    @bind="_isCombined" @bind:after="OnCombinedToggled"
                    aria-controls="combined-section"
@@ -92,7 +91,7 @@ else
             <label class="form-check-label" for="combined-check">
                 Kombinér med anden behandling i samme besøg
             </label>
-        </div>
+        </p>
 
         @if (_isCombined)
         {
@@ -100,6 +99,7 @@ else
                 <legend class="fs-6 fw-semibold mb-2 w-auto px-2">2. behandling</legend>
 
                 <PractitionerSelect SelectId="practitioner-2"
+                                    FilterByClinic="true"
                                     AllPractitioners="@_practitioners"
                                     SelectedClinicId="@_selectedClinicId"
                                     SelectedPractitionerId="@_selectedSecondPractitionerId"
@@ -111,27 +111,25 @@ else
                                      SelectedTreatmentTypeId="@_selectedSecondTreatmentTypeId"
                                      SelectedTreatmentTypeIdChanged="OnSecondTreatmentTypeChanged" />
 
-                <div class="mb-3">
-                    <label class="form-label" for="duration-2">
-                        Varighed <span aria-hidden="true">*</span>
-                    </label>
-                    <select id="duration-2"
-                            class="form-select"
-                            value="@_selectedSecondDuration"
-                            @onchange="e => _selectedSecondDuration = string.IsNullOrEmpty(e.Value?.ToString()) ? null : int.Parse(e.Value!.ToString()!)"
-                            disabled="@(_selectedSecondTreatmentTypeId is null)"
-                            aria-required="true"
-                            aria-describedby="duration-2-hint">
-                        <option value="">-- Vælg varighed --</option>
-                        @foreach (var dur in AvailableSecondDurations)
-                        {
-                            <option value="@dur">@dur minutter</option>
-                        }
-                    </select>
-                    <small id="duration-2-hint" class="text-muted">
-                        @(_selectedSecondTreatmentTypeId is null ? "Vælg en behandlingstype for at se varighed" : "")
-                    </small>
-                </div>
+                <label class="form-label" for="duration-2">
+                    Varighed <span aria-hidden="true">*</span>
+                </label>
+                <select id="duration-2"
+                        class="form-select"
+                        value="@_selectedSecondDuration"
+                        @onchange="e => _selectedSecondDuration = string.IsNullOrEmpty(e.Value?.ToString()) ? null : int.Parse(e.Value!.ToString()!)"
+                        disabled="@(_selectedSecondTreatmentTypeId is null)"
+                        aria-required="true"
+                        aria-describedby="duration-2-hint">
+                    <option value="">-- Vælg varighed --</option>
+                    @foreach (var dur in AvailableSecondDurations)
+                    {
+                        <option value="@dur">@dur minutter</option>
+                    }
+                </select>
+                <small id="duration-2-hint" class="d-block text-muted mb-3">
+                    @(_selectedSecondTreatmentTypeId is null ? "Vælg en behandlingstype for at se varighed" : "")
+                </small>
 
                 @* aria-live annoncerer ændringer i samlet tid når brugeren vælger varigheder *@
                 <p aria-live="polite" aria-atomic="true" class="text-muted small mb-0">
@@ -146,50 +144,44 @@ else
             </fieldset>
         }
 
-        <div class="mb-3">
-            <label class="form-label" for="patient-select">
-                Patient <span aria-hidden="true">*</span>
-            </label>
-            <select id="patient-select"
-                    class="form-select"
-                    value="@_selectedPatientId"
-                    @onchange="e => _selectedPatientId = string.IsNullOrEmpty(e.Value?.ToString()) ? null : Guid.Parse(e.Value!.ToString()!)"
-                    aria-required="true">
-                <option value="">-- Vælg patient --</option>
-                @foreach (var p in _patients)
-                {
-                    <option value="@p.Id">@p.FirstName @p.LastName</option>
-                }
-            </select>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label" for="date-input">
-                Dato <span aria-hidden="true">*</span>
-            </label>
-            <input id="date-input"
-                   type="date"
-                   class="form-control"
-                   @bind="_date"
-                   @bind:format="yyyy-MM-dd"
-                   min="@TodayMin"
-                   aria-required="true" />
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label" for="time-input">
-                Starttidspunkt <span aria-hidden="true">*</span>
-            </label>
-            <input id="time-input"
-                   type="time"
-                   class="form-control @(IsStartInPast ? "is-invalid" : "")"
-                   @bind="_time"
-                   aria-required="true" />
-            @if (IsStartInPast)
+        <label class="form-label" for="patient-select">
+            Patient <span aria-hidden="true">*</span>
+        </label>
+        <select id="patient-select"
+                class="form-select mb-3"
+                value="@_selectedPatientId"
+                @onchange="e => _selectedPatientId = string.IsNullOrEmpty(e.Value?.ToString()) ? null : Guid.Parse(e.Value!.ToString()!)"
+                aria-required="true">
+            <option value="">-- Vælg patient --</option>
+            @foreach (var p in _patients)
             {
-                <div class="invalid-feedback">Tidspunktet er allerede passeret.</div>
+                <option value="@p.Id">@p.FirstName @p.LastName</option>
             }
-        </div>
+        </select>
+
+        <label class="form-label" for="date-input">
+            Dato <span aria-hidden="true">*</span>
+        </label>
+        <input id="date-input"
+               type="date"
+               class="form-control mb-3"
+               @bind="_date"
+               @bind:format="yyyy-MM-dd"
+               min="@TodayMin"
+               aria-required="true" />
+
+        <label class="form-label" for="time-input">
+            Starttidspunkt <span aria-hidden="true">*</span>
+        </label>
+        <input id="time-input"
+               type="time"
+               class="form-control @(IsStartInPast ? "is-invalid" : "mb-3")"
+               @bind="_time"
+               aria-required="true" />
+        @if (IsStartInPast)
+        {
+            <small class="invalid-feedback d-block mb-3">Tidspunktet er allerede passeret.</small>
+        }
 
         <button type="submit"
                 class="btn btn-primary"

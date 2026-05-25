@@ -13,28 +13,29 @@
    modal-backdrop er et halvgennemsigtigt mørkt lag der dækker hele siden bag
    dialogen, så brugeren fokuserer på modal-indholdet. Det er rent dekorativt.
 *@
-<div class="modal-backdrop fade show"></div>
+<span aria-hidden="true" class="modal-backdrop fade show"></span>
 
 @* ── Modal-container ─────────────────────────────────────────────────────────
-   role="dialog" fortæller hjælpeteknologier at dette er en dialog-boks.
+   <dialog open> er det semantisk korrekte HTML5-element for en modal dialog —
+   det giver implicit role="dialog" uden at man skal sætte det manuelt.
    aria-modal="true" indikerer at resten af siden er inaktiv mens dialogen er åben.
    aria-labelledby peger på id'et for overskriften inde i dialogen, så
    skærmlæsere læser titlen op når dialogen åbnes.
-   @onclick="OnClose" på det ydre lag lukker dialogen hvis man klikker på
-   baggrunden uden for selve indholdsfeltet.
+   d-flex centrerer <article> lodret og vandret i det faste overlay.
+   p-3 sikrer luft til skærmkanter på små skærme.
+   @onclick="OnClose" lukker dialogen hvis man klikker på baggrunden.
    @onkeydown="HandleKeyDown" fanger tastaturhændelser (fx Escape).
 *@
-<div class="modal fade show d-block" role="dialog" aria-modal="true" aria-labelledby="apt-modal-title" @onclick="OnClose" @onkeydown="HandleKeyDown">
+<dialog open class="modal fade show d-flex align-items-center justify-content-center p-3"
+        aria-modal="true"
+        aria-labelledby="apt-modal-title"
+        @onclick="OnClose"
+        @onkeydown="HandleKeyDown">
 
-    @* modal-dialog-centered centrerer boksen lodret på skærmen.
-       @ref="_dialogRef" giver C#-koden en reference til dette DOM-element
-       så vi kan flytte fokus hertil via JavaScript.
-       @onclick:stopPropagation forhindrer at klik inde i dialogen bobler
-       op til det ydre lag og utilsigtet lukker vinduet. *@
-    <div class="modal-dialog modal-dialog-centered" @ref="_dialogRef" tabindex="-1" @onclick:stopPropagation>
-
-        @* <article> er semantisk korrekt for selvstændigt indhold som en dialog *@
-        <article class="modal-content">
+    @* <article> er semantisk korrekt for selvstændigt indhold som en dialog.
+       @ref og tabindex="-1" bruges til fokusstyring via JavaScript.
+       @onclick:stopPropagation forhindrer at klik inde i dialogen lukker vinduet. *@
+    <article class="modal-content" @ref="_dialogRef" tabindex="-1" @onclick:stopPropagation>
 
             @* ── Overskriftslinje ────────────────────────────────────────────
                <header> grupperer modalens titelrække og luk-knap.
@@ -153,17 +154,11 @@
                     @* Aktiv (booket) aftale – tre knapper til at skifte status.
                        Lambda-udtrykkene sender det ønskede statusnavn som argument
                        op til RequestStatusChange og sætter bekræftelsestilstanden. *@
-                    <div class="d-flex gap-2 flex-wrap me-auto">
-                        <button class="btn btn-success btn-sm" @onclick='() => RequestStatusChange("completed")'>
-                            Gennemført
-                        </button>
-                        <button class="btn btn-danger btn-sm" @onclick='() => RequestStatusChange("cancelled")'>
-                            Aflys
-                        </button>
-                        <button class="btn btn-warning btn-sm" @onclick='() => RequestStatusChange("noshow")'>
-                            Udeblevet
-                        </button>
-                    </div>
+                    <menu class="d-flex gap-2 flex-wrap me-auto list-unstyled mb-0 p-0">
+                        <li><button class="btn btn-success btn-sm" @onclick='() => RequestStatusChange("completed")'>Gennemført</button></li>
+                        <li><button class="btn btn-danger btn-sm" @onclick='() => RequestStatusChange("cancelled")'>Aflys</button></li>
+                        <li><button class="btn btn-warning btn-sm" @onclick='() => RequestStatusChange("noshow")'>Udeblevet</button></li>
+                    </menu>
                     <button type="button" class="btn btn-secondary btn-sm" @onclick="OnClose">Luk</button>
                 }
                 else
@@ -173,8 +168,7 @@
                 }
             </footer>
         </article>
-    </div>
-</div>
+</dialog>
 
 @code {
     [Parameter, EditorRequired] public Guid AppointmentId { get; set; }

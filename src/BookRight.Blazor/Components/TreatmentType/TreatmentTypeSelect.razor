@@ -1,26 +1,24 @@
 @using BookRight.Facade.DTO
 
-<div class="mb-3">
-    <label class="form-label" for="@SelectId">
-        Behandlingstype <span aria-hidden="true">*</span>
-    </label>
-    <select id="@SelectId"
-            class="form-select"
-            value="@SelectedTreatmentTypeId"
-            @onchange="OnChanged"
-            disabled="@(PractitionerAuthorization == null)"
-            aria-required="true"
-            aria-describedby="@HintId">
-        <option value="">-- Vælg behandlingstype --</option>
-        @foreach (var t in Filtered)
-        {
-            <option value="@t.Id">@t.Name</option>
-        }
-    </select>
-    <small id="@HintId" class="text-muted">
-        @(PractitionerAuthorization == null ? "Vælg en behandler for at se behandlingstyper" : "")
-    </small>
-</div>
+<label class="form-label" for="@SelectId">
+    Behandlingstype <span aria-hidden="true">*</span>
+</label>
+<select id="@SelectId"
+        class="form-select"
+        value="@SelectedTreatmentTypeId"
+        @onchange="OnChanged"
+        disabled="@(PractitionerAuthorization == null)"
+        aria-required="true"
+        aria-describedby="@HintId">
+    <option value="">-- Vælg behandlingstype --</option>
+    @foreach (var t in Filtered)
+    {
+        <option value="@t.Id">@t.Name</option>
+    }
+</select>
+<small id="@HintId" class="d-block text-muted mb-3">
+    @(PractitionerAuthorization == null ? "Vælg en behandler for at se behandlingstyper" : "")
+</small>
 
 @code {
     [Parameter] public string SelectId { get; set; } = "treatment-select";

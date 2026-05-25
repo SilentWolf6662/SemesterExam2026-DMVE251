@@ -2,6 +2,27 @@ html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
+/* <dialog> has a white background in browser UA stylesheets; reset it so Bootstrap's
+   .modal-backdrop span handles the overlay instead */
+dialog.modal {
+    background-color: transparent;
+}
+
+/* Page shell layout — replaces .page div in MainLayout.
+   min-height: 100vh prevents empty scroll space when content is short. */
+body {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+@media (min-width: 641px) {
+    body {
+        flex-direction: row;
+    }
+}
+
 a, .btn-link {
     color: #006bb7;
 }

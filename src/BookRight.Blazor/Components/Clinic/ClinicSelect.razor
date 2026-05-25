@@ -2,28 +2,26 @@
 @using BookRight.Facade.Interfaces.Queries
 @inject IClinicQueries ClinicQueries
 
-<div class="mb-3">
-    <label class="form-label" for="@SelectId">
-        Klinik <span aria-hidden="true">*</span>
-    </label>
-    <select id="@SelectId"
-            class="form-select"
-            value="@SelectedClinicId"
-            @onchange="OnChanged"
-            disabled="@(_clinics is null)"
-            aria-required="true"
-            aria-busy="@(_clinics is null ? "true" : "false")"
-            aria-describedby="@HintId">
-        <option value="">-- Vælg klinik --</option>
-        @foreach (var c in _clinics ?? [])
-        {
-            <option value="@c.Id">@c.StreetName, @c.Zipcode</option>
-        }
-    </select>
-    <small id="@HintId" class="text-muted">
-        @(_clinics is null ? "Indlæser klinikker…" : "")
-    </small>
-</div>
+<label class="form-label" for="@SelectId">
+    Klinik <span aria-hidden="true">*</span>
+</label>
+<select id="@SelectId"
+        class="form-select"
+        value="@SelectedClinicId"
+        @onchange="OnChanged"
+        disabled="@(_clinics is null)"
+        aria-required="true"
+        aria-busy="@(_clinics is null ? "true" : "false")"
+        aria-describedby="@HintId">
+    <option value="">-- Vælg klinik --</option>
+    @foreach (var c in _clinics ?? [])
+    {
+        <option value="@c.Id">@c.StreetName, @c.Zipcode</option>
+    }
+</select>
+<small id="@HintId" class="d-block text-muted mb-3">
+    @(_clinics is null ? "Indlæser klinikker…" : "")
+</small>
 
 @code {
     [Parameter] public string SelectId { get; set; } = "clinic-select";
