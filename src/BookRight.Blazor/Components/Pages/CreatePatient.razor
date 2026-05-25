@@ -1,0 +1,214 @@
+﻿@page "/opretpatient"
+@rendermode InteractiveServer
+@using BookRight.Blazor.Components.Practitioner
+@using BookRight.Domain.Exceptions
+@using BookRight.Facade.Command
+@using BookRight.Facade.DTO
+@using BookRight.Facade.Interfaces.Queries
+@using BookRight.Facade.Interfaces.UseCase
+@using Microsoft.IdentityModel.Tokens
+
+@inject IPractitionerQueries PractitionerQueries
+@inject ICreatePatientUseCase CreatePatientUseCase
+
+<PageTitle>Opret Patient</PageTitle>
+
+<h3>Create Patient</h3>
+@if (_loading)
+{
+	<p role="status" aria-live="polite" class="text-muted">Indlæser data…</p>
+}
+else
+{
+	@* Fejl- og statusbeskeder annonceres automatisk af skærmlæsere via role *@
+	<output aria-atomic="true" class="d-block">
+		@if (_error is not null)
+		{
+			<p class="alert alert-danger" role="alert">@_error</p>
+		}
+		@if (_success)
+		{
+			<p class="alert alert-success" role="status">Patient oprettet!</p>
+		}
+	</output>
+
+	<form @onsubmit="OnSubmit" @onsubmit:preventDefault>
+		<label class="form-label" for="firstname"> Fornavn</label>
+		<input id="firstname" class="form-control" type="text"
+		       @bind="_firstName"
+		       placeholder="Fornavn "/>
+
+		<label class="form-label" for="lastname"> Efternavn</label>
+		<input id="lastname" class="form-control" type="text"
+		       @bind="_lastName"
+		       placeholder="Efternavn "/>
+
+		<label class="form-label" for="phonenumber"> Telefon nummer</label>
+		<input id="phonenumber" class="form-control" type="tel"
+		       @bind="_phoneNumber"
+		       placeholder="Telefon nummer "/>
+
+		<label class="form-label" for="email"> Mail</label>
+		<input id="email" class="form-control" type="email"
+		       @bind="_email"
+		       placeholder="Mail "/>
+
+		<label class="form-label" for="birthday"> Fødseldato</label>
+		<input id="birthday" class="form-control" type="date"
+		       @bind="_birthday"
+		       @bind:format="yyyy-MM-dd"
+		       max="@TodayMax"
+		       placeholder="Fødselsdato "/>
+
+		<label class="form-label" for="street"> Vejnavn</label>
+		<input id="street" class="form-control" type="text"
+		       @bind="_street"
+		       placeholder="Vejnavn "/>
+
+		<label class="form-label" for="zipcode"> Post nummer</label>
+		<input id="zipcode" class="form-control" type="number"
+		       @bind="_zipCode"
+		       placeholder="Post nummer "/>
+
+		<label class="form-label" for="note"> Helbredsnotat</label>
+		<input id="note" class="form-control" type="text"
+		       @bind="_note"
+		       placeholder="Helbredsnotat "/>
+
+		<PractitionerSelect Label="Foretrukne behandler" AllPractitioners="@_practitioners" SelectedPractitionerId="@_selectedPractitionerId" SelectedPractitionerIdChanged="OnPractitionerChanged" />
+
+		@* type="submit" gør knappen til en indsend-knap — klik kalder formens @onsubmit.
+           disabled="@(!CanSubmit || _submitting)" låser knappen hvis formularen ikke er
+           udfyldt korrekt, eller hvis en indsendelse allerede er i gang.
+           aria-busy fortæller skærmlæsere at knappen er i gang med noget (spinner). *@
+		<button type="submit"
+		        class="btn btn-primary"
+		        disabled="@(!CanSubmit || _submitting)"
+		        aria-busy="@(_submitting ? "true" : "false")">
+			@if (_submitting)
+			{
+				@* Bootstrap-spinner der vises mens serveren behandler patienten.
+                   role="status" + aria-hidden="true": selve animationen skjules for
+                   skærmlæsere, men teksten "Opretter patient…" nedenfor læses op. *@
+				<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+				<span>Opretter patient…</span>
+			}
+			else
+			{
+				<span>Opret Patient</span>
+			}
+		</button>
+
+	</form>
+}
+
+
+@code {
+	private bool _loading = true;
+	private IReadOnlyList<PractitionerDto> _practitioners = [];
+	private Guid? _selectedPractitionerId;
+	private string? _firstName;
+	private string? _lastName;
+	private string? _phoneNumber;
+	private string? _email;
+	private DateTime? _birthday;
+	private string? _street;
+	private int? _zipCode;
+	private string? _note; 
+
+	private string? _error;
+	private bool _success;
+	private bool _submitting;
+
+	private static string TodayMax => DateTime.Today.ToString("yyyy-MM-dd");
+
+	private PractitionerDto? SelectedPractitioner =>
+		_practitioners.FirstOrDefault(p => p.Id == _selectedPractitionerId);
+
+	private void OnPractitionerChanged(Guid? id)
+	{
+		_selectedPractitionerId = id;
+		ClearMessages();
+	}
+
+	private bool CanSubmit =>
+		_firstName is not null &&
+		_lastName is not null &&
+		_phoneNumber is not null &&
+		_email is not null &&
+		_birthday is not null &&
+		_street is not null &&
+		_zipCode is not null;
+
+
+	protected override async Task OnInitializedAsync()
+	{
+		if (!RendererInfo.IsInteractive) return;
+
+		_practitioners = await PractitionerQueries.GetAllAsync();
+
+		_loading = false;
+	}
+
+	private async Task OnSubmit()
+	{
+		if (!CanSubmit) return;
+
+		_submitting = true;
+		_error = null;
+		_success = false;
+
+		try
+		{
+				
+				await CreatePatientUseCase.Execute(new CreatePatientRequest(
+								_firstName,
+								_lastName,
+								_email,
+								"+45" + _phoneNumber!.ToString(),
+								_birthday!.Value,
+								_street,
+								_zipCode!.Value,
+							    string.IsNullOrWhiteSpace(_note) ? null : _note,
+								_selectedPractitionerId!.HasValue ?_selectedPractitionerId.Value:Guid.Empty));
+
+			_success = true;
+			ResetForm();
+		}
+		catch (DomainException ex)
+		{
+			_error = ex.Message;
+		}
+		catch (NotFoundException ex)
+		{
+			_error = ex.Message;
+		}
+		catch (Exception)
+		{
+			_error = "Der opstod en uventet fejl. Prøv igen.";
+		}
+		finally
+		{
+			_submitting = false;
+		}
+	}
+
+	private void ResetForm()
+	{
+		_firstName = null;
+		_lastName = null;
+		_email = null;
+		_phoneNumber = null;
+		_birthday = null;
+		_street = null;
+		_zipCode = null;
+		_note = null;
+		_selectedPractitionerId = null;
+	}
+
+	private void ClearMessages()
+	{
+		_error = null;
+		_success = false;
+	}
+}

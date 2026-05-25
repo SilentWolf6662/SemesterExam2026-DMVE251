@@ -72,7 +72,7 @@ else
 	{
 		try
 		{
-			Patients ??= await PatientQueries.GetAllAsync();
+			Patients = await PatientQueries.GetAllAsync();
 		}
 		catch (Exception ex)
 		{

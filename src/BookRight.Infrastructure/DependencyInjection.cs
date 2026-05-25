@@ -3,7 +3,8 @@ using BookRight.Facade.Interfaces.UseCase;
 using BookRight.Infrastructure.Query;
 using BookRight.Infrastructure.Repository;
 using BookRight.UseCases.Command;
-using BookRight.UseCases.DiscountStrategy;
+using BookRight.UseCases.Discount;
+using BookRight.UseCases.Discount.DiscountStrategy;
 using BookRight.UseCases.Repositories;
 using BookRight.UseCases.Services;
 using Microsoft.EntityFrameworkCore;
@@ -44,9 +45,9 @@ public static class DependencyInjection
         services.AddScoped<PricingService>();
 
         // Appointment Use Cases
-        services.AddScoped<IBookAppointment, BookAppointmentUseCase>();
+        services.AddScoped<IBookAppointmentUseCase, BookAppointmentUseCase>();
         services.AddScoped<IBookCombinedAppointment, BookCombinedAppointmentUseCase>();
-        services.AddScoped<IChangeStatus, ChangeStatusUseCase>();
+        services.AddScoped<IChangeStatusUseCase, ChangeStatusUseCase>();
 
         // Queries (Scoped)
         services.AddScoped<IAppointmentQueries, AppointmentQueriesImpl>();

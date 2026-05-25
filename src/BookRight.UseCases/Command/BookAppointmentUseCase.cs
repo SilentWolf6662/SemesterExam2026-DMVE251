@@ -6,21 +6,24 @@ using BookRight.Facade.Interfaces.UseCase;
 using BookRight.UseCases.Repositories;
 using BookRight.UseCases.Services;
 
+
 namespace BookRight.UseCases.Command;
 
 public class BookAppointmentUseCase : IBookAppointmentUseCase
 {
+    private readonly PricingService _pricingService;
     private readonly IAppointmentRepository _appointmentRepo;
     private readonly IPractitionerRepository _practitionerRepo;
     private readonly IPatientRepository _patientRepo;
     private readonly ITreatmentTypeRepository _treatmentTypeRepo;
 
-    public BookAppointmentUseCase(IAppointmentRepository appointmentRepo, IPractitionerRepository practitionerRepo, IPatientRepository patientRepo, ITreatmentTypeRepository treatmentTypeRepo)
+    public BookAppointmentUseCase(IAppointmentRepository appointmentRepo, IPractitionerRepository practitionerRepo, IPatientRepository patientRepo, ITreatmentTypeRepository treatmentTypeRepo, PricingService pricingService)
     {
         _appointmentRepo = appointmentRepo;
         _practitionerRepo = practitionerRepo;
         _patientRepo = patientRepo;
         _treatmentTypeRepo = treatmentTypeRepo;
+        _pricingService = pricingService;
     }
 
     public async Task Execute(BookAppointmentRequest request)
