@@ -1,0 +1,30 @@
+﻿
+
+.patient-wrapper {
+    display: table;
+    margin: 0 auto;
+}
+
+.søgefelt {
+    justify-self: start;
+    width: 265px;
+    margin-bottom: 0.5rem;
+}
+
+section {
+    display: grid;
+    justify-items: center;
+}
+
+h2 {
+    text-align: center;
+}
+
+th, td {
+    padding-right: 3rem;
+}
+
+tr {
+    border-bottom: 1px solid #444;
+}
+
