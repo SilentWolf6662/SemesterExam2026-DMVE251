@@ -6,7 +6,6 @@ using BookRight.Facade.Interfaces.UseCase;
 using BookRight.UseCases.Repositories;
 using BookRight.UseCases.Services;
 
-
 namespace BookRight.UseCases.Command;
 
 public class BookAppointmentUseCase : IBookAppointmentUseCase
@@ -16,14 +15,16 @@ public class BookAppointmentUseCase : IBookAppointmentUseCase
     private readonly IPractitionerRepository _practitionerRepo;
     private readonly IPatientRepository _patientRepo;
     private readonly ITreatmentTypeRepository _treatmentTypeRepo;
+    private readonly IClinicRepository _clinicRepo;
 
-    public BookAppointmentUseCase(IAppointmentRepository appointmentRepo, IPractitionerRepository practitionerRepo, IPatientRepository patientRepo, ITreatmentTypeRepository treatmentTypeRepo, PricingService pricingService)
+    public BookAppointmentUseCase(IAppointmentRepository appointmentRepo, IPractitionerRepository practitionerRepo, IPatientRepository patientRepo, ITreatmentTypeRepository treatmentTypeRepo, PricingService pricingService, IClinicRepository clinicRepo)
     {
         _appointmentRepo = appointmentRepo;
         _practitionerRepo = practitionerRepo;
         _patientRepo = patientRepo;
         _treatmentTypeRepo = treatmentTypeRepo;
         _pricingService = pricingService;
+        _clinicRepo = clinicRepo;
     }
 
     public async Task Execute(BookAppointmentRequest request)
@@ -35,6 +36,10 @@ public class BookAppointmentUseCase : IBookAppointmentUseCase
 
         _ = await _practitionerRepo.GetByIdAsync(request.PractitionerId)
             ?? throw new NotFoundException("Practitioner not found");
+
+        // Klinikken skal eksistere og vi skal bruge antallet af rum til kapacitetstjek
+        var clinic = await _clinicRepo.GetByIdAsync(request.ClinicId)
+            ?? throw new NotFoundException("Klinik ikke fundet");
 
         // Vi henter behandlingstypen fordi vi skal bruge dens prisliste til at beregne bookingprisen
         var treatmentType = await _treatmentTypeRepo.GetByIdAsync(request.TreatmentTypeId)
@@ -49,12 +54,19 @@ public class BookAppointmentUseCase : IBookAppointmentUseCase
         var patientBookinger = await _appointmentRepo.GetAllByPatientIdAsync(request.PatientId);
         var practitionerBookinger = await _appointmentRepo.GetAllByPractitionerIdAsync(request.PractitionerId);
 
+        // Rumsbegrænsning: tæl aktive bookinger på klinikken der overlapper med det ønskede tidspunkt
+        var clinicBookinger = await _appointmentRepo.GetAllByClinicIdAsync(request.ClinicId);
+        var overlappende = clinicBookinger.Count(a => a.IsActive && timeInterval.Overlapping(a.TimeInterval));
+        if (overlappende >= clinic.Rooms)
+            throw new DomainException($"Klinikken har ingen ledige rum på det valgte tidspunkt (maks. {clinic.Rooms} samtidige bookinger)");
+
         // Opret appointment med basisprisen — validerer overlap og sætter Price så PricingService kan læse den
         var appointment = Appointment.Create(
             timeInterval,
             request.TreatmentTypeId,
             request.PatientId,
             request.PractitionerId,
+            request.ClinicId,
             basePrice,
             patientBookinger,
             practitionerBookinger);

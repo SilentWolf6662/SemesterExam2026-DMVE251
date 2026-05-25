@@ -199,68 +199,68 @@ public class SeedData
 
         var a1 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 5, 20, 9, 0, 0), new DateTime(2026, 5, 20, 10, 0, 0)),
-            physio.Id, lars.Id, anna.Id, physio.GetBasePrice(60), larsAppts, annaAppts);
+            physio.Id, lars.Id, anna.Id, clinic1.Id, physio.GetBasePrice(60), larsAppts, annaAppts);
         a1.Complete("God fremgang, fortsat styrkeøvelser anbefalet.");
         larsAppts.Add(a1); annaAppts.Add(a1); anna.Appointments.Add(a1.Id);
 
         // Ekstra gennemførte sessioner for Lars → samlet 4.470 kr → Bronze loyalitetsrabat (5 %)
         var aL1 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 4, 7, 10, 0, 0), new DateTime(2026, 4, 7, 11, 0, 0)),
-            physio.Id, lars.Id, anna.Id, physio.GetBasePrice(60), larsAppts, annaAppts);
+            physio.Id, lars.Id, anna.Id, clinic1.Id, physio.GetBasePrice(60), larsAppts, annaAppts);
         aL1.Complete("Knæøvelser fortsat.");
         larsAppts.Add(aL1); annaAppts.Add(aL1); anna.Appointments.Add(aL1.Id);
 
         var aL2 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 3, 10, 10, 0, 0), new DateTime(2026, 3, 10, 11, 0, 0)),
-            physio.Id, lars.Id, anna.Id, physio.GetBasePrice(60), larsAppts, annaAppts);
+            physio.Id, lars.Id, anna.Id, clinic1.Id, physio.GetBasePrice(60), larsAppts, annaAppts);
         aL2.Complete("Styrkeøvelser for knæ.");
         larsAppts.Add(aL2); annaAppts.Add(aL2); anna.Appointments.Add(aL2.Id);
 
         var aL3 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 2, 10, 10, 0, 0), new DateTime(2026, 2, 10, 11, 0, 0)),
-            physio.Id, lars.Id, anna.Id, physio.GetBasePrice(60), larsAppts, annaAppts);
+            physio.Id, lars.Id, anna.Id, clinic1.Id, physio.GetBasePrice(60), larsAppts, annaAppts);
         aL3.Complete("Rehabilitering uge 6.");
         larsAppts.Add(aL3); annaAppts.Add(aL3); anna.Appointments.Add(aL3.Id);
 
         var aL4 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 1, 12, 10, 0, 0), new DateTime(2026, 1, 12, 11, 0, 0)),
-            physio.Id, lars.Id, anna.Id, physio.GetBasePrice(60), larsAppts, annaAppts);
+            physio.Id, lars.Id, anna.Id, clinic1.Id, physio.GetBasePrice(60), larsAppts, annaAppts);
         aL4.Complete("Stabiliseringsøvelser.");
         larsAppts.Add(aL4); annaAppts.Add(aL4); anna.Appointments.Add(aL4.Id);
 
         var aL5 = Appointment.Create(
             new TimeInterval(new DateTime(2025, 12, 8, 10, 0, 0), new DateTime(2025, 12, 8, 11, 0, 0)),
-            physio.Id, lars.Id, anna.Id, physio.GetBasePrice(60), larsAppts, annaAppts);
+            physio.Id, lars.Id, anna.Id, clinic1.Id, physio.GetBasePrice(60), larsAppts, annaAppts);
         aL5.Complete("Første session efter pause.");
         larsAppts.Add(aL5); annaAppts.Add(aL5); anna.Appointments.Add(aL5.Id);
 
         var a2 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 5, 27, 14, 0, 0), new DateTime(2026, 5, 27, 15, 0, 0)),
-            physio.Id, metteBak.Id, anna.Id, physio.GetBasePrice(60), metteBAppts, annaAppts);
+            physio.Id, metteBak.Id, anna.Id, clinic1.Id, physio.GetBasePrice(60), metteBAppts, annaAppts);
         a2.Complete("Albuen viser bedring, ny session om 2 uger.");
         metteBAppts.Add(a2); annaAppts.Add(a2); anna.Appointments.Add(a2.Id);
 
         var a3 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 5, 15, 10, 0, 0), new DateTime(2026, 5, 15, 11, 0, 0)),
-            massage.Id, mariaPed.Id, michael.Id, massage.GetBasePrice(60), mariaPAppts, michaelAppts);
+            massage.Id, mariaPed.Id, michael.Id, clinic1.Id, massage.GetBasePrice(60), mariaPAppts, michaelAppts);
         a3.Complete("Muskelspændinger i nakke og skuldre behandlet.");
         mariaPAppts.Add(a3); michaelAppts.Add(a3); michael.Appointments.Add(a3.Id);
 
         var a4 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 5, 30, 10, 0, 0), new DateTime(2026, 5, 30, 11, 0, 0)),
-            massage.Id, thomas.Id, frederik.Id, massage.GetBasePrice(60), thomasAppts, frederikAppts);
+            massage.Id, thomas.Id, frederik.Id, clinic1.Id, massage.GetBasePrice(60), thomasAppts, frederikAppts);
         a4.Complete("Nakkestivhed reduceret markant.");
         thomasAppts.Add(a4); frederikAppts.Add(a4); frederik.Appointments.Add(a4.Id);
 
         var a5 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 5, 28, 9, 0, 0), new DateTime(2026, 5, 28, 9, 45, 0)),
-            acupuncture.Id, sofieA.Id, sara.Id, acupuncture.GetBasePrice(45), sofieAAppts, saraAppts);
+            acupuncture.Id, sofieA.Id, sara.Id, clinic2.Id, acupuncture.GetBasePrice(45), sofieAAppts, saraAppts);
         a5.Complete("Første akupunkturbehandling gennemført.");
         sofieAAppts.Add(a5); saraAppts.Add(a5); sara.Appointments.Add(a5.Id);
 
         var a6 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 5, 26, 14, 0, 0), new DateTime(2026, 5, 26, 14, 45, 0)),
-            acupuncture.Id, henrik.Id, jonas.Id, acupuncture.GetBasePrice(45), henrikAppts, jonasAppts);
+            acupuncture.Id, henrik.Id, jonas.Id, clinic3.Id, acupuncture.GetBasePrice(45), henrikAppts, jonasAppts);
         a6.Complete("Rygsmerter afhjulpet med akupunktur.");
         henrikAppts.Add(a6); jonasAppts.Add(a6); jonas.Appointments.Add(a6.Id);
 
@@ -268,7 +268,7 @@ public class SeedData
 
         var a7 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 5, 22, 14, 0, 0), new DateTime(2026, 5, 22, 15, 0, 0)),
-            physio.Id, oliver.Id, kasper.Id, physio.GetBasePrice(60), oliverAppts, kasperAppts);
+            physio.Id, oliver.Id, kasper.Id, clinic2.Id, physio.GetBasePrice(60), oliverAppts, kasperAppts);
         a7.NoOneShowed();
         oliverAppts.Add(a7); kasperAppts.Add(a7); kasper.Appointments.Add(a7.Id);
 
@@ -276,13 +276,13 @@ public class SeedData
 
         var a8 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 6, 10, 0, 0), new DateTime(2026, 6, 6, 11, 0, 0)),
-            massage.Id, thomas.Id, frederik.Id, massage.GetBasePrice(60), thomasAppts, frederikAppts);
+            massage.Id, thomas.Id, frederik.Id, clinic1.Id, massage.GetBasePrice(60), thomasAppts, frederikAppts);
         a8.Cancel();
         thomasAppts.Add(a8); frederikAppts.Add(a8); frederik.Appointments.Add(a8.Id);
 
         var a9 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 2, 9, 0, 0), new DateTime(2026, 6, 2, 10, 0, 0)),
-            dietitian.Id, nadia.Id, louise.Id, dietitian.GetBasePrice(60), nadiaAppts, louiseAppts);
+            dietitian.Id, nadia.Id, louise.Id, clinic1.Id, dietitian.GetBasePrice(60), nadiaAppts, louiseAppts);
         a9.Cancel();
         nadiaAppts.Add(a9); louiseAppts.Add(a9); louise.Appointments.Add(a9.Id);
 
@@ -290,77 +290,77 @@ public class SeedData
 
         var a10 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 3, 9, 0, 0), new DateTime(2026, 6, 3, 10, 0, 0)),
-            physio.Id, lars.Id, anna.Id, physio.GetBasePrice(60), larsAppts, annaAppts);
+            physio.Id, lars.Id, anna.Id, clinic1.Id, physio.GetBasePrice(60), larsAppts, annaAppts);
         larsAppts.Add(a10); annaAppts.Add(a10); anna.Appointments.Add(a10.Id);
 
         var a11 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 3, 11, 0, 0), new DateTime(2026, 6, 3, 12, 0, 0)),
-            physio.Id, anders.Id, anna.Id, physio.GetBasePrice(60), andersAppts, annaAppts);
+            physio.Id, anders.Id, anna.Id, clinic1.Id, physio.GetBasePrice(60), andersAppts, annaAppts);
         andersAppts.Add(a11); annaAppts.Add(a11); anna.Appointments.Add(a11.Id);
 
         var a12 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 1, 14, 0, 0), new DateTime(2026, 6, 1, 15, 0, 0)),
-            physio.Id, camilla.Id, kasper.Id, physio.GetBasePrice(60), camillaAppts, kasperAppts);
+            physio.Id, camilla.Id, kasper.Id, clinic2.Id, physio.GetBasePrice(60), camillaAppts, kasperAppts);
         camillaAppts.Add(a12); kasperAppts.Add(a12); kasper.Appointments.Add(a12.Id);
 
         var a13 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 4, 9, 0, 0), new DateTime(2026, 6, 4, 9, 45, 0)),
-            acupuncture.Id, sofieA.Id, sara.Id, acupuncture.GetBasePrice(45), sofieAAppts, saraAppts);
+            acupuncture.Id, sofieA.Id, sara.Id, clinic2.Id, acupuncture.GetBasePrice(45), sofieAAppts, saraAppts);
         sofieAAppts.Add(a13); saraAppts.Add(a13); sara.Appointments.Add(a13.Id);
 
         var a14 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 4, 11, 0, 0), new DateTime(2026, 6, 4, 11, 45, 0)),
-            acupuncture.Id, nadia.Id, sara.Id, acupuncture.GetBasePrice(45), nadiaAppts, saraAppts);
+            acupuncture.Id, nadia.Id, sara.Id, clinic2.Id, acupuncture.GetBasePrice(45), nadiaAppts, saraAppts);
         nadiaAppts.Add(a14); saraAppts.Add(a14); sara.Appointments.Add(a14.Id);
 
         var a15 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 4, 13, 0, 0), new DateTime(2026, 6, 4, 14, 0, 0)),
-            massage.Id, mariaPed.Id, michael.Id, massage.GetBasePrice(60), mariaPAppts, michaelAppts);
+            massage.Id, mariaPed.Id, michael.Id, clinic1.Id, massage.GetBasePrice(60), mariaPAppts, michaelAppts);
         mariaPAppts.Add(a15); michaelAppts.Add(a15); michael.Appointments.Add(a15.Id);
 
         var a16 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 2, 10, 0, 0), new DateTime(2026, 6, 2, 11, 0, 0)),
-            dietitian.Id, emmaD.Id, julie.Id, dietitian.GetBasePrice(60), emmaDAppts, julieAppts);
+            dietitian.Id, emmaD.Id, julie.Id, clinic2.Id, dietitian.GetBasePrice(60), emmaDAppts, julieAppts);
         emmaDAppts.Add(a16); julieAppts.Add(a16); julie.Appointments.Add(a16.Id);
 
         var a17 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 3, 14, 0, 0), new DateTime(2026, 6, 3, 15, 0, 0)),
-            massage.Id, henrik.Id, emma.Id, massage.GetBasePrice(60), henrikAppts, emmaAppts);
+            massage.Id, henrik.Id, emma.Id, clinic3.Id, massage.GetBasePrice(60), henrikAppts, emmaAppts);
         henrikAppts.Add(a17); emmaAppts.Add(a17); emma.Appointments.Add(a17.Id);
 
         var a18 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 3, 14, 0, 0), new DateTime(2026, 6, 3, 14, 45, 0)),
-            acupuncture.Id, lena.Id, jonas.Id, acupuncture.GetBasePrice(45), lenaAppts, jonasAppts);
+            acupuncture.Id, lena.Id, jonas.Id, clinic3.Id, acupuncture.GetBasePrice(45), lenaAppts, jonasAppts);
         lenaAppts.Add(a18); jonasAppts.Add(a18); jonas.Appointments.Add(a18.Id);
 
         var a19 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 5, 9, 0, 0), new DateTime(2026, 6, 5, 10, 0, 0)),
-            physio.Id, rasmus.Id, peter.Id, physio.GetBasePrice(60), rasmusAppts, peterAppts);
+            physio.Id, rasmus.Id, peter.Id, clinic1.Id, physio.GetBasePrice(60), rasmusAppts, peterAppts);
         rasmusAppts.Add(a19); peterAppts.Add(a19); peter.Appointments.Add(a19.Id);
 
         var a20 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 5, 11, 0, 0), new DateTime(2026, 6, 5, 12, 0, 0)),
-            physio.Id, ida.Id, peter.Id, physio.GetBasePrice(60), idaAppts, peterAppts);
+            physio.Id, ida.Id, peter.Id, clinic1.Id, physio.GetBasePrice(60), idaAppts, peterAppts);
         idaAppts.Add(a20); peterAppts.Add(a20); peter.Appointments.Add(a20.Id);
 
         var a21 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 5, 13, 0, 0), new DateTime(2026, 6, 5, 14, 0, 0)),
-            physio.Id, mikkel.Id, metteLar.Id, physio.GetBasePrice(60), mikkelAppts, metteLarAppts);
+            physio.Id, mikkel.Id, metteLar.Id, clinic3.Id, physio.GetBasePrice(60), mikkelAppts, metteLarAppts);
         mikkelAppts.Add(a21); metteLarAppts.Add(a21); metteLar.Appointments.Add(a21.Id);
 
         var a22 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 10, 11, 0, 0), new DateTime(2026, 6, 10, 12, 0, 0)),
-            physio.Id, camilla.Id, metteLar.Id, physio.GetBasePrice(60), camillaAppts, metteLarAppts);
+            physio.Id, camilla.Id, metteLar.Id, clinic3.Id, physio.GetBasePrice(60), camillaAppts, metteLarAppts);
         camillaAppts.Add(a22); metteLarAppts.Add(a22); metteLar.Appointments.Add(a22.Id);
 
         var a23 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 4, 11, 0, 0), new DateTime(2026, 6, 4, 12, 0, 0)),
-            physio.Id, lena.Id, christian.Id, physio.GetBasePrice(60), lenaAppts, christianAppts);
+            physio.Id, lena.Id, christian.Id, clinic3.Id, physio.GetBasePrice(60), lenaAppts, christianAppts);
         lenaAppts.Add(a23); christianAppts.Add(a23); christian.Appointments.Add(a23.Id);
 
         var a24 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 6, 8, 9, 0, 0), new DateTime(2026, 6, 8, 10, 0, 0)),
-            groupTraining.Id, oliver.Id, peter.Id, groupTraining.GetBasePrice(60), oliverAppts, peterAppts);
+            groupTraining.Id, oliver.Id, peter.Id, clinic1.Id, groupTraining.GetBasePrice(60), oliverAppts, peterAppts);
         oliverAppts.Add(a24); peterAppts.Add(a24); peter.Appointments.Add(a24.Id);
 
         db.Appointments.AddRange(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24,

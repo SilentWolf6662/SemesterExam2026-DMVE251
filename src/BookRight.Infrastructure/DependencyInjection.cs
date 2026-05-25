@@ -46,6 +46,7 @@ public static class DependencyInjection
         services.AddScoped<IDiscountStrategy, BronzeLoyaltyDiscountStrategy>();
         services.AddScoped<IDiscountStrategy, SilverLoyaltyDiscountStrategy>();
         services.AddScoped<IDiscountStrategy, GoldLoyaltyDiscountStrategy>();
+        services.AddScoped<IDiscountStrategy, NoDiscountStrategy>();
         services.AddScoped<PricingService>();
 
         // Appointment Use Cases

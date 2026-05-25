@@ -10,6 +10,7 @@ public class Appointment : AggregateRoot
     public Guid TreatmentTypeId { get; private set; }
     public Guid PatientId { get; private set; }
     public Guid PractitionerId { get; private set; }
+    public Guid ClinicId { get; private set; }
     public string Note { get; private set; } = string.Empty;
     public AppointmentStatus Status { get; private set; }
     // Prisen låses fast ved oprettelsen via PricingService og TreatmentType.GetBasePrice().
@@ -20,12 +21,13 @@ public class Appointment : AggregateRoot
 
     // PRIVAT constructor — tvinger brug af factory-metoden Create()
     private Appointment() { } // EF Core kræver en parameterløs konstruktør
-    private Appointment(TimeInterval timeInterval, Guid type, Guid patient, Guid practitioner)
+    private Appointment(TimeInterval timeInterval, Guid type, Guid patient, Guid practitioner, Guid clinic)
     {
         TimeInterval = timeInterval;
         TreatmentTypeId = type;
         PatientId = patient;
         PractitionerId = practitioner;
+        ClinicId = clinic;
         // Alle nye bookinger starter med status Booked
         Status = AppointmentStatus.Booked;
         DiscountType = DiscountType.None;
@@ -37,12 +39,13 @@ public class Appointment : AggregateRoot
         Guid treatmentTypeId,
         Guid patientId,
         Guid practitionerId,
-        decimal price,           // Beregnet endeligt beløb inkl. evt. aftens/weekend-tillæg
+        Guid clinicId,
+        decimal price,
         IEnumerable<Appointment> existingForPatient,
         IEnumerable<Appointment> existingForPractitioner)
     {
         // Opret den nye booking — status sættes automatisk til Booked i konstruktøren
-        var appointment = new Appointment(timeInterval, treatmentTypeId, patientId, practitionerId);
+        var appointment = new Appointment(timeInterval, treatmentTypeId, patientId, practitionerId, clinicId);
 
         // Prisen tildeles efter objektet er oprettet fordi Price har private set
         appointment.Price = price;

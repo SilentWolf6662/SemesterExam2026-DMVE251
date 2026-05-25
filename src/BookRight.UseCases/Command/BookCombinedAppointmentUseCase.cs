@@ -14,6 +14,7 @@ public class BookCombinedAppointmentUseCase : IBookCombinedAppointment
     private readonly IPractitionerRepository _practitionerRepo;
     private readonly IPatientRepository _patientRepo;
     private readonly ITreatmentTypeRepository _treatmentTypeRepo;
+    private readonly IClinicRepository _clinicRepo;
     private readonly PricingService _pricingService;
 
     public BookCombinedAppointmentUseCase(
@@ -21,12 +22,14 @@ public class BookCombinedAppointmentUseCase : IBookCombinedAppointment
         IPractitionerRepository practitionerRepo,
         IPatientRepository patientRepo,
         ITreatmentTypeRepository treatmentTypeRepo,
+        IClinicRepository clinicRepo,
         PricingService pricingService)
     {
         _appointmentRepo = appointmentRepo;
         _practitionerRepo = practitionerRepo;
         _patientRepo = patientRepo;
         _treatmentTypeRepo = treatmentTypeRepo;
+        _clinicRepo = clinicRepo;
         _pricingService = pricingService;
     }
 
@@ -40,6 +43,9 @@ public class BookCombinedAppointmentUseCase : IBookCombinedAppointment
 
         _ = await _practitionerRepo.GetByIdAsync(request.SecondPractitionerId)
             ?? throw new NotFoundException("Anden behandler ikke fundet");
+
+        var clinic = await _clinicRepo.GetByIdAsync(request.ClinicId)
+            ?? throw new NotFoundException("Klinik ikke fundet");
 
         var firstType = await _treatmentTypeRepo.GetByIdAsync(request.FirstTreatmentTypeId)
             ?? throw new NotFoundException("Første behandlingstype ikke fundet");
@@ -61,6 +67,16 @@ public class BookCombinedAppointmentUseCase : IBookCombinedAppointment
         decimal firstBasePrice = firstType.GetBasePrice(request.FirstDurationMinutes);
         decimal secondBasePrice = secondType.GetBasePrice(request.SecondDurationMinutes);
 
+        // Rumsbegrænsning: begge tidsblokke tjekkes separat — de er ikke samtidige
+        var clinicBookinger = (await _appointmentRepo.GetAllByClinicIdAsync(request.ClinicId)).ToList();
+        var overlappende1 = clinicBookinger.Count(a => a.IsActive && firstInterval.Overlapping(a.TimeInterval));
+        if (overlappende1 >= clinic.Rooms)
+            throw new DomainException($"Klinikken har ingen ledige rum til 1. behandling (maks. {clinic.Rooms} samtidige bookinger)");
+
+        var overlappende2 = clinicBookinger.Count(a => a.IsActive && secondInterval.Overlapping(a.TimeInterval));
+        if (overlappende2 >= clinic.Rooms)
+            throw new DomainException($"Klinikken har ingen ledige rum til 2. behandling (maks. {clinic.Rooms} samtidige bookinger)");
+
         var patientBookinger = (await _appointmentRepo.GetAllByPatientIdAsync(request.PatientId)).ToList();
         var firstPractBookinger = (await _appointmentRepo.GetAllByPractitionerIdAsync(request.FirstPractitionerId)).ToList();
         var secondPractBookinger = (await _appointmentRepo.GetAllByPractitionerIdAsync(request.SecondPractitionerId)).ToList();
@@ -71,6 +87,7 @@ public class BookCombinedAppointmentUseCase : IBookCombinedAppointment
             request.FirstTreatmentTypeId,
             request.PatientId,
             request.FirstPractitionerId,
+            request.ClinicId,
             firstBasePrice,
             patientBookinger,
             firstPractBookinger);
@@ -87,6 +104,7 @@ public class BookCombinedAppointmentUseCase : IBookCombinedAppointment
             request.SecondTreatmentTypeId,
             request.PatientId,
             request.SecondPractitionerId,
+            request.ClinicId,
             secondBasePrice,
             patientBookinger,
             secondPractBookinger);

@@ -742,6 +742,7 @@ else
                 await BookCombinedUseCase.Execute(new BookCombinedAppointmentRequest(
                     from,
                     _selectedPatientId!.Value,
+                    _selectedClinicId!.Value,
                     _selectedPractitionerId!.Value,
                     _selectedTreatmentTypeId!.Value,
                     _selectedDuration!.Value,
@@ -759,7 +760,8 @@ else
                     _selectedDuration!.Value,
                     _selectedTreatmentTypeId!.Value,
                     _selectedPatientId!.Value,
-                    _selectedPractitionerId!.Value));
+                    _selectedPractitionerId!.Value,
+                    _selectedClinicId!.Value));
             }
 
             _success = true;

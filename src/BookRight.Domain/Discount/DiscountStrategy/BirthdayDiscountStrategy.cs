@@ -11,6 +11,7 @@ public class BirthdayDiscountStrategy : IDiscountStrategy
 
     async Task<DiscountResult> IDiscountStrategy.Calculate(DiscountInput input)
     {
+        // TODO: BugFix: bruger DateTime.Now.Month i stedet for input.From.Month — det betyder rabattjekket er baseret på i dag og ikke behandlingsdatoen (Kan i princippet ligge i næste måned).
         // Hvis patientens fødselsmåned matcher den nuværende måned, og de ikke har brugt fødselsdagsrabatten, kan der gives rabat
         if (await IsBirthday(input.PatientBirthDate) && input.BirthdayDiscountUsedCount < MaxPerYear)
         {

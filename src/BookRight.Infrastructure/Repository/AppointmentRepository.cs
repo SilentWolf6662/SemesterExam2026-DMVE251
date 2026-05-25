@@ -39,6 +39,15 @@ public class AppointmentRepository : IAppointmentRepository
             .ToListAsync();
     }
 
+    // Henter alle appointments baseret på klinik Id — bruges til rumsbegrænsning
+    async Task<IReadOnlyList<Appointment>> IAppointmentRepository.GetAllByClinicIdAsync(Guid clinicId)
+    {
+        return await _db.Appointments
+            .AsNoTracking()
+            .Where(a => a.ClinicId == clinicId)
+            .ToListAsync();
+    }
+
     // Henter summen for alle patientes appointments de sidste 12 måneder
     async Task<decimal> IAppointmentRepository.GetSumOf12MonthsByPatientIdAsync(Guid patientId, DateTime startDate)
     {

@@ -5,6 +5,7 @@ namespace BookRight.Facade.Command;
 public record BookCombinedAppointmentRequest(
     DateTime From,
     Guid PatientId,
+    Guid ClinicId,
     Guid FirstPractitionerId,
     Guid FirstTreatmentTypeId,
     int FirstDurationMinutes,
