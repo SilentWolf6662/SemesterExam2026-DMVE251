@@ -8,7 +8,7 @@
    @SelectId er en parameter der sendes ind udefra, så id'et er unikt
    hvis komponenten bruges to gange (1. og 2. behandling). *@
 <label class="form-label" for="@SelectId">
-    @Label <span aria-hidden="true">*</span>
+    @Label @if (!Optional) {<span aria-hidden="true"> *</span>}
 </label>
 
 @* <select> er HTML's dropdown — brugeren vælger én behandler fra listen.
@@ -19,7 +19,7 @@
    aria-required="true" markerer feltet som påkrævet for skærmlæsere.
    aria-describedby="@HintId" kobler hjælpeteksten nedenfor til feltet. *@
 <select id="@SelectId"
-        class="form-select"
+        class="form-select @(IsInvalid ? "is-invalid" : "")"
         value="@SelectedPractitionerId"
         @onchange="OnChanged"
         aria-required="true"
@@ -41,13 +41,15 @@
 
 @* Hjælpetekst der informerer brugeren om at listen er filtreret når en klinik er valgt.
    mb-3 giver luft under hele feltet uanset om teksten er tom eller ej. *@
-<small id="@HintId" class="d-block text-muted mb-3">
-    @(SelectedClinicId is not null ? "Viser kun behandlere tilknyttet den valgte klinik" : "")
+<small id="@HintId" class="@(IsInvalid ? "invalid-feedback d-block mb-3" : "d-block text-muted mb-3")">
+    @if (IsInvalid) { @("Vælg venligst en behandler.") }
+    else { @(SelectedClinicId is not null ? "Viser kun behandlere tilknyttet den valgte klinik" : "") }
 </small>
 
 @code {
     // SelectId gør id'et unikt når komponenten bruges to gange på samme side.
     [Parameter] public string SelectId { get; set; } = "practitioner-select";
+    [Parameter] public bool IsInvalid { get; set; }
 
     // EditorRequired giver en advarsel i IDE'et hvis parameteren ikke sendes med —
     // vi skal altid have behandlerlisten udefra.
@@ -56,6 +58,7 @@
     // Label er teksten der vises over dropdown'en.
     // = "Behandler" er standardværdien hvis ingen Label sendes med udefra.
     [Parameter] public string Label { get; set; } = "Behandler";
+    [Parameter] public bool Optional { get; set; } = true;
 
     // Guid? = nullable — null betyder ingen klinik er valgt.
     // Null   → Filtered returnerer alle behandlere.

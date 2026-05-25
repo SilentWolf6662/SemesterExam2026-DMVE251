@@ -93,7 +93,8 @@ else
            brugeren vælger en klinik. *@
         <ClinicSelect SelectId="clinic"
                       SelectedClinicId="@_selectedClinicId"
-                      SelectedClinicIdChanged="OnClinicChanged" />
+                      SelectedClinicIdChanged="OnClinicChanged"
+                      IsInvalid="@(_submitted && _selectedClinicId is null)" />
 
         @* <fieldset> grupperer flere relaterede felter visuelt og semantisk.
            Skærmlæsere annoncerer <legend>-teksten som overskrift for gruppen,
@@ -107,10 +108,12 @@ else
                SelectedClinicId="@_selectedClinicId" sender den valgte kliniks ID
                ned i komponenten, så den kan filtrere behandlere korrekt. *@
             <PractitionerSelect SelectId="practitioner-1"
+                                Optional="false"
                                 AllPractitioners="@_practitioners"
                                 SelectedClinicId="@_selectedClinicId"
                                 SelectedPractitionerId="@_selectedPractitionerId"
-                                SelectedPractitionerIdChanged="OnPractitionerChanged" />
+                                SelectedPractitionerIdChanged="OnPractitionerChanged"
+                                IsInvalid="@(_submitted && _selectedPractitionerId is null)" />
 
             @* TreatmentTypeSelect viser kun behandlingstyper der passer til
                den valgte behandlers autorisation (f.eks. kun massage til en massør).
@@ -120,7 +123,8 @@ else
                                  AllTreatmentTypes="@_treatmentTypes"
                                  PractitionerAuthorization="@SelectedPractitioner?.Authorization"
                                  SelectedTreatmentTypeId="@_selectedTreatmentTypeId"
-                                 SelectedTreatmentTypeIdChanged="OnTreatmentTypeChanged" />
+                                 SelectedTreatmentTypeIdChanged="OnTreatmentTypeChanged"
+                                 IsInvalid="@(_submitted && _selectedTreatmentTypeId is null && _selectedPractitionerId is not null)" />
 
             @* <label> viser en tekstbeskrivelse for et formularfelt.
                for="duration-1" knytter labelen til <select id="duration-1"> nedenfor —
@@ -138,27 +142,28 @@ else
                aria-describedby="duration-1-hint" peger på <small>-teksten nedenfor,
                så skærmlæsere læser hjælpeteksten op efter feltbeskrivelsen. *@
             <select id="duration-1"
-                    class="form-select"
+                    class="form-select @(_submitted && _selectedDuration is null && _selectedTreatmentTypeId is not null ? "is-invalid" : "")"
                     value="@_selectedDuration"
                     @onchange="OnDurationChanged"
                     disabled="@(_selectedTreatmentTypeId is null)"
                     aria-required="true"
                     aria-describedby="duration-1-hint">
                 <option value="">-- Vælg varighed --</option>
-                @* @foreach generer et <option>-element for hver varighed i listen.
-                   AvailableDurations er en computed property i @code der returnerer
-                   de varigheder den valgte behandlingstype tilbyder. *@
                 @foreach (var duration in AvailableDurations)
                 {
                     <option value="@duration">@duration minutter</option>
                 }
             </select>
 
-            @* <small> er HTML til fin/supplerende tekst.
-               d-block gør den til et blokelement (fylder hele bredden).
-               mb-3 er Bootstrap for margin-bottom: 1rem — luft under feltet. *@
-            <small id="duration-1-hint" class="d-block text-muted mb-3">
-                @(_selectedTreatmentTypeId is null ? "Vælg en behandlingstype for at se varighed" : "")
+            <small id="duration-1-hint" class="@(_submitted && _selectedDuration is null && _selectedTreatmentTypeId is not null ? "invalid-feedback d-block mb-3" : "d-block text-muted mb-3")">
+                @if (_submitted && _selectedDuration is null && _selectedTreatmentTypeId is not null)
+                {
+                    @("Vælg venligst en varighed.")
+                }
+                else
+                {
+                    @(_selectedTreatmentTypeId is null ? "Vælg en behandlingstype for at se varighed" : "")
+                }
             </small>
         </fieldset>
 
@@ -194,23 +199,25 @@ else
 
                 @* Samme komponenter som 1. behandling, men bundet til de separate
                    felter for 2. behandling (_selectedSecond...). *@
-                <PractitionerSelect SelectId="practitioner-2"
+                <PractitionerSelect Optional="false" SelectId="practitioner-2"
                                     AllPractitioners="@_practitioners"
                                     SelectedClinicId="@_selectedClinicId"
                                     SelectedPractitionerId="@_selectedSecondPractitionerId"
-                                    SelectedPractitionerIdChanged="OnSecondPractitionerChanged" />
+                                    SelectedPractitionerIdChanged="OnSecondPractitionerChanged"
+                                    IsInvalid="@(_submitted && _selectedSecondPractitionerId is null)" />
 
                 <TreatmentTypeSelect SelectId="treatment-2"
                                      AllTreatmentTypes="@_treatmentTypes"
                                      PractitionerAuthorization="@SecondPractitioner?.Authorization"
                                      SelectedTreatmentTypeId="@_selectedSecondTreatmentTypeId"
-                                     SelectedTreatmentTypeIdChanged="OnSecondTreatmentTypeChanged" />
+                                     SelectedTreatmentTypeIdChanged="OnSecondTreatmentTypeChanged"
+                                     IsInvalid="@(_submitted && _selectedSecondTreatmentTypeId is null && _selectedSecondPractitionerId is not null)" />
 
                 <label class="form-label" for="duration-2">
                     Varighed <span aria-hidden="true">*</span>
                 </label>
                 <select id="duration-2"
-                        class="form-select"
+                        class="form-select @(_submitted && _selectedSecondDuration is null && _selectedSecondTreatmentTypeId is not null ? "is-invalid" : "")"
                         value="@_selectedSecondDuration"
                         @onchange="OnSecondDurationChanged"
                         disabled="@(_selectedSecondTreatmentTypeId == null)"
@@ -222,8 +229,15 @@ else
                         <option value="@duration">@duration minutter</option>
                     }
                 </select>
-                <small id="duration-2-hint" class="d-block text-muted mb-3">
-                    @(_selectedSecondTreatmentTypeId == null ? "Vælg en behandlingstype for at se varighed" : "")
+                <small id="duration-2-hint" class="@(_submitted && _selectedSecondDuration is null && _selectedSecondTreatmentTypeId is not null ? "invalid-feedback d-block mb-3" : "d-block text-muted mb-3")">
+                    @if (_submitted && _selectedSecondDuration is null && _selectedSecondTreatmentTypeId is not null)
+                    {
+                        @("Vælg venligst en varighed.")
+                    }
+                    else
+                    {
+                        @(_selectedSecondTreatmentTypeId == null ? "Vælg en behandlingstype for at se varighed" : "")
+                    }
                 </small>
 
                 @* aria-live="polite" på dette afsnit opdaterer skærmlæseren blidt
@@ -285,7 +299,7 @@ else
             Patient <span aria-hidden="true">*</span>
         </label>
         <select id="patient-select"
-                class="form-select mb-3"
+                class="form-select @(_submitted && _selectedPatientId is null ? "is-invalid" : "mb-3")"
                 value="@_selectedPatientId"
                 @onchange="OnPatientChanged"
                 aria-required="true">
@@ -295,6 +309,10 @@ else
                 <option value="@p.Id">@p.FirstName @p.LastName</option>
             }
         </select>
+        @if (_submitted && _selectedPatientId is null)
+        {
+            <small class="invalid-feedback d-block mb-3">Vælg venligst en patient.</small>
+        }
 
         @* type="date" giver en indbygget datovælger i browseren.
            @bind binder feltet to-vejs til _date (DateTime?).
@@ -307,12 +325,16 @@ else
         </label>
         <input id="date-input"
                type="date"
-               class="form-control mb-3"
+               class="form-control @(_submitted && _date is null ? "is-invalid" : "mb-3")"
                @bind="_date"
                @bind:format="yyyy-MM-dd"
                @bind:after="TryUpdatePreview"
                min="@TodayMin"
                aria-required="true" />
+        @if (_submitted && _date is null)
+        {
+            <small class="invalid-feedback d-block mb-3">Vælg venligst en dato.</small>
+        }
 
         @* type="time" giver en tidsvælger (timer:minutter).
            @(IsStartInPast ? "is-invalid" : "mb-3") er et C#-udtryk inde i @().
@@ -323,16 +345,17 @@ else
         </label>
         <input id="time-input"
                type="time"
-               class="form-control @(IsStartInPast ? "is-invalid" : "mb-3")"
+               class="form-control @(IsStartInPast || (_submitted && !_time.HasValue) ? "is-invalid" : "mb-3")"
                @bind="_time"
                @bind:after="TryUpdatePreview"
                min="@TimeMin"
                aria-required="true" />
 
-        @* Fejlteksten vises kun hvis starttidspunktet er i fortiden.
-           invalid-feedback er Bootstraps klasse til valideringsfejl under et felt.
-           d-block tilsidesætter Bootstraps display:none, og mb-3 giver luft nedenunder. *@
-        @if (IsStartInPast)
+        @if (_submitted && !_time.HasValue)
+        {
+            <small class="invalid-feedback d-block mb-3">Vælg venligst et starttidspunkt.</small>
+        }
+        else if (IsStartInPast)
         {
             <small class="invalid-feedback d-block mb-3">Tidspunktet er allerede passeret.</small>
         }
@@ -415,12 +438,12 @@ else
         }
 
         @* type="submit" gør knappen til en indsend-knap — klik kalder formens @onsubmit.
-           disabled="@(!CanSubmit || _submitting)" låser knappen hvis formularen ikke er
-           udfyldt korrekt, eller hvis en indsendelse allerede er i gang.
+           disabled="@_submitting" låser knappen kun mens bookingen oprettes på serveren.
+           Validering vises pr. felt når man klikker "Opret Booking" med manglende felter.
            aria-busy fortæller skærmlæsere at knappen er i gang med noget (spinner). *@
         <button type="submit"
                 class="btn btn-primary"
-                disabled="@(!CanSubmit || _submitting)"
+                disabled="@_submitting"
                 aria-busy="@(_submitting ? "true" : "false")">
             @if (_submitting)
             {
@@ -479,6 +502,7 @@ else
     private string? _error;
     private bool _success;
     private bool _submitting;
+    private bool _submitted;
 
     // Prisestimering — vises under formularen inden booking oprettes.
     private PricePreviewDto? _pricePreview;
@@ -722,8 +746,7 @@ else
     // async Task fordi vi kalder await inde i metoden.
     private async Task OnSubmit()
     {
-        // Dobbelt sikkerhed: tjek igen at alt er udfyldt (CanSubmit slår knappen fra,
-        // men vi validerer også her i tilfælde af race conditions).
+        _submitted = true;
         if (!CanSubmit) return;
 
         _submitting = true;
@@ -805,6 +828,7 @@ else
         _time = null;
         _pricePreview = null;
         _secondPricePreview = null;
+        _submitted = false;
     }
 
     // Rydder fejl- og succesbeskederne, f.eks. når brugeren begynder at rette en fejl.

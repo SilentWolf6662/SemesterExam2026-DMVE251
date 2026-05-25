@@ -28,7 +28,7 @@
    aria-describedby="@HintId" peger på <small>-elementet nedenfor, så skærmlæsere
    læser hjælpeteksten op efter feltets navn. *@
 <select id="@SelectId"
-        class="form-select"
+        class="form-select @(IsInvalid ? "is-invalid" : "")"
         value="@SelectedClinicId"
         @onchange="OnChanged"
         disabled="@(_clinics is null)"
@@ -54,8 +54,9 @@
    d-block er Bootstrap for display:block — gør <small> til et blokelement der fylder hele linjen.
    mb-3 er Bootstrap for margin-bottom: 1rem — giver luft under hele feltet.
    Ternær operator: vis "Indlæser klinikker…" hvis listen endnu ikke er hentet, ellers vis ingenting. *@
-<small id="@HintId" class="d-block text-muted mb-3">
-    @(_clinics is null ? "Indlæser klinikker…" : "")
+<small id="@HintId" class="@(IsInvalid ? "invalid-feedback d-block mb-3" : "d-block text-muted mb-3")">
+    @if (IsInvalid) { @("Vælg venligst en klinik.") }
+    else { @(_clinics is null ? "Indlæser klinikker…" : "") }
 </small>
 
 @code {
@@ -63,6 +64,7 @@
     // Eks.: <ClinicSelect SelectId="clinic" /> — "clinic" sendes ind som SelectId.
     // = "clinic-select" er standardværdien hvis ingen SelectId sendes med.
     [Parameter] public string SelectId { get; set; } = "clinic-select";
+    [Parameter] public bool IsInvalid { get; set; }
 
     // Den aktuelt valgte kliniks ID. Guid? betyder det er et unikt ID der må være null.
     [Parameter] public Guid? SelectedClinicId { get; set; }
