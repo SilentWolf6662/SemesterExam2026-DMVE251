@@ -2,7 +2,7 @@
 
 namespace BookRight.Facade.Interfaces.UseCase;
 
-public interface IBookAppointment
+public interface IBookAppointmentUseCase
 {
     Task Execute(BookAppointmentRequest request);
 }

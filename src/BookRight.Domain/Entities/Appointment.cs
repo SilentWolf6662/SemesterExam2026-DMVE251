@@ -16,6 +16,7 @@ public class Appointment : AggregateRoot
     // Den gemmes på bookingen så en fremtidig prisændring på behandlingstypen
     // ikke påvirker allerede oprettede bookinger.
     public decimal Price { get; private set; }
+    public DiscountType DiscountType { get; private set; }
 
     // PRIVAT constructor — tvinger brug af factory-metoden Create()
     private Appointment() { } // EF Core kræver en parameterløs konstruktør
@@ -27,6 +28,7 @@ public class Appointment : AggregateRoot
         PractitionerId = practitioner;
         // Alle nye bookinger starter med status Booked
         Status = AppointmentStatus.Booked;
+        DiscountType = DiscountType.None;
     }
 
     // ── Factory-metode: eneste måde at oprette en booking for behandling ──────
@@ -88,6 +90,12 @@ public class Appointment : AggregateRoot
     public void ApplyFinalPrice(decimal finalPrice)
     {
         Price = finalPrice;
+    }
+
+    // Opdater rabattypen til den højeste rabat
+    public void ApplyDiscountType(DiscountType discountType)
+    {
+        DiscountType = discountType;
     }
 
     public bool IsActive => Status == AppointmentStatus.Booked; // En appointment er aktiv hvis den er 'Booked' (IKKE 'Cancelled', 'Completed', eller 'NoShow')

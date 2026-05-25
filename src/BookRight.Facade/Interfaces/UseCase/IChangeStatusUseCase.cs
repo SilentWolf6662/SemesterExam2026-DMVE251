@@ -2,7 +2,7 @@
 
 namespace BookRight.Facade.Interfaces.UseCase;
 
-public interface IChangeStatus
+public interface IChangeStatusUseCase
 {
     Task Execute(ChangeStatusRequest request);
 }

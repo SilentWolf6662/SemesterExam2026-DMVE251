@@ -1,30 +1,26 @@
-﻿using BookRight.Domain.Entities;
+﻿using BookRight.Domain.Enums;
+using BookRight.UseCases.Discount;
 
-namespace BookRight.Domain.Discount;
+namespace BookRight.UseCases.Discount.DiscountStrategy;
 
 public class BlackFridayDiscountStrategy : IDiscountStrategy
 {
     public string Name => "Black Friday Rabat";
-    private const decimal _discountRate = 0.25m; // 25% rabat
 
-    private BlackFridayDiscountStrategy() { }
 
-    async Task<CalculatedDiscount> IDiscountStrategy.Calculate(decimal currentPrice, Appointment appointment)
+    private decimal _discountRate = 0.25m; // 25% rabat
+
+    async Task<DiscountResult> IDiscountStrategy.Calculate(DiscountInput input)
     {
         // Hvis sluttiden for appointment ligger på black friday kan der gives rabat
-        if (IsBlackFriday(appointment.TimeInterval.End))
+        if (IsBlackFriday(input.From))
         {
-            return new CalculatedDiscount(
-                Name,
-                Math.Round(currentPrice * _discountRate, 2)
-                );
+            decimal discount = input.CurrentPrice * _discountRate;
+            return new DiscountResult(Name, discount, true, DiscountType.BlackFriday);
         }
-        else // ellers retuneres der ingen rabat (0)
+        else // ellers retuneres der ingen rabat
         {
-            return new CalculatedDiscount(
-                Name,
-                0
-                );
+            return new DiscountResult(Name, 0, false, DiscountType.None);
         }
     }
 

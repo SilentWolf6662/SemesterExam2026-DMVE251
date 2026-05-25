@@ -8,21 +8,19 @@ using BookRight.UseCases.Services;
 
 namespace BookRight.UseCases.Command;
 
-public class BookAppointmentUseCase : IBookAppointment
+public class BookAppointmentUseCase : IBookAppointmentUseCase
 {
     private readonly IAppointmentRepository _appointmentRepo;
     private readonly IPractitionerRepository _practitionerRepo;
     private readonly IPatientRepository _patientRepo;
     private readonly ITreatmentTypeRepository _treatmentTypeRepo;
-    private readonly PricingService _pricingService;
 
-    public BookAppointmentUseCase(IAppointmentRepository appointmentRepo, IPractitionerRepository practitionerRepo, IPatientRepository patientRepo, ITreatmentTypeRepository treatmentTypeRepo, PricingService pricingService)
+    public BookAppointmentUseCase(IAppointmentRepository appointmentRepo, IPractitionerRepository practitionerRepo, IPatientRepository patientRepo, ITreatmentTypeRepository treatmentTypeRepo)
     {
         _appointmentRepo = appointmentRepo;
         _practitionerRepo = practitionerRepo;
         _patientRepo = patientRepo;
         _treatmentTypeRepo = treatmentTypeRepo;
-        _pricingService = pricingService;
     }
 
     public async Task Execute(BookAppointmentRequest request)
@@ -57,10 +55,6 @@ public class BookAppointmentUseCase : IBookAppointment
             basePrice,
             patientBookinger,
             practitionerBookinger);
-
-        // Trin 2: anvend evt. aftens/weekend-tillæg og rabatter via PricingService
-        decimal finalPrice = _pricingService.Calculate(appointment, timeInterval);
-        appointment.ApplyFinalPrice(finalPrice);
 
         // Gem den nye booking i databasen — AddAsync stager den, SaveAsync sender SQL
         await _appointmentRepo.AddAsync(appointment);

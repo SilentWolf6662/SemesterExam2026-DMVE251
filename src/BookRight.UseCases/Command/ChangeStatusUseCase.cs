@@ -5,7 +5,7 @@ using BookRight.UseCases.Repositories;
 
 namespace BookRight.UseCases.Command;
 
-public class ChangeStatusUseCase : IChangeStatus
+public class ChangeStatusUseCase : IChangeStatusUseCase
 {
     private readonly IAppointmentRepository _appointmentRepo;
 

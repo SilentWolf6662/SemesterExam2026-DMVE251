@@ -2,7 +2,7 @@
 
 namespace BookRight.Domain.Entities;
 
-public class OvertimeChargeService
+public class OvertimeCharge
 {
     private const decimal Surcharge = 0.15m; // BookRight-reglerne specificerer 15 % tillæg på aftener og weekender
     private static readonly TimeOnly EveningStart = new TimeOnly(17, 0); // Aftenstillæg gælder fra kl. 17:00 og frem
