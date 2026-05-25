@@ -1,54 +1,100 @@
+@* @using importerer navnerum så vi kan bruge PractitionerDto uden at skrive hele stien.
+   Denne komponent har ikke @inject fordi behandlerlisten hentes i forælderen (BookAppointment)
+   og sendes ned som parameter — det er hurtigere end at hente den igen her. *@
 @using BookRight.Facade.DTO
 
+@* <label> knytter en tekstbeskrivelse til dropdown'en via for="@SelectId".
+   Klik på labelen flytter fokus til <select>-elementet — god for brugervenlighed.
+   @SelectId er en parameter der sendes ind udefra, så id'et er unikt
+   hvis komponenten bruges to gange (1. og 2. behandling). *@
 <label class="form-label" for="@SelectId">
     Behandler <span aria-hidden="true">*</span>
 </label>
+
+@* <select> er HTML's dropdown — brugeren vælger én behandler fra listen.
+   value="@SelectedPractitionerId" viser den aktuelt valgte behandler i dropdown'en.
+   @onchange="OnChanged" kalder C#-metoden nedenfor når brugeren skifter valg.
+   Hvis SelectedClinicId er null vises alle behandlere.
+   Hvis SelectedClinicId er sat vises kun behandlere tilknyttet den klinik.
+   aria-required="true" markerer feltet som påkrævet for skærmlæsere.
+   aria-describedby="@HintId" kobler hjælpeteksten nedenfor til feltet. *@
 <select id="@SelectId"
         class="form-select"
         value="@SelectedPractitionerId"
         @onchange="OnChanged"
-        disabled="@(SelectedClinicId is null)"
         aria-required="true"
         aria-describedby="@HintId">
+
+    @* Standardmulighed der vises øverst — value="" signalerer "intet valgt". *@
     <option value="">-- Vælg behandler --</option>
+
+    @* @foreach løber igennem Filtered.
+       Filtered returnerer enten alle behandlere (ingen klinik valgt)
+       eller kun dem der er tilknyttet den valgte klinik.
+       value="@p.Id" gemmer behandlerens unikke Guid-ID som den sendte værdi.
+       Vi viser navn + autorisationstype i parentes så brugeren kan se hvad behandleren må. *@
     @foreach (var p in Filtered)
     {
         <option value="@p.Id">@p.FirstName @p.LastName (@TranslatedAuthorizationName(p.Authorization))</option>
     }
 </select>
+
+@* Hjælpetekst der informerer brugeren om at listen er filtreret når en klinik er valgt.
+   mb-3 giver luft under hele feltet uanset om teksten er tom eller ej. *@
 <small id="@HintId" class="d-block text-muted mb-3">
-    @(SelectedClinicId is null ? "Vælg en klinik for at se tilgængelige behandlere" : "")
+    @(SelectedClinicId is not null ? "Viser kun behandlere tilknyttet den valgte klinik" : "")
 </small>
 
 @code {
-    [Parameter] public bool FilterByClinic { get; set; } = false;
+    // SelectId gør id'et unikt når komponenten bruges to gange på samme side.
     [Parameter] public string SelectId { get; set; } = "practitioner-select";
+
+    // EditorRequired giver en advarsel i IDE'et hvis parameteren ikke sendes med —
+    // vi skal altid have behandlerlisten udefra.
     [Parameter, EditorRequired] public IReadOnlyList<PractitionerDto> AllPractitioners { get; set; } = [];
+
+    // Guid? = nullable — null betyder ingen klinik er valgt.
+    // Null   → Filtered returnerer alle behandlere.
+    // Sat    → Filtered returnerer kun behandlere tilknyttet den klinik.
     [Parameter] public Guid? SelectedClinicId { get; set; }
+
+    // Den aktuelt valgte behandlers ID.
     [Parameter] public Guid? SelectedPractitionerId { get; set; }
+
+    // EventCallback sender det valgte behandler-ID op til forælderkomponenten.
     [Parameter] public EventCallback<Guid?> SelectedPractitionerIdChanged { get; set; }
 
+    // HintId beregnes ud fra SelectId så hint-elementets id altid er unikt.
     private string HintId => $"{SelectId}-hint";
 
-    private IEnumerable<PractitionerDto> Filtered
-    {
-        get
-        {
-            if (SelectedClinicId == null)
-                return [];
-            if (FilterByClinic)
-                return AllPractitioners.Where(p => p.ClinicIds.Contains(SelectedClinicId.Value));
-            return AllPractitioners;
-        }
-    }
+    // Filtered bestemmer hvilke behandlere der vises i dropdown'en.
+    // Er SelectedClinicId null → returner hele listen.
+    // Er SelectedClinicId sat  → filtrer til kun dem der tilhører den klinik.
+    // .Where() er LINQ — gennemgår listen og beholder kun elementer der opfylder betingelsen.
+    // p.ClinicIds.Contains(...) tjekker om behandleren er tilknyttet klinikken.
+    private IEnumerable<PractitionerDto> Filtered =>
+        SelectedClinicId is null
+            ? AllPractitioners
+            : AllPractitioners.Where(p => p.ClinicIds.Contains(SelectedClinicId.Value));
 
+    // Kaldes når brugeren vælger en ny behandler i dropdown'en.
     private async Task OnChanged(ChangeEventArgs e)
     {
+        // e.Value er den valgte option's value-attribut (behandlerens Guid som tekst).
         var val = e.Value?.ToString();
+
+        // Tomme streng → brugeren valgte "-- Vælg behandler --" → sæt til null.
+        // Ellers konverter tekststrengen til en Guid.
         var id = string.IsNullOrEmpty(val) ? (Guid?)null : Guid.Parse(val);
+
+        // Send det valgte ID op til forælderkomponenten.
         await SelectedPractitionerIdChanged.InvokeAsync(id);
     }
 
+    // Oversætter de engelske autorisationsnavne fra databasen til dansk.
+    // switch expression: sammenligner authorization med hvert mønster og returnerer oversættelsen.
+    // _ er "default" — alt der ikke matcher de andre cases returneres uændret.
+    // static betyder metoden ikke bruger noget fra instansen — den er ren tekstoversætter.
     private static string TranslatedAuthorizationName(string authorization) => authorization switch
     {
         "Physiotherapist" => "Fysioterapeut",

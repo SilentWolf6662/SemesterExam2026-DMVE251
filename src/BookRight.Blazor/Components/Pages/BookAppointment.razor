@@ -1,5 +1,17 @@
+@* ── Sidedirektiver ──────────────────────────────────────────────────────────
+   @page fortæller Blazor hvilken URL denne side svarer på.
+   Skriv f.eks. "/opretbehandling" i browseren for at lande her.
+*@
 @page "/opretbehandling"
+
+@* @rendermode InteractiveServer gør siden interaktiv via en SignalR-forbindelse
+   til serveren. Uden dette ville knapklik og @oninput ikke reagere — siden
+   ville bare være statisk HTML. *@
 @rendermode InteractiveServer
+
+@* @using er det samme som C# "using" øverst i en .cs-fil.
+   Det fortæller Blazor hvilke navnerum der skal importeres, så vi kan bruge
+   komponenterne og typerne uden at skrive hele stien hver gang. *@
 @using BookRight.Blazor.Components.Clinic
 @using BookRight.Blazor.Components.Practitioner
 @using BookRight.Blazor.Components.TreatmentType
@@ -9,62 +21,121 @@
 @using BookRight.Facade.Interfaces.Queries
 @using BookRight.Facade.Interfaces.UseCase
 
+@* @inject henter en service fra dependency injection-containeren.
+   Tænk på det som: "giv mig det objekt der implementerer denne interface".
+   PractitionerQueries bruges til at hente behandlere fra databasen. *@
 @inject IPractitionerQueries PractitionerQueries
 @inject ITreatmentTypeQueries TreatmentTypeQueries
 @inject IPatientQueries PatientQueries
 @inject IBookAppointment BookAppointmentUseCase
 @inject IBookCombinedAppointment BookCombinedUseCase
 
+@* <PageTitle> sætter teksten i browserens faneblad.
+   Det er en Blazor-komponent der skriver til <title>-elementet i <head>. *@
 <PageTitle>Opret Booking</PageTitle>
 
+@* <h2> er en overskrift på niveau 2 (næststørste).
+   id="booking-heading" bruges af <form aria-labelledby> nedenfor,
+   så skærmlæsere ved hvilken overskrift der hører til formularen. *@
 <h2 id="booking-heading">Opret Booking</h2>
 
+@* @if er Blazors måde at skrive betingede blokke på i markup.
+   Mens _loading er true vises kun en "indlæser"-tekst.
+   Når data er hentet sættes _loading = false og resten af siden vises. *@
 @if (_loading)
 {
+    @* role="status" og aria-live="polite" fortæller skærmlæsere at denne
+       tekst er en statusbesked der opdateres automatisk. *@
     <p role="status" aria-live="polite" class="text-muted">Indlæser data…</p>
 }
 else
 {
-    @* Fejl- og statusbeskeder annonceres automatisk af skærmlæsere via role *@
+    @* <output> er et HTML5-element designet til at vise dynamiske resultater.
+       Det har implicit aria-live="polite", dvs. skærmlæsere annoncerer
+       ændringer automatisk uden at afbryde det brugeren er i gang med.
+       aria-atomic="true" betyder at hele elementet læses op på én gang
+       når indholdet skifter — ikke bare den ændrede del.
+       class="d-block" er Bootstrap for display:block, da <output> er inline som standard. *@
     <output aria-atomic="true" class="d-block">
+        @* @if (_error is not null) viser kun fejlbeskeden hvis der er en fejl.
+           role="alert" gør at skærmlæsere læser beskeden op med det samme. *@
         @if (_error is not null)
         {
             <p class="alert alert-danger" role="alert">@_error</p>
         }
+        @* role="status" er en blødere version af alert — annonceres når
+           brugeren ikke er i gang med noget andet. *@
         @if (_success)
         {
             <p class="alert alert-success" role="status">Booking oprettet!</p>
         }
     </output>
 
+    @* En lille hjælpetekst øverst der forklarer at * markerer påkrævede felter.
+       <span aria-hidden="true"> skjuler stjernen for skærmlæsere, da den
+       rent visuelle markering ikke giver mening i lyd. *@
     <p class="text-muted small mb-3">Felter markeret med <span aria-hidden="true">*</span> er påkrævet.</p>
 
+    @* <form> grupperer alle formularens felter.
+       aria-labelledby="booking-heading" knytter formularen til sidens <h2>
+       overskrift — skærmlæsere annoncerer overskriften når fokus flyttes til formen.
+       novalidate slår browserens indbyggede validering fra, så vi selv styrer den.
+       @onsubmit="OnSubmit" kalder vores C#-metode når brugeren trykker "Opret".
+       @onsubmit:preventDefault stopper browseren fra at genindlæse siden ved submit. *@
     <form aria-labelledby="booking-heading" novalidate
           @onsubmit="OnSubmit" @onsubmit:preventDefault>
 
+        @* ClinicSelect er en Blazor-komponent vi selv har lavet (se ClinicSelect.razor).
+           Parametre sendes som HTML-attributter. @ foran en værdi betyder at det er
+           C#-kode, ikke en tekststreng. EventCallback er Blazors måde at lade en
+           underkomponent "kalde op" til forælderen på — her får vi besked når
+           brugeren vælger en klinik. *@
         <ClinicSelect SelectId="clinic"
                       SelectedClinicId="@_selectedClinicId"
                       SelectedClinicIdChanged="OnClinicChanged" />
 
+        @* <fieldset> grupperer flere relaterede felter visuelt og semantisk.
+           Skærmlæsere annoncerer <legend>-teksten som overskrift for gruppen,
+           så blinde brugere forstår at de er inde i "1. behandling"-sektionen. *@
         <fieldset>
             <legend class="fs-6 fw-semibold mb-2">1. behandling</legend>
 
+            @* PractitionerSelect er vores komponent til at vælge behandler.
+               FilterByClinic="true" sender parameteren med værdien true —
+               det er en bool-parameter der filtrerer listen til den valgte klinik.
+               SelectedClinicId="@_selectedClinicId" sender den valgte kliniks ID
+               ned i komponenten, så den kan filtrere behandlere korrekt. *@
             <PractitionerSelect SelectId="practitioner-1"
-                                FilterByClinic="true"
                                 AllPractitioners="@_practitioners"
                                 SelectedClinicId="@_selectedClinicId"
                                 SelectedPractitionerId="@_selectedPractitionerId"
                                 SelectedPractitionerIdChanged="OnPractitionerChanged" />
 
+            @* TreatmentTypeSelect viser kun behandlingstyper der passer til
+               den valgte behandlers autorisation (f.eks. kun massage til en massør).
+               ?. er C# null-safe operator — hvis SelectedPractitioner er null
+               returneres null i stedet for at kaste en fejl. *@
             <TreatmentTypeSelect SelectId="treatment-1"
                                  AllTreatmentTypes="@_treatmentTypes"
                                  PractitionerAuthorization="@SelectedPractitioner?.Authorization"
                                  SelectedTreatmentTypeId="@_selectedTreatmentTypeId"
                                  SelectedTreatmentTypeIdChanged="OnTreatmentTypeChanged" />
 
+            @* <label> viser en tekstbeskrivelse for et formularfelt.
+               for="duration-1" knytter labelen til <select id="duration-1"> nedenfor —
+               klik på labelen flyttes fokus til dropdown'en. *@
             <label class="form-label" for="duration-1">
                 Varighed <span aria-hidden="true">*</span>
             </label>
+
+            @* <select> er en dropdown-liste.
+               value="@_selectedDuration" sætter den valgte værdi fra vores C#-felt.
+               @onchange kalder kode hver gang brugeren vælger noget nyt.
+               Koden er en lambda (pil-funktion): e er hændelsen, e.Value er den valgte tekst.
+               Vi parser teksten til int og gemmer i _selectedDuration.
+               disabled="@(...)" låser dropdown hvis ingen behandlingstype er valgt endnu.
+               aria-describedby="duration-1-hint" peger på <small>-teksten nedenfor,
+               så skærmlæsere læser hjælpeteksten op efter feltbeskrivelsen. *@
             <select id="duration-1"
                     class="form-select"
                     value="@_selectedDuration"
@@ -73,16 +144,33 @@ else
                     aria-required="true"
                     aria-describedby="duration-1-hint">
                 <option value="">-- Vælg varighed --</option>
-                @foreach (var dur in AvailableDurations)
+                @* @foreach generer et <option>-element for hver varighed i listen.
+                   AvailableDurations er en computed property i @code der returnerer
+                   de varigheder den valgte behandlingstype tilbyder. *@
+                @foreach (var duration in AvailableDurations)
                 {
-                    <option value="@dur">@dur minutter</option>
+                    <option value="@duration">@duration minutter</option>
                 }
             </select>
+
+            @* <small> er HTML til fin/supplerende tekst.
+               d-block gør den til et blokelement (fylder hele bredden).
+               mb-3 er Bootstrap for margin-bottom: 1rem — luft under feltet. *@
             <small id="duration-1-hint" class="d-block text-muted mb-3">
                 @(_selectedTreatmentTypeId is null ? "Vælg en behandlingstype for at se varighed" : "")
             </small>
         </fieldset>
 
+        @* form-check er Bootstrap-klassen der giver et pænt layout til checkbokse.
+           Vi bruger <p> her fordi checkboks + label er phrasing content (inline-elementer)
+           og <p> er korrekt container for det.
+           @bind="_isCombined" er Blazors two-way binding: feltet opdateres automatisk
+           når brugeren sætter hak i boksen, og boksen afspejler altid feltets værdi.
+           @bind:after="OnCombinedToggled" kalder metoden EFTER binding er opdateret,
+           så vi kan nulstille 2. behandlings-felter hvis brugeren fjerner hakket.
+           aria-controls="combined-section" fortæller skærmlæsere hvilken sektion
+           checkboksen styrer synligheden af.
+           aria-expanded viser om sektionen er åben (true) eller lukket (false). *@
         <p class="mb-3 form-check">
             <input class="form-check-input" type="checkbox" id="combined-check"
                    @bind="_isCombined" @bind:after="OnCombinedToggled"
@@ -93,13 +181,19 @@ else
             </label>
         </p>
 
+        @* @if (_isCombined) viser kun denne sektion hvis brugeren har sat hak.
+           Blazor fjerner HTML-elementerne helt fra DOM'en når betingelsen er false —
+           det er ikke bare display:none, elementerne eksisterer ikke i browseren. *@
         @if (_isCombined)
         {
+            @* id="combined-section" bruges af aria-controls ovenfor.
+               border, rounded og p-3 er Bootstrap-klasser til ramme og indrykning. *@
             <fieldset id="combined-section" class="border rounded p-3 mb-3">
                 <legend class="fs-6 fw-semibold mb-2 w-auto px-2">2. behandling</legend>
 
+                @* Samme komponenter som 1. behandling, men bundet til de separate
+                   felter for 2. behandling (_selectedSecond...). *@
                 <PractitionerSelect SelectId="practitioner-2"
-                                    FilterByClinic="true"
                                     AllPractitioners="@_practitioners"
                                     SelectedClinicId="@_selectedClinicId"
                                     SelectedPractitionerId="@_selectedSecondPractitionerId"
@@ -118,21 +212,25 @@ else
                         class="form-select"
                         value="@_selectedSecondDuration"
                         @onchange="e => _selectedSecondDuration = string.IsNullOrEmpty(e.Value?.ToString()) ? null : int.Parse(e.Value!.ToString()!)"
-                        disabled="@(_selectedSecondTreatmentTypeId is null)"
+                        disabled="@(_selectedSecondTreatmentTypeId == null)"
                         aria-required="true"
                         aria-describedby="duration-2-hint">
                     <option value="">-- Vælg varighed --</option>
-                    @foreach (var dur in AvailableSecondDurations)
+                    @foreach (var duration in AvailableSecondDurations)
                     {
-                        <option value="@dur">@dur minutter</option>
+                        <option value="@duration">@duration minutter</option>
                     }
                 </select>
                 <small id="duration-2-hint" class="d-block text-muted mb-3">
-                    @(_selectedSecondTreatmentTypeId is null ? "Vælg en behandlingstype for at se varighed" : "")
+                    @(_selectedSecondTreatmentTypeId == null ? "Vælg en behandlingstype for at se varighed" : "")
                 </small>
 
-                @* aria-live annoncerer ændringer i samlet tid når brugeren vælger varigheder *@
+                @* aria-live="polite" på dette afsnit opdaterer skærmlæseren blidt
+                   når den samlede besøgstid ændrer sig. aria-atomic="true" sikrer
+                   at hele sætningen læses op, ikke kun den ændrede tidsværdi. *@
                 <p aria-live="polite" aria-atomic="true" class="text-muted small mb-0">
+                    @* .HasValue tjekker om en nullable int har en værdi (ikke null).
+                       Vi viser kun beregningen hvis begge varigheder er valgt. *@
                     @if (_selectedDuration.HasValue && _selectedSecondDuration.HasValue)
                     {
                         <span>
@@ -144,6 +242,8 @@ else
             </fieldset>
         }
 
+        @* Patient-dropdown — samme mønster som varighed-dropdown ovenfor.
+           mb-3 er direkte på <select> fordi der ingen hjælpetekst er under dette felt. *@
         <label class="form-label" for="patient-select">
             Patient <span aria-hidden="true">*</span>
         </label>
@@ -159,6 +259,12 @@ else
             }
         </select>
 
+        @* type="date" giver en indbygget datovælger i browseren.
+           @bind binder feltet to-vejs til _date (DateTime?).
+           @bind:format="yyyy-MM-dd" fortæller Blazor hvilket datoformat der sendes
+           til og fra HTML-inputtet (HTML5 date-input bruger altid ISO-format).
+           min="@TodayMin" sætter den mindste valgbare dato til i dag,
+           så man ikke kan booke tilbage i tiden. *@
         <label class="form-label" for="date-input">
             Dato <span aria-hidden="true">*</span>
         </label>
@@ -170,6 +276,10 @@ else
                min="@TodayMin"
                aria-required="true" />
 
+        @* type="time" giver en tidsvælger (timer:minutter).
+           @(IsStartInPast ? "is-invalid" : "mb-3") er et C#-udtryk inde i @().
+           Hvis starttidspunktet er i fortiden tilføjes Bootstrap-klassen is-invalid
+           der viser en rød ramme; ellers tilføjes mb-3 for luft under feltet. *@
         <label class="form-label" for="time-input">
             Starttidspunkt <span aria-hidden="true">*</span>
         </label>
@@ -178,17 +288,28 @@ else
                class="form-control @(IsStartInPast ? "is-invalid" : "mb-3")"
                @bind="_time"
                aria-required="true" />
+
+        @* Fejlteksten vises kun hvis starttidspunktet er i fortiden.
+           invalid-feedback er Bootstraps klasse til valideringsfejl under et felt.
+           d-block tilsidesætter Bootstraps display:none, og mb-3 giver luft nedenunder. *@
         @if (IsStartInPast)
         {
             <small class="invalid-feedback d-block mb-3">Tidspunktet er allerede passeret.</small>
         }
 
+        @* type="submit" gør knappen til en indsend-knap — klik kalder formens @onsubmit.
+           disabled="@(!CanSubmit || _submitting)" låser knappen hvis formularen ikke er
+           udfyldt korrekt, eller hvis en indsendelse allerede er i gang.
+           aria-busy fortæller skærmlæsere at knappen er i gang med noget (spinner). *@
         <button type="submit"
                 class="btn btn-primary"
                 disabled="@(!CanSubmit || _submitting)"
                 aria-busy="@(_submitting ? "true" : "false")">
             @if (_submitting)
             {
+                @* Bootstrap-spinner der vises mens serveren behandler bookingen.
+                   role="status" + aria-hidden="true": selve animationen skjules for
+                   skærmlæsere, men teksten "Opretter booking…" nedenfor læses op. *@
                 <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                 <span>Opretter booking…</span>
             }
@@ -202,9 +323,13 @@ else
 }
 
 @code {
+    // [SupplyParameterFromQuery] læser en værdi fra URL'ens query string.
+    // Eks.: /opretbehandling?date=2025-06-01&time=10:00 udfylder felterne automatisk.
     [SupplyParameterFromQuery(Name = "date")] public string? PrefilledDate { get; set; }
     [SupplyParameterFromQuery(Name = "time")] public string? PrefilledTime { get; set; }
 
+    // Tilstandsfelter — private felter med _ foran er konventionen for Blazor-state.
+    // ? efter typen betyder feltet må være null (ingen værdi valgt endnu).
     private bool _loading = true;
     private IReadOnlyList<PractitionerDto> _practitioners = [];
     private IReadOnlyList<TreatmentTypeDto> _treatmentTypes = [];
@@ -227,13 +352,20 @@ else
     private DateTime? _date;
     private TimeOnly? _time;
 
+    // DateTime.Today.ToString(...) formaterer dags dato som "yyyy-MM-dd",
+    // det format HTML's min-attribut på date-input forventer.
     private static string TodayMin => DateTime.Today.ToString("yyyy-MM-dd");
+
+    // Bruges ikke aktivt men kan bruges til at sætte min-tid på time-inputtet.
     private string? TimeMin => _date?.Date == DateTime.Today ? DateTime.Now.ToString("HH:mm") : null;
 
     private string? _error;
     private bool _success;
     private bool _submitting;
 
+    // Computed properties — beregnes automatisk ud fra de nuværende feltværdier.
+    // => er en expression-bodied property: returnerer resultatet af udtrykket direkte.
+    // FirstOrDefault() returnerer det første match i listen, eller null hvis ingen match.
     private PractitionerDto? SelectedPractitioner =>
         _practitioners.FirstOrDefault(p => p.Id == _selectedPractitionerId);
 
@@ -246,16 +378,23 @@ else
     private TreatmentTypeDto? SelectedSecondTreatmentType =>
         _treatmentTypes.FirstOrDefault(t => t.Id == _selectedSecondTreatmentTypeId);
 
+    // ?? er null-coalescing operatoren: returner venstre side, med mindre den er null,
+    // i så fald returner højre side. Her: returner varighedslisten, ellers en tom liste.
     private IReadOnlyList<int> AvailableDurations =>
         SelectedTreatmentType?.AvailableDurations ?? [];
 
     private IReadOnlyList<int> AvailableSecondDurations =>
         SelectedSecondTreatmentType?.AvailableDurations ?? [];
 
+    // Beregner om det valgte tidspunkt allerede er passeret.
+    // _date.Value.Date + _time.Value.ToTimeSpan() kombinerer dato og tid til ét DateTime.
     private bool IsStartInPast =>
         _date is not null && _time.HasValue &&
         (_date.Value.Date + _time.Value.ToTimeSpan()) < DateTime.Now;
 
+    // CanSubmit er true kun når alle påkrævede felter er udfyldt og starttid ikke er passeret.
+    // && betyder "og" — alle betingelser skal være opfyldt.
+    // !_isCombined || (...) betyder: enten er det ikke kombineret, eller 2. behandling er udfyldt.
     private bool CanSubmit =>
         _selectedClinicId is not null &&
         _selectedPractitionerId is not null &&
@@ -270,14 +409,22 @@ else
             _selectedSecondTreatmentTypeId is not null &&
             _selectedSecondDuration is not null));
 
+    // OnInitializedAsync er en Blazor lifecycle-metode der køres automatisk
+    // første gang komponenten indlæses. async/await bruges til at vente på
+    // asynkrone operationer (som databasekald) uden at blokere tråden.
     protected override async Task OnInitializedAsync()
     {
+        // RendererInfo.IsInteractive er false under server-side prerendering.
+        // Vi springer datahentning over her — den sker når siden er fuldt interaktiv.
         if (!RendererInfo.IsInteractive) return;
 
+        // Henter alle lister parallelt — await venter på at asynkront kald er færdigt.
         _practitioners = await PractitionerQueries.GetAllAsync();
         _treatmentTypes = await TreatmentTypeQueries.GetAllAsync();
         _patients = await PatientQueries.GetAllAsync();
 
+        // Udfylder dato- og tidsfelter hvis de kom med i URL'en som query parameters.
+        // DateTime.TryParse returnerer true hvis strengen kunne parses, og sætter "d".
         if (PrefilledDate is not null && DateTime.TryParse(PrefilledDate, out var d))
             _date = d;
         if (PrefilledTime is not null && TimeOnly.TryParse(PrefilledTime, out var t))
@@ -286,6 +433,9 @@ else
         _loading = false;
     }
 
+    // Kaldes når brugeren vælger en ny klinik.
+    // Vi nulstiller alle afhængige valg, så man ikke beholder en behandler
+    // fra en anden klinik efter man har skiftet klinik.
     private void OnClinicChanged(Guid? id)
     {
         _selectedClinicId = id;
@@ -298,6 +448,7 @@ else
         ClearMessages();
     }
 
+    // Behandlervalg nulstiller behandlingstype og varighed da de afhænger af behandleren.
     private void OnPractitionerChanged(Guid? id)
     {
         _selectedPractitionerId = id;
@@ -312,6 +463,7 @@ else
         _selectedDuration = null;
         ClearMessages();
 
+        // Hvis behandlingstypen kun har én mulig varighed, vælges den automatisk.
         if (SelectedTreatmentType?.AvailableDurations.Count == 1)
             _selectedDuration = SelectedTreatmentType.AvailableDurations[0];
     }
@@ -334,6 +486,8 @@ else
             _selectedSecondDuration = SelectedSecondTreatmentType.AvailableDurations[0];
     }
 
+    // Kaldes når brugeren toggler "kombinér"-checkboksen.
+    // Hvis brugeren fjerner hakket, ryddes 2. behandlingens felter.
     private void OnCombinedToggled()
     {
         if (!_isCombined)
@@ -345,20 +499,27 @@ else
         ClearMessages();
     }
 
+    // Kaldes når formularen indsendes (brugeren klikker "Opret Booking").
+    // async Task fordi vi kalder await inde i metoden.
     private async Task OnSubmit()
     {
+        // Dobbelt sikkerhed: tjek igen at alt er udfyldt (CanSubmit slår knappen fra,
+        // men vi validerer også her i tilfælde af race conditions).
         if (!CanSubmit) return;
 
         _submitting = true;
         _error = null;
         _success = false;
 
+        // try/catch/finally: kode i try køres, catch fanger fejl, finally køres altid.
         try
         {
+            // Kombinerer dato og tid til ét DateTime-objekt der angiver starttidspunktet.
             var from = _date!.Value.Date + _time!.Value.ToTimeSpan();
 
             if (_isCombined)
             {
+                // BookCombinedUseCase håndterer to samtidige behandlinger i samme besøg.
                 await BookCombinedUseCase.Execute(new BookCombinedAppointmentRequest(
                     from,
                     _selectedPatientId!.Value,
@@ -371,6 +532,7 @@ else
             }
             else
             {
+                // AddMinutes beregner sluttidspunktet ud fra varigheden.
                 var to = from.AddMinutes(_selectedDuration!.Value);
                 await BookAppointmentUseCase.Execute(new BookAppointmentRequest(
                     from,
@@ -382,26 +544,31 @@ else
             }
 
             _success = true;
-            ResetForm();
+            ResetForm(); // Ryd formularen så man kan oprette en ny booking med det samme.
         }
         catch (DomainException ex)
         {
+            // DomainException er vores egne forretningsfejl, f.eks. "tidspunktet er optaget".
             _error = ex.Message;
         }
         catch (NotFoundException ex)
         {
+            // NotFoundException smides hvis patient, behandler eller klinik ikke findes.
             _error = ex.Message;
         }
         catch (Exception)
         {
+            // Opsamler alle andre uventede fejl og viser en generisk besked.
             _error = "Der opstod en uventet fejl. Prøv igen.";
         }
         finally
         {
+            // Slår spinner fra uanset om det gik godt eller dårligt.
             _submitting = false;
         }
     }
 
+    // Nulstiller alle formularfelter til null/false efter en vellykket booking.
     private void ResetForm()
     {
         _selectedClinicId = null;
@@ -417,6 +584,7 @@ else
         _time = null;
     }
 
+    // Rydder fejl- og succesbeskederne, f.eks. når brugeren begynder at rette en fejl.
     private void ClearMessages()
     {
         _error = null;

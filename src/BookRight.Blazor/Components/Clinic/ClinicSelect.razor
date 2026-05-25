@@ -1,10 +1,32 @@
+@* @using importerer navnerum så vi kan bruge typerne uden at skrive hele stien.
+   DTO = Data Transfer Object — enkle klasser der kun bruges til at flytte data rundt. *@
 @using BookRight.Facade.DTO
 @using BookRight.Facade.Interfaces.Queries
+
+@* @inject henter en service fra dependency injection.
+   IClinicQueries giver os adgang til metoder der henter klinikdata fra databasen. *@
 @inject IClinicQueries ClinicQueries
 
+@* <label> viser teksten "Klinik" over dropdown'en.
+   for="@SelectId" knytter labelen til <select>-elementet med samme id.
+   Det betyder at klik på labelen automatisk åbner dropdown'en — vigtig for brugervenlighed.
+   @SelectId er en parameter der sendes ind udefra, så id'et kan gøres unikt
+   hvis komponenten bruges flere gange på samme side. *@
 <label class="form-label" for="@SelectId">
     Klinik <span aria-hidden="true">*</span>
 </label>
+
+@* <select> er HTML's dropdown-element — brugeren klikker og vælger én mulighed fra listen.
+   id="@SelectId" bruges af <label for="..."> ovenfor til at koble dem sammen.
+   class="form-select" er en Bootstrap-klasse der giver dropdown'en pænt design.
+   value="@SelectedClinicId" sætter hvilken klinik der vises som valgt.
+   @onchange="OnChanged" kalder vores C#-metode hver gang brugeren vælger noget nyt.
+   disabled="@(_clinics is null)" låser dropdown'en mens kliniklisten indlæses —
+   _clinics er null indtil databasekaldet er færdigt.
+   aria-required="true" fortæller skærmlæsere at feltet er påkrævet.
+   aria-busy fortæller skærmlæsere om komponenten stadig indlæser data ("true"/"false").
+   aria-describedby="@HintId" peger på <small>-elementet nedenfor, så skærmlæsere
+   læser hjælpeteksten op efter feltets navn. *@
 <select id="@SelectId"
         class="form-select"
         value="@SelectedClinicId"
@@ -13,33 +35,74 @@
         aria-required="true"
         aria-busy="@(_clinics is null ? "true" : "false")"
         aria-describedby="@HintId">
+
+    @* Den tomme standardmulighed vises øverst og har value="" (ingen klinik valgt). *@
     <option value="">-- Vælg klinik --</option>
+
+    @* @foreach generer et <option>-element for hver klinik i _clinics-listen.
+       ?? [] betyder: hvis _clinics er null, brug en tom liste i stedet (undgår fejl).
+       value="@c.Id" gemmer klinikkens unikke ID som den valgte værdi — det er det
+       vi sender videre til forælderkomponenten, ikke adresseteksten. *@
     @foreach (var c in _clinics ?? [])
     {
         <option value="@c.Id">@c.StreetName, @c.Zipcode</option>
     }
 </select>
+
+@* <small> bruges til supplerende/fin tekst.
+   id="@HintId" er det id som aria-describedby ovenfor peger på.
+   d-block er Bootstrap for display:block — gør <small> til et blokelement der fylder hele linjen.
+   mb-3 er Bootstrap for margin-bottom: 1rem — giver luft under hele feltet.
+   Ternær operator: vis "Indlæser klinikker…" hvis listen endnu ikke er hentet, ellers vis ingenting. *@
 <small id="@HintId" class="d-block text-muted mb-3">
     @(_clinics is null ? "Indlæser klinikker…" : "")
 </small>
 
 @code {
+    // [Parameter] betyder at denne egenskab kan sættes udefra når komponenten bruges.
+    // Eks.: <ClinicSelect SelectId="clinic" /> — "clinic" sendes ind som SelectId.
+    // = "clinic-select" er standardværdien hvis ingen SelectId sendes med.
     [Parameter] public string SelectId { get; set; } = "clinic-select";
+
+    // Den aktuelt valgte kliniks ID. Guid? betyder det er et unikt ID der må være null.
     [Parameter] public Guid? SelectedClinicId { get; set; }
+
+    // EventCallback er Blazors måde at sende data OP til forælderkomponenten.
+    // Tænk på det som en hændelse: "hej forælder, brugeren valgte en ny klinik, her er ID'et".
+    // <Guid?> angiver hvilken type der sendes med — her en nullable Guid.
     [Parameter] public EventCallback<Guid?> SelectedClinicIdChanged { get; set; }
 
+    // HintId beregnes automatisk ud fra SelectId, så label og hint altid har unikke id'er.
+    // $ foran en streng er C# string interpolation — {} indsætter værdier i teksten.
     private string HintId => $"{SelectId}-hint";
+
+    // _clinics starter som null og udfyldes når databasekaldet er færdigt.
+    // IReadOnlyList betyder vi kan læse listen men ikke ændre den direkte.
     private IReadOnlyList<ClinicDto>? _clinics;
 
+    // OnInitializedAsync er en Blazor lifecycle-metode der køres automatisk
+    // første gang komponenten vises. Vi henter kliniklisten her.
+    // override = vi tilsidesætter den tomme standardimplementering fra Blazor.
+    // async Task = metoden er asynkron og vi kan bruge await inde i den.
     protected override async Task OnInitializedAsync()
     {
+        // await venter på at databasekaldet er færdigt inden vi fortsætter.
+        // Mens vi venter kan browseren håndtere andre hændelser — siden fryser ikke.
         _clinics = await ClinicQueries.GetAllAsync();
     }
 
+    // Kaldes automatisk af Blazor når brugeren vælger en ny klinik i dropdown'en.
+    // ChangeEventArgs e indeholder den nye værdi brugeren valgte.
     private async Task OnChanged(ChangeEventArgs e)
     {
+        // e.Value er den valgte <option>'s value-attribut som en object — vi konverterer til string.
         var val = e.Value?.ToString();
+
+        // Hvis brugeren valgte den tomme "-- Vælg klinik --" option, sæt id til null.
+        // Ellers parse teksten til en Guid (det unikke ID vi gemte i value-attributten).
         var id = string.IsNullOrEmpty(val) ? (Guid?)null : Guid.Parse(val);
+
+        // InvokeAsync sender den valgte Guid op til forælderkomponenten via EventCallback.
         await SelectedClinicIdChanged.InvokeAsync(id);
     }
 }

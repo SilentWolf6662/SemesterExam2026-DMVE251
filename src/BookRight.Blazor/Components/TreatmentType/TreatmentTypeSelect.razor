@@ -1,8 +1,24 @@
+@* @using importerer navnerum så vi kan bruge TreatmentTypeDto uden at skrive hele stien.
+   Ligesom PractitionerSelect henter denne komponent ikke selv data —
+   den modtager listen som parameter fra forælderen for at undgå dobbelte databasekald. *@
 @using BookRight.Facade.DTO
 
+@* <label> knytter en tekst til dropdown'en via for="@SelectId".
+   Klik på labelen sætter fokus på <select>-elementet — vigtigt for brugervenlighed.
+   @SelectId er en parameter der sendes ind, så id'et er unikt
+   hvis komponenten bruges to gange på samme side (1. og 2. behandling). *@
 <label class="form-label" for="@SelectId">
     Behandlingstype <span aria-hidden="true">*</span>
 </label>
+
+@* <select> er HTML's dropdown — brugeren vælger én behandlingstype fra listen.
+   value="@SelectedTreatmentTypeId" viser den aktuelt valgte type i dropdown'en.
+   @onchange="OnChanged" kalder C#-metoden nedenfor når brugeren skifter valg.
+   disabled="@(PractitionerAuthorization == null)" låser feltet hvis ingen behandler
+   er valgt endnu — behandlingstyper er afhængige af behandlerens autorisation,
+   f.eks. kan en massør ikke vælge akupunktur-behandlinger.
+   aria-required="true" markerer feltet som påkrævet for skærmlæsere.
+   aria-describedby="@HintId" kobler hjælpeteksten nedenfor til feltet. *@
 <select id="@SelectId"
         class="form-select"
         value="@SelectedTreatmentTypeId"
@@ -10,34 +26,77 @@
         disabled="@(PractitionerAuthorization == null)"
         aria-required="true"
         aria-describedby="@HintId">
+
+    @* Standardmulighed øverst — value="" signalerer "intet valgt endnu". *@
     <option value="">-- Vælg behandlingstype --</option>
+
+    @* @foreach løber igennem Filtered — de behandlingstyper der matcher
+       den valgte behandlers autorisation.
+       value="@t.Id" gemmer behandlingstypens unikke Guid-ID som den sendte værdi.
+       @t.Name viser det læsbare navn i dropdown'en. *@
     @foreach (var t in Filtered)
     {
         <option value="@t.Id">@t.Name</option>
     }
 </select>
+
+@* Hjælpetekst der vejleder brugeren om at vælge en behandler først.
+   Ternær operator: vis vejledning hvis ingen autorisation er sat, ellers vis ingenting.
+   Elementet er altid i DOM'en (selv tomt) så mb-3 giver konstant luft under feltet. *@
 <small id="@HintId" class="d-block text-muted mb-3">
     @(PractitionerAuthorization == null ? "Vælg en behandler for at se behandlingstyper" : "")
 </small>
 
 @code {
+    // SelectId gør id'et unikt når komponenten bruges to gange på samme side.
+    // = "treatment-select" er standardværdien hvis parameteren ikke sendes med.
     [Parameter] public string SelectId { get; set; } = "treatment-select";
+
+    // EditorRequired giver en IDE-advarsel hvis AllTreatmentTypes ikke sendes med.
+    // IReadOnlyList = vi kan læse listen men ikke ændre den.
+    // = [] er en tom liste som standardværdi så vi ikke får null-fejl.
     [Parameter, EditorRequired] public IReadOnlyList<TreatmentTypeDto> AllTreatmentTypes { get; set; } = [];
+
+    // Autorisationstypen fra den valgte behandler, f.eks. "Physiotherapist" eller "Masseur".
+    // string? = nullable — null betyder ingen behandler er valgt endnu.
+    // Bruges til at filtrere listen til kun de typer behandleren må udføre.
     [Parameter] public string? PractitionerAuthorization { get; set; }
+
+    // Den aktuelt valgte behandlingstypes ID. Guid? = nullable unik ID.
     [Parameter] public Guid? SelectedTreatmentTypeId { get; set; }
+
+    // EventCallback sender det valgte ID op til forælderkomponenten når brugeren vælger.
     [Parameter] public EventCallback<Guid?> SelectedTreatmentTypeIdChanged { get; set; }
 
+    // HintId beregnes automatisk ud fra SelectId.
+    // $ er C# string interpolation: {} indsætter værdien af SelectId i teksten.
     private string HintId => $"{SelectId}-hint";
 
+    // Filtered er en computed property med expression body (=>).
+    // Den beregnes automatisk når PractitionerAuthorization ændrer sig.
+    // ? foran [] er ternær operator: returner tom liste hvis autorisation er null,
+    // ellers filtrer listen med .Where().
+    // .Where() er LINQ — gennemgår listen og beholder kun elementer der opfylder betingelsen.
+    // t.AuthorizationType == PractitionerAuthorization filtrerer til kun de behandlingstyper
+    // der kræver præcis den samme autorisation som den valgte behandler har.
     private IEnumerable<TreatmentTypeDto> Filtered =>
         PractitionerAuthorization is null
             ? []
             : AllTreatmentTypes.Where(t => t.AuthorizationType == PractitionerAuthorization);
 
+    // Kaldes når brugeren vælger en behandlingstype i dropdown'en.
+    // ChangeEventArgs e indeholder den nye value fra det valgte <option>-element.
     private async Task OnChanged(ChangeEventArgs e)
     {
+        // e.Value er et object — vi konverterer det til en streng med ToString().
+        // ?. er null-safe: hvis e.Value er null returneres null i stedet for en fejl.
         var val = e.Value?.ToString();
+
+        // Hvis brugeren valgte standardmuligheden (tom streng), sæt ID til null.
+        // Ellers parse teksten til en Guid (det unikke ID vi gemte i value-attributten).
         var id = string.IsNullOrEmpty(val) ? (Guid?)null : Guid.Parse(val);
+
+        // InvokeAsync sender den valgte Guid op til forælderkomponenten via EventCallback.
         await SelectedTreatmentTypeIdChanged.InvokeAsync(id);
     }
 }
