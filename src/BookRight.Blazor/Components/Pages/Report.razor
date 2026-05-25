@@ -1,0 +1,135 @@
+﻿@page "/rapport"
+@rendermode InteractiveServer
+
+@using BookRight.Domain.Exceptions
+@using BookRight.Facade.DTO
+@using BookRight.Facade.Interfaces.Queries
+
+@inject IReportQueries ReportQueries
+
+<h3>Rapport</h3>
+
+<output aria-atomic="true" class="d-block">
+	@* @if (_error is not null) viser kun fejlbeskeden hvis der er en fejl.
+           role="alert" gør at skærmlæsere læser beskeden op med det samme. *@
+	@if (_error is not null)
+	{
+		<p class="alert alert-danger" role="alert">@_error</p>
+	}
+	@* role="status" er en blødere version af alert — annonceres når
+           brugeren ikke er i gang med noget andet. *@
+	@if (_success)
+	{
+		<p class="alert alert-success" role="status">Rapport genereret!</p>
+	}
+</output>
+<form @onsubmit="OnSubmit" @onsubmit:preventDefault>
+
+	<label class="form-label" for="Startdate-input">
+		Dato fra <span aria-hidden="true">*</span>
+	</label>
+	<input id="Startdate-input"
+	       type="date"
+	       class="form-control mb-3"
+	       @oninput="e => _periodStart = e.Value != null ? DateOnly.Parse(e.Value.ToString()!) : null "
+	       @bind:format="yyyy-MM-dd"
+	       aria-required="true" />
+	   
+	<label class="form-label" for="EndDate-input">
+		Dato til <span aria-hidden="true">*</span>
+	</label>
+	<input id="EndDate-input"
+	       type="date"
+	       class="form-control mb-3"
+	       @oninput="e => _periodEnd = e.Value != null ? DateOnly.Parse(e.Value.ToString()!) : null"
+	       @bind:format="yyyy-MM-dd"
+	       aria-required="true" />
+	   
+	<button type="submit"
+	        class="btn btn-primary"
+	        disabled="@(!CanSubmit || _submitting)"
+	        aria-busy="@(_submitting ? "true" : "false")">
+		@if (_submitting)
+		{
+			@* Bootstrap-spinner der vises mens serveren genere rapporten.
+                   role="status" + aria-hidden="true": selve animationen skjules for
+                   skærmlæsere, men teksten "Genere rapport…" nedenfor læses op. *@
+			<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+			<span>Genere rapport…</span>
+		}
+		else
+		{
+			<span>Genere Rapport</span>
+		}
+	</button>
+
+</form>
+@if (_reportDto != null)
+{  @*Viser rapporten*@
+	<p>
+		Titel: @_reportDto.Title
+	</p>
+	<p>
+		Periode: @_reportDto.PeriodStart - @_reportDto.PeriodEnd
+	</p>
+	<p>
+		Total omsætning: @_reportDto.TotalRevenue kr. 
+	</p>
+
+}
+@code {
+	private string? _error;
+	private bool _success;
+	private bool _submitting;
+
+	private ReportDto? _reportDto;
+
+	private DateOnly? _periodStart;
+	private DateOnly? _periodEnd;
+
+	private bool CanSubmit =>
+		_periodStart is not null &&
+		_periodEnd is not null;
+
+	private async Task OnSubmit()
+	{
+		if (!CanSubmit) return;
+
+		_submitting = true;
+		_error = null;
+		_success = false;
+
+		try
+		{
+
+			_reportDto = await ReportQueries.GenerateAsync(
+				_periodStart!.Value,
+				_periodEnd!.Value);
+
+			_success = true;
+			ResetForm();
+		}
+		catch (DomainException ex)
+		{
+			_error = ex.Message;
+		}
+		catch (NotFoundException ex)
+		{
+			_error = ex.Message;
+		}
+		catch (Exception)
+		{
+			_error = "Der opstod en uventet fejl. Prøv igen.";
+		}
+		finally
+		{
+			_submitting = false;
+		}
+	}
+
+	private void ResetForm()
+	{
+		_periodStart = null;
+		_periodEnd = null;
+	}
+}

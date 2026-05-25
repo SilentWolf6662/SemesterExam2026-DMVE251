@@ -55,6 +55,7 @@ public static class DependencyInjection
         services.AddScoped<IPatientQueries, PatientQueriesImpl>();
         services.AddScoped<IPractitionerQueries, PractitionerQueriesImpl>();
         services.AddScoped<ITreatmentTypeQueries, TreatmentTypeQueriesImpl>();
+        services.AddScoped<IReportQueries, ReportQueriesImpl>();
 
         return services;
     }
