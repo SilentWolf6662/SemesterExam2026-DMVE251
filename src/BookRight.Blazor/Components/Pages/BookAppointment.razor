@@ -27,6 +27,7 @@
 @inject IPractitionerQueries PractitionerQueries
 @inject ITreatmentTypeQueries TreatmentTypeQueries
 @inject IPatientQueries PatientQueries
+@inject IPricePreviewQueries PricePreviewQueries
 @inject IBookAppointmentUseCase BookAppointmentUseCase
 @inject IBookCombinedAppointment BookCombinedUseCase
 
@@ -139,7 +140,7 @@ else
             <select id="duration-1"
                     class="form-select"
                     value="@_selectedDuration"
-                    @onchange="e => _selectedDuration = string.IsNullOrEmpty(e.Value?.ToString()) ? null : int.Parse(e.Value!.ToString()!)"
+                    @onchange="OnDurationChanged"
                     disabled="@(_selectedTreatmentTypeId is null)"
                     aria-required="true"
                     aria-describedby="duration-1-hint">
@@ -211,7 +212,7 @@ else
                 <select id="duration-2"
                         class="form-select"
                         value="@_selectedSecondDuration"
-                        @onchange="e => _selectedSecondDuration = string.IsNullOrEmpty(e.Value?.ToString()) ? null : int.Parse(e.Value!.ToString()!)"
+                        @onchange="OnSecondDurationChanged"
                         disabled="@(_selectedSecondTreatmentTypeId == null)"
                         aria-required="true"
                         aria-describedby="duration-2-hint">
@@ -239,6 +240,42 @@ else
                         </span>
                     }
                 </p>
+
+                @* Prisestimering for 2. behandling — vises når alle felter for 2. behandling er valgt. *@
+                @if (_loadingSecondPreview)
+                {
+                    <p class="text-muted small mt-2 mb-0" role="status" aria-live="polite">Beregner pris…</p>
+                }
+                else if (_secondPricePreview is not null)
+                {
+                    <section aria-labelledby="price-preview-2-heading" class="card mt-3 mb-0">
+                        <header class="card-header" id="price-preview-2-heading">Prisestimering 2. behandling</header>
+                        <dl class="card-body mb-0">
+                            <div class="d-flex justify-content-between mb-1">
+                                <dt class="fw-normal">Basispris</dt>
+                                <dd>@_secondPricePreview.BasePrice.ToString("N2") kr.</dd>
+                            </div>
+                            @if (_secondPricePreview.OvertimeSurcharge > 0)
+                            {
+                                <div class="d-flex justify-content-between mb-1 text-warning-emphasis">
+                                    <dt class="fw-normal">Aften/weekend-tillæg (15 %)</dt>
+                                    <dd>+ @_secondPricePreview.OvertimeSurcharge.ToString("N2") kr.</dd>
+                                </div>
+                            }
+                            @if (_secondPricePreview.DiscountAmount > 0)
+                            {
+                                <div class="d-flex justify-content-between mb-1 text-success">
+                                    <dt class="fw-normal">Rabat (@_secondPricePreview.DiscountName)</dt>
+                                    <dd>− @_secondPricePreview.DiscountAmount.ToString("N2") kr.</dd>
+                                </div>
+                            }
+                            <div class="d-flex justify-content-between border-top mt-2 pt-2 fw-bold">
+                                <dt>Pris i alt</dt>
+                                <dd>@_secondPricePreview.FinalPrice.ToString("N2") kr.</dd>
+                            </div>
+                        </dl>
+                    </section>
+                }
             </fieldset>
         }
 
@@ -250,7 +287,7 @@ else
         <select id="patient-select"
                 class="form-select mb-3"
                 value="@_selectedPatientId"
-                @onchange="e => _selectedPatientId = string.IsNullOrEmpty(e.Value?.ToString()) ? null : Guid.Parse(e.Value!.ToString()!)"
+                @onchange="OnPatientChanged"
                 aria-required="true">
             <option value="">-- Vælg patient --</option>
             @foreach (var p in _patients)
@@ -273,6 +310,7 @@ else
                class="form-control mb-3"
                @bind="_date"
                @bind:format="yyyy-MM-dd"
+               @bind:after="TryUpdatePreview"
                min="@TodayMin"
                aria-required="true" />
 
@@ -287,6 +325,8 @@ else
                type="time"
                class="form-control @(IsStartInPast ? "is-invalid" : "mb-3")"
                @bind="_time"
+               @bind:after="TryUpdatePreview"
+               min="@TimeMin"
                aria-required="true" />
 
         @* Fejlteksten vises kun hvis starttidspunktet er i fortiden.
@@ -295,6 +335,83 @@ else
         @if (IsStartInPast)
         {
             <small class="invalid-feedback d-block mb-3">Tidspunktet er allerede passeret.</small>
+        }
+
+        @* Prisestimering — vises når patient, behandlingstype, varighed, dato og tid er valgt.
+           aria-live="polite" gør at skærmlæsere annoncerer ændringer uden at afbryde brugeren.
+           <section> er semantisk korrekt her da det er et selvstændigt indholdsafsnit med overskrift. *@
+        @if (_loadingPreview)
+        {
+            <p class="text-muted small mb-3" role="status" aria-live="polite">Beregner pris…</p>
+        }
+        else if (_pricePreview is not null)
+        {
+            <section aria-labelledby="price-preview-heading" class="card mb-3">
+                <header class="card-header" id="price-preview-heading">@(_isCombined ? "Prisestimering 1. behandling" : "Prisestimering")</header>
+
+                @* <dl> (description list) er det semantisk korrekte element til nøgle/værdi-par.
+                   <dt> er termen (nøglen), <dd> er definitionen (værdien).
+                   Den indre <div> giver os flex-layout uden at bryde semantikken. *@
+                <dl class="card-body mb-0">
+                    <div class="d-flex justify-content-between mb-1">
+                        <dt class="fw-normal">Basispris</dt>
+                        <dd>@_pricePreview.BasePrice.ToString("N2") kr.</dd>
+                    </div>
+
+                    @* Overtillæg vises kun hvis der er et (aften/weekend-booking). *@
+                    @if (_pricePreview.OvertimeSurcharge > 0)
+                    {
+                        <div class="d-flex justify-content-between mb-1 text-warning-emphasis">
+                            <dt class="fw-normal">Aften/weekend-tillæg (15 %)</dt>
+                            <dd>+ @_pricePreview.OvertimeSurcharge.ToString("N2") kr.</dd>
+                        </div>
+                    }
+
+                    @* Rabatlinjen vises kun hvis en rabat er gældende. *@
+                    @if (_pricePreview.DiscountAmount > 0)
+                    {
+                        <div class="d-flex justify-content-between mb-1 text-success">
+                            <dt class="fw-normal">Rabat (@_pricePreview.DiscountName)</dt>
+                            <dd>− @_pricePreview.DiscountAmount.ToString("N2") kr.</dd>
+                        </div>
+                    }
+
+                    @* Separator og samlet pris i fed skrift. *@
+                    <div class="d-flex justify-content-between border-top mt-2 pt-2 fw-bold">
+                        <dt>Pris i alt</dt>
+                        <dd>@_pricePreview.FinalPrice.ToString("N2") kr.</dd>
+                    </div>
+                </dl>
+            </section>
+        }
+
+        @* Samlet pris for kombineret besøg — vises kun når begge behandlinger er estimeret. *@
+        @if (_isCombined && _pricePreview is not null && _secondPricePreview is not null)
+        {
+            var totalWithoutDiscount = _pricePreview.PriceBeforeDiscount + _secondPricePreview.PriceBeforeDiscount;
+            var totalFinal = _pricePreview.FinalPrice + _secondPricePreview.FinalPrice;
+            var totalDiscount = _pricePreview.DiscountAmount + _secondPricePreview.DiscountAmount;
+
+            <section aria-labelledby="price-total-heading" class="card mb-3 border-primary">
+                <header class="card-header bg-primary text-white" id="price-total-heading">Samlet pris for besøget</header>
+                <dl class="card-body mb-0">
+                    <div class="d-flex justify-content-between mb-1">
+                        <dt class="fw-normal">Pris uden rabat</dt>
+                        <dd>@totalWithoutDiscount.ToString("N2") kr.</dd>
+                    </div>
+                    @if (totalDiscount > 0)
+                    {
+                        <div class="d-flex justify-content-between mb-1 text-success">
+                            <dt class="fw-normal">Samlet rabat (@_pricePreview.DiscountName)</dt>
+                            <dd>− @totalDiscount.ToString("N2") kr.</dd>
+                        </div>
+                    }
+                    <div class="d-flex justify-content-between border-top mt-2 pt-2 fw-bold fs-5">
+                        <dt>Total</dt>
+                        <dd>@totalFinal.ToString("N2") kr.</dd>
+                    </div>
+                </dl>
+            </section>
         }
 
         @* type="submit" gør knappen til en indsend-knap — klik kalder formens @onsubmit.
@@ -362,6 +479,12 @@ else
     private string? _error;
     private bool _success;
     private bool _submitting;
+
+    // Prisestimering — vises under formularen inden booking oprettes.
+    private PricePreviewDto? _pricePreview;
+    private bool _loadingPreview;
+    private PricePreviewDto? _secondPricePreview;
+    private bool _loadingSecondPreview;
 
     // Computed properties — beregnes automatisk ud fra de nuværende feltværdier.
     // => er en expression-bodied property: returnerer resultatet af udtrykket direkte.
@@ -445,6 +568,7 @@ else
         _selectedSecondPractitionerId = null;
         _selectedSecondTreatmentTypeId = null;
         _selectedSecondDuration = null;
+        _pricePreview = null;
         ClearMessages();
     }
 
@@ -454,18 +578,101 @@ else
         _selectedPractitionerId = id;
         _selectedTreatmentTypeId = null;
         _selectedDuration = null;
+        _pricePreview = null;
         ClearMessages();
     }
 
-    private void OnTreatmentTypeChanged(Guid? id)
+    private async Task OnTreatmentTypeChanged(Guid? id)
     {
         _selectedTreatmentTypeId = id;
         _selectedDuration = null;
+        _pricePreview = null;
         ClearMessages();
 
         // Hvis behandlingstypen kun har én mulig varighed, vælges den automatisk.
         if (SelectedTreatmentType?.AvailableDurations.Count == 1)
+        {
             _selectedDuration = SelectedTreatmentType.AvailableDurations[0];
+            await TryUpdatePreview();
+        }
+    }
+
+    // Kaldes når brugeren vælger en varighed. Opdaterer feltet og genberegner prisestimering.
+    private async Task OnDurationChanged(ChangeEventArgs e)
+    {
+        _selectedDuration = string.IsNullOrEmpty(e.Value?.ToString()) ? null : int.Parse(e.Value!.ToString()!);
+        await TryUpdatePreview();
+    }
+
+    // Kaldes når brugeren vælger en patient. Opdaterer feltet og genberegner prisestimering.
+    private async Task OnPatientChanged(ChangeEventArgs e)
+    {
+        _selectedPatientId = string.IsNullOrEmpty(e.Value?.ToString()) ? null : Guid.Parse(e.Value!.ToString()!);
+        await TryUpdatePreview();
+    }
+
+    // Beregner prisestimering og viser den i kortet over indsend-knappen.
+    // Køres automatisk når patient, behandlingstype, varighed, dato eller tid ændres.
+    private async Task TryUpdatePreview()
+    {
+        // Alle fem felter skal være sat for at vi kan beregne en pris.
+        if (_selectedTreatmentTypeId is null || _selectedDuration is null ||
+            _selectedPatientId is null || _date is null || !_time.HasValue)
+        {
+            _pricePreview = null;
+            _secondPricePreview = null;
+            return;
+        }
+
+        var from = _date.Value.Date + _time.Value.ToTimeSpan();
+
+        _loadingPreview = true;
+        try
+        {
+            _pricePreview = await PricePreviewQueries.GetPreviewAsync(
+                _selectedTreatmentTypeId.Value,
+                _selectedDuration.Value,
+                _selectedPatientId.Value,
+                from);
+        }
+        catch
+        {
+            // Ved fejl vises ingen prisestimering — det er ikke kritisk.
+            _pricePreview = null;
+        }
+        finally
+        {
+            _loadingPreview = false;
+        }
+
+        // Beregn estimering for kombineret booking — én rabat på den samlede pris.
+        if (_isCombined && _selectedSecondTreatmentTypeId is not null && _selectedSecondDuration is not null)
+        {
+            _loadingSecondPreview = true;
+            try
+            {
+                // Hent begge behandlingers priser i ét kald — rabat beregnes på det samlede beløb
+                (_pricePreview, _secondPricePreview) = await PricePreviewQueries.GetCombinedPreviewAsync(
+                    _selectedTreatmentTypeId.Value, _selectedDuration.Value,
+                    _selectedSecondTreatmentTypeId.Value, _selectedSecondDuration.Value,
+                    _selectedPatientId.Value,
+                    from);
+            }
+            catch
+            {
+                _pricePreview = null;
+                _secondPricePreview = null;
+            }
+            finally
+            {
+                _loadingSecondPreview = false;
+                _loadingPreview = false;
+            }
+        }
+        else
+        {
+            _secondPricePreview = null;
+        }
     }
 
     private void OnSecondPractitionerChanged(Guid? id)
@@ -473,21 +680,32 @@ else
         _selectedSecondPractitionerId = id;
         _selectedSecondTreatmentTypeId = null;
         _selectedSecondDuration = null;
+        _secondPricePreview = null;
         ClearMessages();
     }
 
-    private void OnSecondTreatmentTypeChanged(Guid? id)
+    private async Task OnSecondTreatmentTypeChanged(Guid? id)
     {
         _selectedSecondTreatmentTypeId = id;
         _selectedSecondDuration = null;
+        _secondPricePreview = null;
         ClearMessages();
 
         if (SelectedSecondTreatmentType?.AvailableDurations.Count == 1)
+        {
             _selectedSecondDuration = SelectedSecondTreatmentType.AvailableDurations[0];
+            await TryUpdatePreview();
+        }
+    }
+
+    private async Task OnSecondDurationChanged(ChangeEventArgs e)
+    {
+        _selectedSecondDuration = string.IsNullOrEmpty(e.Value?.ToString()) ? null : int.Parse(e.Value!.ToString()!);
+        await TryUpdatePreview();
     }
 
     // Kaldes når brugeren toggler "kombinér"-checkboksen.
-    // Hvis brugeren fjerner hakket, ryddes 2. behandlingens felter.
+    // Hvis brugeren fjerner hakket, ryddes 2. behandlingens felter og estimering.
     private void OnCombinedToggled()
     {
         if (!_isCombined)
@@ -495,6 +713,7 @@ else
             _selectedSecondPractitionerId = null;
             _selectedSecondTreatmentTypeId = null;
             _selectedSecondDuration = null;
+            _secondPricePreview = null;
         }
         ClearMessages();
     }
@@ -582,6 +801,8 @@ else
         _selectedPatientId = null;
         _date = null;
         _time = null;
+        _pricePreview = null;
+        _secondPricePreview = null;
     }
 
     // Rydder fejl- og succesbeskederne, f.eks. når brugeren begynder at rette en fejl.

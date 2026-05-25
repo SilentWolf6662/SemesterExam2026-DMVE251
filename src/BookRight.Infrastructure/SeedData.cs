@@ -203,6 +203,37 @@ public class SeedData
         a1.Complete("God fremgang, fortsat styrkeøvelser anbefalet.");
         larsAppts.Add(a1); annaAppts.Add(a1); anna.Appointments.Add(a1.Id);
 
+        // Ekstra gennemførte sessioner for Lars → samlet 4.470 kr → Bronze loyalitetsrabat (5 %)
+        var aL1 = Appointment.Create(
+            new TimeInterval(new DateTime(2026, 4, 7, 10, 0, 0), new DateTime(2026, 4, 7, 11, 0, 0)),
+            physio.Id, lars.Id, anna.Id, physio.GetBasePrice(60), larsAppts, annaAppts);
+        aL1.Complete("Knæøvelser fortsat.");
+        larsAppts.Add(aL1); annaAppts.Add(aL1); anna.Appointments.Add(aL1.Id);
+
+        var aL2 = Appointment.Create(
+            new TimeInterval(new DateTime(2026, 3, 10, 10, 0, 0), new DateTime(2026, 3, 10, 11, 0, 0)),
+            physio.Id, lars.Id, anna.Id, physio.GetBasePrice(60), larsAppts, annaAppts);
+        aL2.Complete("Styrkeøvelser for knæ.");
+        larsAppts.Add(aL2); annaAppts.Add(aL2); anna.Appointments.Add(aL2.Id);
+
+        var aL3 = Appointment.Create(
+            new TimeInterval(new DateTime(2026, 2, 10, 10, 0, 0), new DateTime(2026, 2, 10, 11, 0, 0)),
+            physio.Id, lars.Id, anna.Id, physio.GetBasePrice(60), larsAppts, annaAppts);
+        aL3.Complete("Rehabilitering uge 6.");
+        larsAppts.Add(aL3); annaAppts.Add(aL3); anna.Appointments.Add(aL3.Id);
+
+        var aL4 = Appointment.Create(
+            new TimeInterval(new DateTime(2026, 1, 12, 10, 0, 0), new DateTime(2026, 1, 12, 11, 0, 0)),
+            physio.Id, lars.Id, anna.Id, physio.GetBasePrice(60), larsAppts, annaAppts);
+        aL4.Complete("Stabiliseringsøvelser.");
+        larsAppts.Add(aL4); annaAppts.Add(aL4); anna.Appointments.Add(aL4.Id);
+
+        var aL5 = Appointment.Create(
+            new TimeInterval(new DateTime(2025, 12, 8, 10, 0, 0), new DateTime(2025, 12, 8, 11, 0, 0)),
+            physio.Id, lars.Id, anna.Id, physio.GetBasePrice(60), larsAppts, annaAppts);
+        aL5.Complete("Første session efter pause.");
+        larsAppts.Add(aL5); annaAppts.Add(aL5); anna.Appointments.Add(aL5.Id);
+
         var a2 = Appointment.Create(
             new TimeInterval(new DateTime(2026, 5, 27, 14, 0, 0), new DateTime(2026, 5, 27, 15, 0, 0)),
             physio.Id, metteBak.Id, anna.Id, physio.GetBasePrice(60), metteBAppts, annaAppts);
@@ -332,7 +363,8 @@ public class SeedData
             groupTraining.Id, oliver.Id, peter.Id, groupTraining.GetBasePrice(60), oliverAppts, peterAppts);
         oliverAppts.Add(a24); peterAppts.Add(a24); peter.Appointments.Add(a24.Id);
 
-        db.Appointments.AddRange(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24);
+        db.Appointments.AddRange(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24,
+            aL1, aL2, aL3, aL4, aL5);
         db.SaveChanges();
     }
 }

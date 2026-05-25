@@ -3,6 +3,7 @@ using BookRight.Facade.Interfaces.UseCase;
 using BookRight.Infrastructure.Query;
 using BookRight.Infrastructure.Repository;
 using BookRight.UseCases.Command;
+using BookRight.Domain.Discount.DiscountStrategy;
 using BookRight.UseCases.Discount;
 using BookRight.UseCases.Discount.DiscountStrategy;
 using BookRight.UseCases.Repositories;
@@ -42,6 +43,9 @@ public static class DependencyInjection
         // Pricing
         services.AddScoped<IDiscountStrategy, BlackFridayDiscountStrategy>();
         services.AddScoped<IDiscountStrategy, BirthdayDiscountStrategy>();
+        services.AddScoped<IDiscountStrategy, BronzeLoyaltyDiscountStrategy>();
+        services.AddScoped<IDiscountStrategy, SilverLoyaltyDiscountStrategy>();
+        services.AddScoped<IDiscountStrategy, GoldLoyaltyDiscountStrategy>();
         services.AddScoped<PricingService>();
 
         // Appointment Use Cases
@@ -55,7 +59,7 @@ public static class DependencyInjection
         services.AddScoped<IPatientQueries, PatientQueriesImpl>();
         services.AddScoped<IPractitionerQueries, PractitionerQueriesImpl>();
         services.AddScoped<ITreatmentTypeQueries, TreatmentTypeQueriesImpl>();
-        services.AddScoped<IReportQueries, ReportQueriesImpl>();
+        services.AddScoped<IPricePreviewQueries, PricePreviewQueriesImpl>();
 
         return services;
     }

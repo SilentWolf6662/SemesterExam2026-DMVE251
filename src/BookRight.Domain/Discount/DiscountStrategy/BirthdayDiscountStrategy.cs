@@ -6,7 +6,7 @@ namespace BookRight.UseCases.Discount.DiscountStrategy;
 public class BirthdayDiscountStrategy : IDiscountStrategy
 {
     public string Name => "Fødselsdagsrabat";
-    private decimal DiscountRate => 0.10m; // 10% rabat
+    private decimal DiscountRate => 0.25m; // 25% rabat
     private readonly int MaxPerYear = 1; // Max antal gange rabatten kan bruges per år
 
     async Task<DiscountResult> IDiscountStrategy.Calculate(DiscountInput input)
