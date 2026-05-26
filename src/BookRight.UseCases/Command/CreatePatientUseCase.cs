@@ -25,7 +25,7 @@ public class CreatePatientUseCase : ICreatePatientUseCase
             request.Email,
             request.Birthday,
             new Address(request.StreetName, request.Zipcode), // Pak adressedata ind i et Address value object
-            request.Note,
+            request.Note ?? null,
             request.PreferredPractitioner ?? Guid.Empty); // Hvis ingen foretrukken behandler er angivet, bruges Guid.Empty som standardværdi
 
         // Tilføj den nye patient til repository og gem ændringerne i databasen

@@ -20,7 +20,7 @@
    aria-required="true" markerer feltet som påkrævet for skærmlæsere.
    aria-describedby="@HintId" kobler hjælpeteksten nedenfor til feltet. *@
 <select id="@SelectId"
-        class="form-select"
+        class="form-select @(IsInvalid ? "is-invalid" : "")"
         value="@SelectedTreatmentTypeId"
         @onchange="OnChanged"
         disabled="@(PractitionerAuthorization == null)"
@@ -43,14 +43,16 @@
 @* Hjælpetekst der vejleder brugeren om at vælge en behandler først.
    Ternær operator: vis vejledning hvis ingen autorisation er sat, ellers vis ingenting.
    Elementet er altid i DOM'en (selv tomt) så mb-3 giver konstant luft under feltet. *@
-<small id="@HintId" class="d-block text-muted mb-3">
-    @(PractitionerAuthorization == null ? "Vælg en behandler for at se behandlingstyper" : "")
+<small id="@HintId" class="@(IsInvalid ? "invalid-feedback d-block mb-3" : "d-block text-muted mb-3")">
+    @if (IsInvalid) { @("Vælg venligst en behandlingstype.") }
+    else { @(PractitionerAuthorization == null ? "Vælg en behandler for at se behandlingstyper" : "") }
 </small>
 
 @code {
     // SelectId gør id'et unikt når komponenten bruges to gange på samme side.
     // = "treatment-select" er standardværdien hvis parameteren ikke sendes med.
     [Parameter] public string SelectId { get; set; } = "treatment-select";
+    [Parameter] public bool IsInvalid { get; set; }
 
     // EditorRequired giver en IDE-advarsel hvis AllTreatmentTypes ikke sendes med.
     // IReadOnlyList = vi kan læse listen men ikke ændre den.

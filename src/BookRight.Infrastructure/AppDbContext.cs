@@ -1,6 +1,5 @@
 ﻿using BookRight.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using System.Data.SqlTypes;
 
 namespace BookRight.Infrastructure;
 
@@ -78,10 +77,10 @@ public class AppDbContext : DbContext
             // Enum gemmes som string
             entity.Property(p => p.Authorization).HasConversion<string>();
 
-            // List<Guid>
-            entity.PrimitiveCollection(p => p.Clinics);
-
-            entity.PrimitiveCollection(p => p.Appointments);
+            // Backing-felterne _clinics og _appointments eksponeres som IReadOnlyList.
+            // EF Core kan ikke tilgå IReadOnlyList direkte, så vi peger på feltnavnene.
+            entity.PrimitiveCollection("_clinics");
+            entity.PrimitiveCollection("_appointments");
 
             // Unik email
             entity.HasIndex(p => p.Email).IsUnique();

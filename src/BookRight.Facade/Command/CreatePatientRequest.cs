@@ -7,5 +7,5 @@ public record CreatePatientRequest(string FirstName,
     DateTime Birthday,
     string StreetName,
     int Zipcode,
-    string Note,
+    string? Note,
     Guid? PreferredPractitioner);

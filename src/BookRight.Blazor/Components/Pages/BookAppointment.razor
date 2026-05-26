@@ -27,7 +27,8 @@
 @inject IPractitionerQueries PractitionerQueries
 @inject ITreatmentTypeQueries TreatmentTypeQueries
 @inject IPatientQueries PatientQueries
-@inject IBookAppointment BookAppointmentUseCase
+@inject IPricePreviewQueries PricePreviewQueries
+@inject IBookAppointmentUseCase BookAppointmentUseCase
 @inject IBookCombinedAppointment BookCombinedUseCase
 
 @* <PageTitle> sætter teksten i browserens faneblad.
@@ -92,7 +93,8 @@ else
            brugeren vælger en klinik. *@
         <ClinicSelect SelectId="clinic"
                       SelectedClinicId="@_selectedClinicId"
-                      SelectedClinicIdChanged="OnClinicChanged" />
+                      SelectedClinicIdChanged="OnClinicChanged"
+                      IsInvalid="@(_submitted && _selectedClinicId is null)" />
 
         @* <fieldset> grupperer flere relaterede felter visuelt og semantisk.
            Skærmlæsere annoncerer <legend>-teksten som overskrift for gruppen,
@@ -106,10 +108,12 @@ else
                SelectedClinicId="@_selectedClinicId" sender den valgte kliniks ID
                ned i komponenten, så den kan filtrere behandlere korrekt. *@
             <PractitionerSelect SelectId="practitioner-1"
+                                Optional="false"
                                 AllPractitioners="@_practitioners"
                                 SelectedClinicId="@_selectedClinicId"
                                 SelectedPractitionerId="@_selectedPractitionerId"
-                                SelectedPractitionerIdChanged="OnPractitionerChanged" />
+                                SelectedPractitionerIdChanged="OnPractitionerChanged"
+                                IsInvalid="@(_submitted && _selectedPractitionerId is null)" />
 
             @* TreatmentTypeSelect viser kun behandlingstyper der passer til
                den valgte behandlers autorisation (f.eks. kun massage til en massør).
@@ -119,7 +123,8 @@ else
                                  AllTreatmentTypes="@_treatmentTypes"
                                  PractitionerAuthorization="@SelectedPractitioner?.Authorization"
                                  SelectedTreatmentTypeId="@_selectedTreatmentTypeId"
-                                 SelectedTreatmentTypeIdChanged="OnTreatmentTypeChanged" />
+                                 SelectedTreatmentTypeIdChanged="OnTreatmentTypeChanged"
+                                 IsInvalid="@(_submitted && _selectedTreatmentTypeId is null && _selectedPractitionerId is not null)" />
 
             @* <label> viser en tekstbeskrivelse for et formularfelt.
                for="duration-1" knytter labelen til <select id="duration-1"> nedenfor —
@@ -137,13 +142,14 @@ else
                aria-describedby="duration-1-hint" peger på <small>-teksten nedenfor,
                så skærmlæsere læser hjælpeteksten op efter feltbeskrivelsen. *@
             <select id="duration-1"
-                    class="form-select"
+                    class="form-select @(_submitted && _selectedDuration is null && _selectedTreatmentTypeId is not null ? "is-invalid" : "")"
                     value="@_selectedDuration"
-                    @onchange="e => _selectedDuration = string.IsNullOrEmpty(e.Value?.ToString()) ? null : int.Parse(e.Value!.ToString()!)"
+                    @onchange="OnDurationChanged"
                     disabled="@(_selectedTreatmentTypeId is null)"
                     aria-required="true"
                     aria-describedby="duration-1-hint">
                 <option value="">-- Vælg varighed --</option>
+
                 @* @foreach generer et <option>-element for hver varighed i listen.
                    AvailableDurations er en computed property i @code der returnerer
                    de varigheder den valgte behandlingstype tilbyder. *@
@@ -156,8 +162,15 @@ else
             @* <small> er HTML til fin/supplerende tekst.
                d-block gør den til et blokelement (fylder hele bredden).
                mb-3 er Bootstrap for margin-bottom: 1rem — luft under feltet. *@
-            <small id="duration-1-hint" class="d-block text-muted mb-3">
-                @(_selectedTreatmentTypeId is null ? "Vælg en behandlingstype for at se varighed" : "")
+            <small id="duration-1-hint" class="@(_submitted && _selectedDuration is null && _selectedTreatmentTypeId is not null ? "invalid-feedback d-block mb-3" : "d-block text-muted mb-3")">
+                @if (_submitted && _selectedDuration is null && _selectedTreatmentTypeId is not null)
+                {
+                    @("Vælg venligst en varighed.")
+                }
+                else
+                {
+                    @(_selectedTreatmentTypeId is null ? "Vælg en behandlingstype for at se varighed" : "")
+                }
             </small>
         </fieldset>
 
@@ -193,25 +206,27 @@ else
 
                 @* Samme komponenter som 1. behandling, men bundet til de separate
                    felter for 2. behandling (_selectedSecond...). *@
-                <PractitionerSelect SelectId="practitioner-2"
+                <PractitionerSelect Optional="false" SelectId="practitioner-2"
                                     AllPractitioners="@_practitioners"
                                     SelectedClinicId="@_selectedClinicId"
                                     SelectedPractitionerId="@_selectedSecondPractitionerId"
-                                    SelectedPractitionerIdChanged="OnSecondPractitionerChanged" />
+                                    SelectedPractitionerIdChanged="OnSecondPractitionerChanged"
+                                    IsInvalid="@(_submitted && _selectedSecondPractitionerId is null)" />
 
                 <TreatmentTypeSelect SelectId="treatment-2"
                                      AllTreatmentTypes="@_treatmentTypes"
                                      PractitionerAuthorization="@SecondPractitioner?.Authorization"
                                      SelectedTreatmentTypeId="@_selectedSecondTreatmentTypeId"
-                                     SelectedTreatmentTypeIdChanged="OnSecondTreatmentTypeChanged" />
+                                     SelectedTreatmentTypeIdChanged="OnSecondTreatmentTypeChanged"
+                                     IsInvalid="@(_submitted && _selectedSecondTreatmentTypeId is null && _selectedSecondPractitionerId is not null)" />
 
                 <label class="form-label" for="duration-2">
                     Varighed <span aria-hidden="true">*</span>
                 </label>
                 <select id="duration-2"
-                        class="form-select"
+                        class="form-select @(_submitted && _selectedSecondDuration is null && _selectedSecondTreatmentTypeId is not null ? "is-invalid" : "")"
                         value="@_selectedSecondDuration"
-                        @onchange="e => _selectedSecondDuration = string.IsNullOrEmpty(e.Value?.ToString()) ? null : int.Parse(e.Value!.ToString()!)"
+                        @onchange="OnSecondDurationChanged"
                         disabled="@(_selectedSecondTreatmentTypeId == null)"
                         aria-required="true"
                         aria-describedby="duration-2-hint">
@@ -221,8 +236,15 @@ else
                         <option value="@duration">@duration minutter</option>
                     }
                 </select>
-                <small id="duration-2-hint" class="d-block text-muted mb-3">
-                    @(_selectedSecondTreatmentTypeId == null ? "Vælg en behandlingstype for at se varighed" : "")
+                <small id="duration-2-hint" class="@(_submitted && _selectedSecondDuration is null && _selectedSecondTreatmentTypeId is not null ? "invalid-feedback d-block mb-3" : "d-block text-muted mb-3")">
+                    @if (_submitted && _selectedSecondDuration is null && _selectedSecondTreatmentTypeId is not null)
+                    {
+                        @("Vælg venligst en varighed.")
+                    }
+                    else
+                    {
+                        @(_selectedSecondTreatmentTypeId == null ? "Vælg en behandlingstype for at se varighed" : "")
+                    }
                 </small>
 
                 @* aria-live="polite" på dette afsnit opdaterer skærmlæseren blidt
@@ -239,6 +261,42 @@ else
                         </span>
                     }
                 </p>
+
+                @* Prisestimering for 2. behandling — vises når alle felter for 2. behandling er valgt. *@
+                @if (_loadingSecondPreview)
+                {
+                    <p class="text-muted small mt-2 mb-0" role="status" aria-live="polite">Beregner pris…</p>
+                }
+                else if (_secondPricePreview is not null)
+                {
+                    <section aria-labelledby="price-preview-2-heading" class="card mt-3 mb-0">
+                        <header class="card-header" id="price-preview-2-heading">Prisestimering 2. behandling</header>
+                        <dl class="card-body mb-0">
+                            <div class="d-flex justify-content-between mb-1">
+                                <dt class="fw-normal">Basispris</dt>
+                                <dd>@_secondPricePreview.BasePrice.ToString("N2") kr.</dd>
+                            </div>
+                            @if (_secondPricePreview.OvertimeSurcharge > 0)
+                            {
+                                <div class="d-flex justify-content-between mb-1 text-warning-emphasis">
+                                    <dt class="fw-normal">Aften/weekend-tillæg (15 %)</dt>
+                                    <dd>+ @_secondPricePreview.OvertimeSurcharge.ToString("N2") kr.</dd>
+                                </div>
+                            }
+                            @if (_secondPricePreview.DiscountAmount > 0)
+                            {
+                                <div class="d-flex justify-content-between mb-1 text-success">
+                                    <dt class="fw-normal">Rabat (@_secondPricePreview.DiscountName)</dt>
+                                    <dd>− @_secondPricePreview.DiscountAmount.ToString("N2") kr.</dd>
+                                </div>
+                            }
+                            <div class="d-flex justify-content-between border-top mt-2 pt-2 fw-bold">
+                                <dt>Pris i alt</dt>
+                                <dd>@_secondPricePreview.FinalPrice.ToString("N2") kr.</dd>
+                            </div>
+                        </dl>
+                    </section>
+                }
             </fieldset>
         }
 
@@ -248,9 +306,9 @@ else
             Patient <span aria-hidden="true">*</span>
         </label>
         <select id="patient-select"
-                class="form-select mb-3"
+                class="form-select @(_submitted && _selectedPatientId is null ? "is-invalid" : "mb-3")"
                 value="@_selectedPatientId"
-                @onchange="e => _selectedPatientId = string.IsNullOrEmpty(e.Value?.ToString()) ? null : Guid.Parse(e.Value!.ToString()!)"
+                @onchange="OnPatientChanged"
                 aria-required="true">
             <option value="">-- Vælg patient --</option>
             @foreach (var p in _patients)
@@ -258,6 +316,10 @@ else
                 <option value="@p.Id">@p.FirstName @p.LastName</option>
             }
         </select>
+        @if (_submitted && _selectedPatientId is null)
+        {
+            <small class="invalid-feedback d-block mb-3">Vælg venligst en patient.</small>
+        }
 
         @* type="date" giver en indbygget datovælger i browseren.
            @bind binder feltet to-vejs til _date (DateTime?).
@@ -270,11 +332,16 @@ else
         </label>
         <input id="date-input"
                type="date"
-               class="form-control mb-3"
+               class="form-control @(_submitted && _date is null ? "is-invalid" : "mb-3")"
                @bind="_date"
                @bind:format="yyyy-MM-dd"
+               @bind:after="TryUpdatePreview"
                min="@TodayMin"
                aria-required="true" />
+        @if (_submitted && _date is null)
+        {
+            <small class="invalid-feedback d-block mb-3">Vælg venligst en dato.</small>
+        }
 
         @* type="time" giver en tidsvælger (timer:minutter).
            @(IsStartInPast ? "is-invalid" : "mb-3") er et C#-udtryk inde i @().
@@ -285,25 +352,108 @@ else
         </label>
         <input id="time-input"
                type="time"
-               class="form-control @(IsStartInPast ? "is-invalid" : "mb-3")"
+               class="form-control @(IsStartInPast || (_submitted && !_time.HasValue) ? "is-invalid" : "mb-3")"
                @bind="_time"
+               @bind:after="TryUpdatePreview"
+               min="@TimeMin"
                aria-required="true" />
 
         @* Fejlteksten vises kun hvis starttidspunktet er i fortiden.
            invalid-feedback er Bootstraps klasse til valideringsfejl under et felt.
            d-block tilsidesætter Bootstraps display:none, og mb-3 giver luft nedenunder. *@
-        @if (IsStartInPast)
+        @if (_submitted && !_time.HasValue)
+        {
+            <small class="invalid-feedback d-block mb-3">Vælg venligst et starttidspunkt.</small>
+        }
+        else if (IsStartInPast)
         {
             <small class="invalid-feedback d-block mb-3">Tidspunktet er allerede passeret.</small>
         }
 
+        @* Prisestimering — vises når patient, behandlingstype, varighed, dato og tid er valgt.
+           aria-live="polite" gør at skærmlæsere annoncerer ændringer uden at afbryde brugeren.
+           <section> er semantisk korrekt her da det er et selvstændigt indholdsafsnit med overskrift. *@
+        @if (_loadingPreview)
+        {
+            <p class="text-muted small mb-3" role="status" aria-live="polite">Beregner pris…</p>
+        }
+        else if (_pricePreview is not null)
+        {
+            <section aria-labelledby="price-preview-heading" class="card mb-3">
+                <header class="card-header" id="price-preview-heading">@(_isCombined ? "Prisestimering 1. behandling" : "Prisestimering")</header>
+
+                @* <dl> (description list) er det semantisk korrekte element til nøgle/værdi-par.
+                   <dt> er termen (nøglen), <dd> er definitionen (værdien).
+                   Den indre <div> giver os flex-layout uden at bryde semantikken. *@
+                <dl class="card-body mb-0">
+                    <div class="d-flex justify-content-between mb-1">
+                        <dt class="fw-normal">Basispris</dt>
+                        <dd>@_pricePreview.BasePrice.ToString("N2") kr.</dd>
+                    </div>
+
+                    @* Overtillæg vises kun hvis der er et (aften/weekend-booking). *@
+                    @if (_pricePreview.OvertimeSurcharge > 0)
+                    {
+                        <div class="d-flex justify-content-between mb-1 text-warning-emphasis">
+                            <dt class="fw-normal">Aften/weekend-tillæg (15 %)</dt>
+                            <dd>+ @_pricePreview.OvertimeSurcharge.ToString("N2") kr.</dd>
+                        </div>
+                    }
+
+                    @* Rabatlinjen vises kun hvis en rabat er gældende. *@
+                    @if (_pricePreview.DiscountAmount > 0)
+                    {
+                        <div class="d-flex justify-content-between mb-1 text-success">
+                            <dt class="fw-normal">Rabat (@_pricePreview.DiscountName)</dt>
+                            <dd>− @_pricePreview.DiscountAmount.ToString("N2") kr.</dd>
+                        </div>
+                    }
+
+                    @* Separator og samlet pris i fed skrift. *@
+                    <div class="d-flex justify-content-between border-top mt-2 pt-2 fw-bold">
+                        <dt>Pris i alt</dt>
+                        <dd>@_pricePreview.FinalPrice.ToString("N2") kr.</dd>
+                    </div>
+                </dl>
+            </section>
+        }
+
+        @* Samlet pris for kombineret besøg — vises kun når begge behandlinger er estimeret. *@
+        @if (_isCombined && _pricePreview is not null && _secondPricePreview is not null)
+        {
+            var totalWithoutDiscount = _pricePreview.PriceBeforeDiscount + _secondPricePreview.PriceBeforeDiscount;
+            var totalFinal = _pricePreview.FinalPrice + _secondPricePreview.FinalPrice;
+            var totalDiscount = _pricePreview.DiscountAmount + _secondPricePreview.DiscountAmount;
+
+            <section aria-labelledby="price-total-heading" class="card mb-3 border-primary">
+                <header class="card-header bg-primary text-white" id="price-total-heading">Samlet pris for besøget</header>
+                <dl class="card-body mb-0">
+                    <div class="d-flex justify-content-between mb-1">
+                        <dt class="fw-normal">Pris uden rabat</dt>
+                        <dd>@totalWithoutDiscount.ToString("N2") kr.</dd>
+                    </div>
+                    @if (totalDiscount > 0)
+                    {
+                        <div class="d-flex justify-content-between mb-1 text-success">
+                            <dt class="fw-normal">Samlet rabat (@_pricePreview.DiscountName)</dt>
+                            <dd>− @totalDiscount.ToString("N2") kr.</dd>
+                        </div>
+                    }
+                    <div class="d-flex justify-content-between border-top mt-2 pt-2 fw-bold fs-5">
+                        <dt>Total</dt>
+                        <dd>@totalFinal.ToString("N2") kr.</dd>
+                    </div>
+                </dl>
+            </section>
+        }
+
         @* type="submit" gør knappen til en indsend-knap — klik kalder formens @onsubmit.
-           disabled="@(!CanSubmit || _submitting)" låser knappen hvis formularen ikke er
-           udfyldt korrekt, eller hvis en indsendelse allerede er i gang.
+           disabled="@_submitting" låser knappen kun mens bookingen oprettes på serveren.
+           Validering vises pr. felt når man klikker "Opret Booking" med manglende felter.
            aria-busy fortæller skærmlæsere at knappen er i gang med noget (spinner). *@
         <button type="submit"
                 class="btn btn-primary"
-                disabled="@(!CanSubmit || _submitting)"
+                disabled="@_submitting"
                 aria-busy="@(_submitting ? "true" : "false")">
             @if (_submitting)
             {
@@ -362,6 +512,13 @@ else
     private string? _error;
     private bool _success;
     private bool _submitting;
+    private bool _submitted;
+
+    // Prisestimering — vises under formularen inden booking oprettes.
+    private PricePreviewDto? _pricePreview;
+    private bool _loadingPreview;
+    private PricePreviewDto? _secondPricePreview;
+    private bool _loadingSecondPreview;
 
     // Computed properties — beregnes automatisk ud fra de nuværende feltværdier.
     // => er en expression-bodied property: returnerer resultatet af udtrykket direkte.
@@ -445,6 +602,7 @@ else
         _selectedSecondPractitionerId = null;
         _selectedSecondTreatmentTypeId = null;
         _selectedSecondDuration = null;
+        _pricePreview = null;
         ClearMessages();
     }
 
@@ -454,18 +612,101 @@ else
         _selectedPractitionerId = id;
         _selectedTreatmentTypeId = null;
         _selectedDuration = null;
+        _pricePreview = null;
         ClearMessages();
     }
 
-    private void OnTreatmentTypeChanged(Guid? id)
+    private async Task OnTreatmentTypeChanged(Guid? id)
     {
         _selectedTreatmentTypeId = id;
         _selectedDuration = null;
+        _pricePreview = null;
         ClearMessages();
 
         // Hvis behandlingstypen kun har én mulig varighed, vælges den automatisk.
         if (SelectedTreatmentType?.AvailableDurations.Count == 1)
+        {
             _selectedDuration = SelectedTreatmentType.AvailableDurations[0];
+            await TryUpdatePreview();
+        }
+    }
+
+    // Kaldes når brugeren vælger en varighed. Opdaterer feltet og genberegner prisestimering.
+    private async Task OnDurationChanged(ChangeEventArgs e)
+    {
+        _selectedDuration = string.IsNullOrEmpty(e.Value?.ToString()) ? null : int.Parse(e.Value!.ToString()!);
+        await TryUpdatePreview();
+    }
+
+    // Kaldes når brugeren vælger en patient. Opdaterer feltet og genberegner prisestimering.
+    private async Task OnPatientChanged(ChangeEventArgs e)
+    {
+        _selectedPatientId = string.IsNullOrEmpty(e.Value?.ToString()) ? null : Guid.Parse(e.Value!.ToString()!);
+        await TryUpdatePreview();
+    }
+
+    // Beregner prisestimering og viser den i kortet over indsend-knappen.
+    // Køres automatisk når patient, behandlingstype, varighed, dato eller tid ændres.
+    private async Task TryUpdatePreview()
+    {
+        // Alle fem felter skal være sat for at vi kan beregne en pris.
+        if (_selectedTreatmentTypeId is null || _selectedDuration is null ||
+            _selectedPatientId is null || _date is null || !_time.HasValue)
+        {
+            _pricePreview = null;
+            _secondPricePreview = null;
+            return;
+        }
+
+        var from = _date.Value.Date + _time.Value.ToTimeSpan();
+
+        _loadingPreview = true;
+        try
+        {
+            _pricePreview = await PricePreviewQueries.GetPreviewAsync(
+                _selectedTreatmentTypeId.Value,
+                _selectedDuration.Value,
+                _selectedPatientId.Value,
+                from);
+        }
+        catch
+        {
+            // Ved fejl vises ingen prisestimering — det er ikke kritisk.
+            _pricePreview = null;
+        }
+        finally
+        {
+            _loadingPreview = false;
+        }
+
+        // Beregn estimering for kombineret booking — én rabat på den samlede pris.
+        if (_isCombined && _selectedSecondTreatmentTypeId is not null && _selectedSecondDuration is not null)
+        {
+            _loadingSecondPreview = true;
+            try
+            {
+                // Hent begge behandlingers priser i ét kald — rabat beregnes på det samlede beløb
+                (_pricePreview, _secondPricePreview) = await PricePreviewQueries.GetCombinedPreviewAsync(
+                    _selectedTreatmentTypeId.Value, _selectedDuration.Value,
+                    _selectedSecondTreatmentTypeId.Value, _selectedSecondDuration.Value,
+                    _selectedPatientId.Value,
+                    from);
+            }
+            catch
+            {
+                _pricePreview = null;
+                _secondPricePreview = null;
+            }
+            finally
+            {
+                _loadingSecondPreview = false;
+                _loadingPreview = false;
+            }
+        }
+        else
+        {
+            _secondPricePreview = null;
+        }
     }
 
     private void OnSecondPractitionerChanged(Guid? id)
@@ -473,21 +714,32 @@ else
         _selectedSecondPractitionerId = id;
         _selectedSecondTreatmentTypeId = null;
         _selectedSecondDuration = null;
+        _secondPricePreview = null;
         ClearMessages();
     }
 
-    private void OnSecondTreatmentTypeChanged(Guid? id)
+    private async Task OnSecondTreatmentTypeChanged(Guid? id)
     {
         _selectedSecondTreatmentTypeId = id;
         _selectedSecondDuration = null;
+        _secondPricePreview = null;
         ClearMessages();
 
         if (SelectedSecondTreatmentType?.AvailableDurations.Count == 1)
+        {
             _selectedSecondDuration = SelectedSecondTreatmentType.AvailableDurations[0];
+            await TryUpdatePreview();
+        }
+    }
+
+    private async Task OnSecondDurationChanged(ChangeEventArgs e)
+    {
+        _selectedSecondDuration = string.IsNullOrEmpty(e.Value?.ToString()) ? null : int.Parse(e.Value!.ToString()!);
+        await TryUpdatePreview();
     }
 
     // Kaldes når brugeren toggler "kombinér"-checkboksen.
-    // Hvis brugeren fjerner hakket, ryddes 2. behandlingens felter.
+    // Hvis brugeren fjerner hakket, ryddes 2. behandlingens felter og estimering.
     private void OnCombinedToggled()
     {
         if (!_isCombined)
@@ -495,6 +747,7 @@ else
             _selectedSecondPractitionerId = null;
             _selectedSecondTreatmentTypeId = null;
             _selectedSecondDuration = null;
+            _secondPricePreview = null;
         }
         ClearMessages();
     }
@@ -503,8 +756,7 @@ else
     // async Task fordi vi kalder await inde i metoden.
     private async Task OnSubmit()
     {
-        // Dobbelt sikkerhed: tjek igen at alt er udfyldt (CanSubmit slår knappen fra,
-        // men vi validerer også her i tilfælde af race conditions).
+        _submitted = true;
         if (!CanSubmit) return;
 
         _submitting = true;
@@ -523,6 +775,7 @@ else
                 await BookCombinedUseCase.Execute(new BookCombinedAppointmentRequest(
                     from,
                     _selectedPatientId!.Value,
+                    _selectedClinicId!.Value,
                     _selectedPractitionerId!.Value,
                     _selectedTreatmentTypeId!.Value,
                     _selectedDuration!.Value,
@@ -540,7 +793,8 @@ else
                     _selectedDuration!.Value,
                     _selectedTreatmentTypeId!.Value,
                     _selectedPatientId!.Value,
-                    _selectedPractitionerId!.Value));
+                    _selectedPractitionerId!.Value,
+                    _selectedClinicId!.Value));
             }
 
             _success = true;
@@ -582,6 +836,9 @@ else
         _selectedPatientId = null;
         _date = null;
         _time = null;
+        _pricePreview = null;
+        _secondPricePreview = null;
+        _submitted = false;
     }
 
     // Rydder fejl- og succesbeskederne, f.eks. når brugeren begynder at rette en fejl.
