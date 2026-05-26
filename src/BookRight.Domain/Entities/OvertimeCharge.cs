@@ -1,6 +1,4 @@
-﻿using BookRight.Domain.ValueObjects;
-
-namespace BookRight.Domain.Entities;
+﻿namespace BookRight.Domain.Entities;
 
 public class OvertimeCharge
 {

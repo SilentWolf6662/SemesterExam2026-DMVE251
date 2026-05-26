@@ -1,6 +1,5 @@
 ﻿using BookRight.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using System.Data.SqlTypes;
 
 namespace BookRight.Infrastructure;
 

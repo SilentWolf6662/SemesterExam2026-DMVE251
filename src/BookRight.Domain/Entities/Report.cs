@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using BookRight.Domain.ValueObjects;
-
-namespace BookRight.Domain.Entities
+﻿namespace BookRight.Domain.Entities
 {
     public class Report
     {

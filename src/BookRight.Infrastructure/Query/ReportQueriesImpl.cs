@@ -1,6 +1,4 @@
-﻿using System.Reflection.Metadata.Ecma335;
-using BookRight.Domain.Entities;
-using BookRight.Facade.DTO;
+﻿using BookRight.Facade.DTO;
 using BookRight.Facade.Interfaces.Queries;
 using Microsoft.EntityFrameworkCore;
 
