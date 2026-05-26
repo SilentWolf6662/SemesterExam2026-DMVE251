@@ -16,18 +16,18 @@ public class PricePreviewQueriesImpl : IPricePreviewQueries
     // Henter prisestimering for én enkelt booking og konverterer til DTO
     public async Task<PricePreviewDto> GetPreviewAsync(Guid treatmentTypeId, int durationMinutes, Guid patientId, DateTime from)
     {
-        var b = await _pricingService.CalculatePreview(treatmentTypeId, durationMinutes, patientId, from);
+        var b = await _pricingService.Calculate(treatmentTypeId, durationMinutes, patientId, from);
         return Map(b);
     }
 
-    // Henter prisestimering for en kombineret booking — kalder CalculateCombinedPreview
+    // Henter prisestimering for en kombineret booking — kalder CalculateCombined
     // der beregner én rabat på den samlede pris og fordeler den proportionalt
     public async Task<(PricePreviewDto First, PricePreviewDto Second)> GetCombinedPreviewAsync(
         Guid treatment1Id, int duration1,
         Guid treatment2Id, int duration2,
         Guid patientId, DateTime from)
     {
-        var (first, second) = await _pricingService.CalculateCombinedPreview(
+        var (first, second) = await _pricingService.CalculateCombined(
             treatment1Id, duration1, treatment2Id, duration2, patientId, from);
         return (Map(first), Map(second));
     }

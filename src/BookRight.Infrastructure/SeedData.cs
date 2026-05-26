@@ -138,7 +138,7 @@ public class SeedData
             new DateTime(1979, 11, 9), new Address("Grønlandsvej 28", 7100), string.Empty, metteLar.Id);
 
         var metteBak = Patient.Create("Mette", "Bak", "+4592011223", "mette.bak@mail.dk",
-            new DateTime(1966, 5, 17), new Address("Ã…boulevarden 9", 7100), "Tennisalbue højre arm", anna.Id);
+            new DateTime(1966, 5, 17), new Address("Åboulevarden 9", 7100), "Tennisalbue højre arm", anna.Id);
 
         db.Patients.AddRange(lars, mariaPed, anders, sofieA, thomas, rasmus, ida, oliver, camilla, emmaD, henrik, lena, nadia, mikkel, metteBak);
         db.SaveChanges();

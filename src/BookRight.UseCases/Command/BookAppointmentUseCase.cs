@@ -1,4 +1,5 @@
 ﻿using BookRight.Domain.Entities;
+using BookRight.Domain.Enums;
 using BookRight.Domain.Exceptions;
 using BookRight.Domain.ValueObjects;
 using BookRight.Facade.Command;
@@ -72,8 +73,10 @@ public class BookAppointmentUseCase : IBookAppointmentUseCase
             practitionerBookinger);
 
         // Trin 2: anvend evt. aftens/weekend-tillæg og rabatter via PricingService
-        decimal finalPrice = await _pricingService.Calculate(appointment);
-        appointment.ApplyFinalPrice(finalPrice);
+        var breakdown = await _pricingService.Calculate(
+            request.TreatmentTypeId, request.DurationMinutes, request.PatientId, request.From);
+        appointment.ApplyFinalPrice(breakdown.FinalPrice);
+        appointment.ApplyDiscountType(breakdown.BestDiscount?.DiscountType ?? DiscountType.None);
 
         // Gem den nye booking i databasen — AddAsync stager den, SaveAsync sender SQL
         await _appointmentRepo.AddAsync(appointment);

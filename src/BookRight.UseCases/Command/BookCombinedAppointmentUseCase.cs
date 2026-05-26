@@ -1,4 +1,5 @@
 using BookRight.Domain.Entities;
+using BookRight.Domain.Enums;
 using BookRight.Domain.Exceptions;
 using BookRight.Domain.ValueObjects;
 using BookRight.Facade.Command;
@@ -110,11 +111,14 @@ public class BookCombinedAppointmentUseCase : IBookCombinedAppointment
             secondPractBookinger);
 
         // Beregn priser som én enhed — én rabat på den samlede pris, ikke én rabat per behandling
-        var combined = await _pricingService.CalculateCombined(first, second);
-        first.ApplyFinalPrice(combined.FirstFinalPrice);
-        first.ApplyDiscountType(combined.DiscountType);
-        second.ApplyFinalPrice(combined.SecondFinalPrice);
-        second.ApplyDiscountType(combined.DiscountType);
+        var (firstBreakdown, secondBreakdown) = await _pricingService.CalculateCombined(
+            request.FirstTreatmentTypeId, request.FirstDurationMinutes,
+            request.SecondTreatmentTypeId, request.SecondDurationMinutes,
+            request.PatientId, request.From);
+        first.ApplyFinalPrice(firstBreakdown.FinalPrice);
+        first.ApplyDiscountType(firstBreakdown.BestDiscount?.DiscountType ?? DiscountType.None);
+        second.ApplyFinalPrice(secondBreakdown.FinalPrice);
+        second.ApplyDiscountType(secondBreakdown.BestDiscount?.DiscountType ?? DiscountType.None);
 
         await _appointmentRepo.AddAsync(first);
         await _appointmentRepo.AddAsync(second);
