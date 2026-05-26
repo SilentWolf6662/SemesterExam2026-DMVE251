@@ -7,12 +7,12 @@
         public DateTime GeneratedDate { get; private set; }
         public DateOnly PeriodStart { get; private set; }
         public DateOnly PeriodEnd { get; private set; }
+        public decimal EstimatedRevenue { get; private set; }
         public decimal TotalRevenue { get; private set; }
-        
 
         private Report() {}
 
-        public static Report Create(DateOnly periodStart, DateOnly periodEnd, decimal totalRevenue )
+        public static Report Create(DateOnly periodStart, DateOnly periodEnd, decimal totalRevenue, decimal estimatedRevenue)
         {
             return new Report
             {
@@ -21,7 +21,8 @@
                 GeneratedDate = DateTime.Now,
                 PeriodStart = periodStart,
                 PeriodEnd = periodEnd,
-                TotalRevenue = totalRevenue
+                TotalRevenue = totalRevenue,
+                EstimatedRevenue = estimatedRevenue
             };
         }
     }

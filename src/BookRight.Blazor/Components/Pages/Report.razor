@@ -2,10 +2,13 @@
 @rendermode InteractiveServer
 
 @using BookRight.Domain.Exceptions
+@using BookRight.Facade.Command
 @using BookRight.Facade.DTO
 @using BookRight.Facade.Interfaces.Queries
+@using BookRight.Facade.Interfaces.UseCase
 
 @inject IReportQueries ReportQueries
+@inject IDownloadReportUseCase DownloadRepport
 
 <h3>Rapport</h3>
 
@@ -20,7 +23,7 @@
            brugeren ikke er i gang med noget andet. *@
 	@if (_success)
 	{
-		<p class="alert alert-success" role="status">Rapport genereret!</p>
+		<p class="alert alert-success" role="status">Rapport genereret og downloaded til dit skrivebord</p>
 	}
 </output>
 <form @onsubmit="OnSubmit" @onsubmit:preventDefault>
@@ -73,7 +76,8 @@
 		Periode: @_reportDto.PeriodStart - @_reportDto.PeriodEnd
 	</p>
 	<p>
-		Total omsætning: @_reportDto.TotalRevenue kr. 
+		Estimeret omsætning: @_reportDto.EstimatedRevenue kr. 
+		Reel omsætning: @_reportDto.TotalRevenue kr.
 	</p>
 
 }
@@ -105,6 +109,14 @@
 			_reportDto = await ReportQueries.GenerateAsync(
 				_periodStart!.Value,
 				_periodEnd!.Value);
+
+			var downloadRequest = new DownloadReportRequest(_reportDto.GeneratedDate,
+				_reportDto.PeriodStart,
+				_reportDto.PeriodEnd,
+				_reportDto.EstimatedRevenue,
+				_reportDto.TotalRevenue);
+
+			await DownloadRepport.Execute(downloadRequest);
 
 			_success = true;
 			ResetForm();
