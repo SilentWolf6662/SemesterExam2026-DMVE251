@@ -19,9 +19,13 @@ public class ClinicOccupancyQueriesImpl : IClinicOccupancyQueries
         var dayStart = DateTime.Today;
         var dayEnd = dayStart.AddDays(1);
 
+        // Henter alle klinikker — vi skal bruge Rooms til at beregne belægningsprocenten
         var clinics = await _db.Clinics.AsNoTracking().ToListAsync();
 
-        // Hent dagens aktive aftaler (ikke aflyste) — hentes i hukommelsen for at kunne beregne peak
+        // Henter dagens ikke-aflyste aftaler som anonyme objekter i hukommelsen.
+        // Vi henter kun de felter vi rent faktisk bruger (ClinicId, Start, End)
+        // for at holde dataoverførslen minimal.
+        // Aflyste aftaler tæller ikke som rumforbrug.
         var todayAppointments = await _db.Appointments
             .AsNoTracking()
             .Where(a => a.TimeInterval.Start >= dayStart
@@ -32,9 +36,13 @@ public class ClinicOccupancyQueriesImpl : IClinicOccupancyQueries
 
         return clinics.Select(c =>
         {
+            // Filtrer til kun denne kliniKs aftaler
             var clinicApts = todayAppointments.Where(a => a.ClinicId == c.Id).ToList();
 
-            // Peak samtidige rum = det højeste antal overlappende aftaler på et givet tidspunkt
+            // Peak samtidige rum beregnes ved at tælle for hver aftale hvor mange andre
+            // aftaler overlapper med den. Overlapping er defineret som: anden starter
+            // før denne slutter OG anden slutter efter denne starter.
+            // Det højeste antal samtidige aftaler er peak-belægningen.
             int peak = 0;
             foreach (var apt in clinicApts)
             {
@@ -42,6 +50,8 @@ public class ClinicOccupancyQueriesImpl : IClinicOccupancyQueries
                 if (concurrent > peak) peak = concurrent;
             }
 
+            // Belægningsprocenten afrundes til én decimal og begrænses til 100 %
+            // i det usandsynlige tilfælde at peak overstiger det registrerede rumantal
             double pct = c.Rooms > 0 ? Math.Min((double)peak / c.Rooms * 100, 100) : 0;
 
             return new ClinicOccupancyDto(
