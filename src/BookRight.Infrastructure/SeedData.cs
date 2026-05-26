@@ -334,5 +334,35 @@ public class SeedData
 
         db.Appointments.AddRange(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24);
         db.SaveChanges();
+
+        // ── Kampagner ────────────────────────────────────────────────
+        var prevCampaigns = new List<Campaign>();
+
+        // ── Tidligere Kampagner ────────────────────────────────────────────────
+        var campaign1 = Campaign.Create(
+            "Forårskampagne 2026",
+            0.10m,
+            new TimeInterval(new DateTime(2026, 3, 1), new DateTime(2026, 4, 1)),
+            prevCampaigns);
+        prevCampaigns.Add(campaign1);
+        db.Campaigns.Add(campaign1);
+
+        // ── Kampagner (2) ────────────────────────────────────────────────
+        // Kampagne 1 fra 25. maj til 30. juli med 20% rabat
+        var campaign2 = Campaign.Create(
+            "Sommerkampagne 2026",
+            0.20m,
+            new TimeInterval(new DateTime(2026, 5, 25), new DateTime(2026, 7, 30)),
+            prevCampaigns);
+        db.Campaigns.Add(campaign2);
+
+        // Kampagne 2 fra 1. august til 30. september med 15% rabat
+        var campaign3 = Campaign.Create(
+            "Efterårskampagne 2026",
+            0.15m,
+            new TimeInterval(new DateTime(2026, 8, 1), new DateTime(2026, 9, 30)),
+            prevCampaigns);
+        db.Campaigns.Add(campaign3);
+        db.SaveChanges();
     }
 }

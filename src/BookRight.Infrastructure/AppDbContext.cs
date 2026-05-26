@@ -12,6 +12,7 @@ public class AppDbContext : DbContext
     public DbSet<Practitioner> Practitioners => Set<Practitioner>();
     public DbSet<Appointment> Appointments => Set<Appointment>();
     public DbSet<TreatmentType> TreatmentTypes => Set<TreatmentType>();
+    public DbSet<Campaign> Campaigns => Set<Campaign>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
@@ -27,6 +28,7 @@ public class AppDbContext : DbContext
         ConfigureAppointment(modelBuilder);
         ConfigurePractitioner(modelBuilder);
         ConfigureTreatmentType(modelBuilder);
+        ConfigureCampaign(modelBuilder);
     }
 
     private static void ConfigurePatient(ModelBuilder modelBuilder)
@@ -97,6 +99,18 @@ public class AppDbContext : DbContext
             // ComplexCollection med ToJson gemmer listen som én JSON-kolonne i TreatmentTypes-tabellen —
             // samme mønster som WorkingHours på Clinic. Ingen separat pristeabel er nødvendig.
             entity.ComplexCollection(t => t.Prices, p => p.ToJson());
+        });
+    }
+
+    private static void ConfigureCampaign(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Campaign>(entity =>
+        {
+            // TimeInterval er Value Object så vi bruger ComplexProperty med ToJson til map det til JSON i database
+            entity.ComplexProperty(c => c.TimeInterval, t => t.ToJson());
+
+            // Laver decimal precision med max 2 decimaler og 18 cifre
+            entity.Property(a => a.DiscountRate).HasColumnType("decimal(18,2)");
         });
     }
 
