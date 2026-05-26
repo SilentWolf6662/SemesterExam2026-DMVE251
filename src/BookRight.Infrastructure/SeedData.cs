@@ -23,7 +23,7 @@ public class SeedData
             6);
 
         var clinic2 = Clinic.Create(
-            new Address("Damhaven 5", 7100),
+            new Address("Torvet 5", 6040),
             [
                 new TimeInterval(new DateTime(2026, 6, 1, 9, 0, 0), new DateTime(2026, 6, 1, 17, 0, 0)),
                 new TimeInterval(new DateTime(2026, 6, 2, 9, 0, 0), new DateTime(2026, 6, 2, 17, 0, 0)),
@@ -34,7 +34,7 @@ public class SeedData
             5);
 
         var clinic3 = Clinic.Create(
-            new Address("Boulevarden 42", 7100),
+            new Address("Nørregade 8", 7323),
             [
                 new TimeInterval(new DateTime(2026, 6, 1, 8, 0, 0), new DateTime(2026, 6, 1, 16, 0, 0)),
                 new TimeInterval(new DateTime(2026, 6, 2, 8, 0, 0), new DateTime(2026, 6, 2, 16, 0, 0)),

@@ -62,6 +62,7 @@ public static class DependencyInjection
         services.AddScoped<ITreatmentTypeQueries, TreatmentTypeQueriesImpl>();
         services.AddScoped<IPricePreviewQueries, PricePreviewQueriesImpl>();
         services.AddScoped<IReportQueries, ReportQueriesImpl>();
+        services.AddScoped<IClinicOccupancyQueries, ClinicOccupancyQueriesImpl>();
 
         return services;
     }
