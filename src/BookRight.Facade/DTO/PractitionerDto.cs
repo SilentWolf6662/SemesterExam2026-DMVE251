@@ -8,4 +8,4 @@ public record PractitionerDto(
     string PhoneNumber,
     string Authorization,
     int AuthorizationNumber,
-    List<Guid> ClinicIds);
+    IReadOnlyList<Guid> ClinicIds);
