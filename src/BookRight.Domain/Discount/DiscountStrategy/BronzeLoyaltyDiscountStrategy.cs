@@ -14,6 +14,8 @@ public class BronzeLoyaltyDiscountStrategy : IDiscountStrategy
         if (input.PatientBooking12MonthTotalSum >= 3000 && input.PatientBooking12MonthTotalSum <= 10000)
         {
             var discountAmount = input.CurrentPrice * DiscountRate;
+
+            // Returnere en DiscountResult med rabatten og angiver, at den er gyldig
             return new DiscountResult(Name, discountAmount, true, DiscountType.BronzeLoyalty);
         }
         else // ellers retuneres der ingen rabat

@@ -14,6 +14,8 @@ public class BlackFridayDiscountStrategy : IDiscountStrategy
         if (IsBlackFriday(input.From))
         {
             decimal discount = input.CurrentPrice * DiscountRate;
+
+            // Returnere en DiscountResult med rabatten og angiver, at den er gyldig
             return new DiscountResult(Name, discount, true, DiscountType.BlackFriday);
         }
         else // ellers retuneres der ingen rabat

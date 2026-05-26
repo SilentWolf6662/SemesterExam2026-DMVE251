@@ -1,13 +1,23 @@
-﻿namespace BookRight.Domain.Discount.DiscountStrategy;
+﻿using BookRight.Domain.Enums;
+using BookRight.UseCases.Discount;
 
-public class CampaignDiscountStrategy
+namespace BookRight.Domain.Discount.DiscountStrategy;
+
+public class CampaignDiscountStrategy : IDiscountStrategy
 {
-    public string Name { get; set; }
-    private decimal DiscountRate { get; set; } = 0;
-
-    public CampaignDiscountStrategy(string name, decimal discountrate)
+    async Task<DiscountResult> IDiscountStrategy.Calculate(DiscountInput input)
     {
-        Name = name; // "Kampagne Rabat"
-        DiscountRate = discountrate;
+        // Hvis patientens samlede bookingbeløb de sidste 12 måneder er mellem 3.000-10.000 kr., kan der gives rabat
+        if (input.CampaignDiscountAmount > 0)
+        {
+            decimal discount = input.CurrentPrice * input.CampaignDiscountAmount;
+
+            // Returnere en DiscountResult med rabatten og angiver, at den er gyldig
+            return new DiscountResult(input.CampaignName, discount, true, DiscountType.Campaign);
+        }
+        else // ellers retuneres der ingen rabat
+        {
+            return new DiscountResult(input.CampaignName, 0, false, DiscountType.None);
+        }
     }
 }

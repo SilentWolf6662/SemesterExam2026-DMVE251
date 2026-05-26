@@ -29,6 +29,7 @@ public class Program
                 db.Practitioners.ExecuteDelete();
                 db.TreatmentTypes.ExecuteDelete();
                 db.Clinics.ExecuteDelete();
+                db.Campaigns.ExecuteDelete();
             }
             new SeedData().Initialize(db);
         }

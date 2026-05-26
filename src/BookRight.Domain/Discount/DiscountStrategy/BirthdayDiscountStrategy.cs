@@ -16,7 +16,7 @@ public class BirthdayDiscountStrategy : IDiscountStrategy
         {
             decimal discount = input.CurrentPrice * DiscountRate;
 
-            // Returner en DiscountResult med rabatten og angiv, at den er gyldig
+            // Returnere en DiscountResult med rabatten og angiver, at den er gyldig
             return new DiscountResult(Name, discount, true, DiscountType.Birthday);
         }
         else // ellers retuneres der ingen rabat

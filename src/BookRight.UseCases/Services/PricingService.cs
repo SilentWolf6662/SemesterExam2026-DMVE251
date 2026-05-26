@@ -2,6 +2,7 @@
 using BookRight.Domain.Enums;
 using BookRight.Domain.Exceptions;
 using BookRight.UseCases.Discount;
+using BookRight.UseCases.Interfaces;
 using BookRight.UseCases.Repositories;
 
 namespace BookRight.UseCases.Services;
@@ -15,17 +16,23 @@ public class PricingService
     private readonly IAppointmentRepository _appointmentRepository;
     private readonly IPatientRepository _patientRepository;
     private readonly ITreatmentTypeRepository _treatmentTypeRepository;
+    private readonly ICampaignRepository _campaignRepository;
 
-    public PricingService(IEnumerable<IDiscountStrategy> discountStrategies, IAppointmentRepository appointmentRepository, IPatientRepository patientRepository, ITreatmentTypeRepository treatmentTypeRepository)
+    public PricingService(
+        IEnumerable<IDiscountStrategy> discountStrategies, 
+        IAppointmentRepository appointmentRepository, 
+        IPatientRepository patientRepository, 
+        ITreatmentTypeRepository treatmentTypeRepository, 
+        ICampaignRepository campaignRepository)
     {
         _discountStrategies = discountStrategies;
         _appointmentRepository = appointmentRepository;
         _patientRepository = patientRepository;
         _treatmentTypeRepository = treatmentTypeRepository;
+        _campaignRepository = campaignRepository;
     }
 
-    // Beregner den endelige pris for en booking.
-    
+    // Beregner den endelige pris for en booking, inklusive eventuelle rabatter.
     public async Task<decimal> Calculate(Appointment appointment)
     {
         Lock _lock = new();
@@ -33,8 +40,8 @@ public class PricingService
         // Hvis bookingen ikke har en pris defineret, kastes en Exception
         if (!appointment.HasPrice) throw new DomainException("Appointment skal have en pris for at kunne beregnes.");
 
-        // Beregn basisprisen baseret på BookRight-reglerne, ved at ligge overtidsgebyret oveni,
-        // hvis bookingen er om aftenen eller i weekenden
+        // Beregn basisprisen baseret på BookRight-reglerne ved at ligge overtidsgebyret oveni,
+        // hvis bookingen evt. er om aftenen eller i weekenden
         decimal currentPrice = OvertimeCharge.Calculate(appointment);
 
         // Hent patienten for at finde deres fødselsdag
@@ -52,18 +59,28 @@ public class PricingService
         // Find ud af om patienten har brugt sin fødselsdagsrabat 
         var birthdayDiscountUsedCount = await _appointmentRepository.GetBirthdayDiscountUsedCountByPatientIdAsync(appointment.PatientId, appointment.TimeInterval.Start);
 
+        // Hent en eventuel kampagne der gælder for bookingens tidspunkt, for at kunne inkludere kampagnerabat i beregningen
+        var campaign = await _campaignRepository.GetCampaignForAppointmentTimeAsync(appointment.TimeInterval.End);
+
+        // Læg vædierne i seperate variabler, hvis der ikke er en kampagne bruges defaultværdier
+        var campaignDiscountAmount = campaign?.DiscountRate ?? 0; // Default rabat er 0, hvis ingen kampagne
+        var campaignName = campaign?.Name ?? string.Empty; // Default navn er tom string, hvis ingen kampagne
+
+        // Lav et DiscountInput-objekt som indeholder alle de nødvendige informationer for at kunne beregne rabatterne i de forskellige strategier
         var discountInput = new DiscountInput(
             currentPrice,
             appointment.TimeInterval.End,
             appointment.TimeInterval.Start,
             patientBirthday,
             patientBooking12MonthTotalSum,
-            birthdayDiscountUsedCount
-            );
+            birthdayDiscountUsedCount,
+            campaignDiscountAmount,
+            campaignName
+        );
 
         DiscountResult? bestDiscount = null;
 
-        // Hent alle rabatter fra de forskellige strategier og find den bedste (højeste) rabat
+        // Hent alle rabatter fra de forskellige strategier og find den bedste (højeste) rabat på en thread-safe måde
         Parallel.ForEach(_discountStrategies, strategy =>
         {
             var discount = strategy.Calculate(discountInput).GetAwaiter().GetResult();

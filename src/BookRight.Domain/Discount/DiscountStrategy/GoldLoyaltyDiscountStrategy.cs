@@ -14,6 +14,8 @@ public class GoldLoyaltyDiscountStrategy : IDiscountStrategy
         if (input.PatientBooking12MonthTotalSum > 25000)
         {
             var discountAmount = input.CurrentPrice * DiscountRate;
+
+            // Returnere en DiscountResult med rabatten og angiver, at den er gyldig
             return new DiscountResult(Name, discountAmount, true, DiscountType.GoldLoyalty);
         }
         else // ellers retuneres der ingen rabat
