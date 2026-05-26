@@ -24,7 +24,7 @@ namespace BookRight.UseCases.Command
                 writer.WriteLine();
                 writer.WriteLine($"Estimeret omsætning for perioden = {request.EstimatedRevenue}");
                 writer.WriteLine();
-                writer.WriteLine($"Estimeret omsætning for perioden = {request.TotalRevenue}");
+                writer.WriteLine($"Reel omsætning for perioden = {request.TotalRevenue}");
             }
 
             return Task.CompletedTask;

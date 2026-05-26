@@ -6,6 +6,7 @@ using BookRight.UseCases.Command;
 using BookRight.Domain.Discount.DiscountStrategy;
 using BookRight.UseCases.Discount;
 using BookRight.UseCases.Discount.DiscountStrategy;
+using BookRight.UseCases.Interfaces;
 using BookRight.UseCases.Repositories;
 using BookRight.UseCases.Services;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +29,7 @@ public static class DependencyInjection
         services.AddScoped<IPatientRepository, PatientRepository>();
         services.AddScoped<IPractitionerRepository, PractitionerRepository>();
         services.AddScoped<ITreatmentTypeRepository, TreatmentTypeRepository>();
+        services.AddScoped<ICampaignRepository, CampaignRepository>();
 
         // Use Cases (Scoped)
         // Clinic Use Cases
@@ -47,6 +49,7 @@ public static class DependencyInjection
         services.AddScoped<IDiscountStrategy, SilverLoyaltyDiscountStrategy>();
         services.AddScoped<IDiscountStrategy, GoldLoyaltyDiscountStrategy>();
         services.AddScoped<IDiscountStrategy, NoDiscountStrategy>();
+        services.AddScoped<IDiscountStrategy, CampaignDiscountStrategy>();
         services.AddScoped<PricingService>();
 
         // Appointment Use Cases
