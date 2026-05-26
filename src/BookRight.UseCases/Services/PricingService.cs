@@ -60,11 +60,7 @@ public class PricingService
         var birthdayDiscountUsedCount = await _appointmentRepository.GetBirthdayDiscountUsedCountByPatientIdAsync(appointment.PatientId, appointment.TimeInterval.Start);
 
         // Hent en eventuel kampagne der gælder for bookingens tidspunkt, for at kunne inkludere kampagnerabat i beregningen
-        var campaign = await _campaignRepository.GetCampaignForAppointmentTimeAsync(appointment.TimeInterval.End);
-
-        // Læg vædierne i seperate variabler, hvis der ikke er en kampagne bruges defaultværdier
-        var campaignDiscountAmount = campaign?.DiscountRate ?? 0; // Default rabat er 0, hvis ingen kampagne
-        var campaignName = campaign?.Name ?? string.Empty; // Default navn er tom string, hvis ingen kampagne
+        var activeCampaign = await _campaignRepository.GetCampaignForAppointmentTimeAsync(appointment.TimeInterval.End);
 
         // Lav et DiscountInput-objekt som indeholder alle de nødvendige informationer for at kunne beregne rabatterne i de forskellige strategier
         var discountInput = new DiscountInput(
@@ -74,8 +70,8 @@ public class PricingService
             patientBirthday,
             patientBooking12MonthTotalSum,
             birthdayDiscountUsedCount,
-            campaignDiscountAmount,
-            campaignName
+            activeCampaign?.DiscountRate ?? 0, // Default rabat er 0, hvis ingen kampagne
+            activeCampaign?.Name ?? string.Empty // Default navn er tom string, hvis ingen kampagne
         );
 
         DiscountResult? bestDiscount = null;
@@ -117,6 +113,7 @@ public class PricingService
         var patientBirthday = DateOnly.FromDateTime(patient.Birthday);
         var patientBooking12MonthTotalSum = await _appointmentRepository.GetSumOf12MonthsByPatientIdAsync(first.PatientId, first.TimeInterval.Start);
         var birthdayDiscountUsedCount = await _appointmentRepository.GetBirthdayDiscountUsedCountByPatientIdAsync(first.PatientId, first.TimeInterval.Start);
+        var activeCampaign = await _campaignRepository.GetCampaignForAppointmentTimeAsync(second.TimeInterval.End);
 
         var discountInput = new DiscountInput(
             totalPrice,
@@ -124,7 +121,10 @@ public class PricingService
             first.TimeInterval.Start,
             patientBirthday,
             patientBooking12MonthTotalSum,
-            birthdayDiscountUsedCount);
+            birthdayDiscountUsedCount,
+            activeCampaign?.DiscountRate ?? 0, // Default rabat er 0, hvis ingen kampagne
+            activeCampaign?.Name ?? string.Empty // Default navn er tom string, hvis ingen kampagne
+        );
 
         Lock combinedLock = new();
         DiscountResult? bestDiscount = null;
@@ -174,6 +174,7 @@ public class PricingService
         var to = from.AddMinutes(durationMinutes);
         var patientBooking12MonthTotalSum = await _appointmentRepository.GetSumOf12MonthsByPatientIdAsync(patientId, from);
         var birthdayDiscountUsedCount = await _appointmentRepository.GetBirthdayDiscountUsedCountByPatientIdAsync(patientId, from);
+        var activeCampaign = await _campaignRepository.GetCampaignForAppointmentTimeAsync(to);
 
         var discountInput = new DiscountInput(
             priceAfterOvertime,
@@ -181,7 +182,10 @@ public class PricingService
             from,
             patientBirthday,
             patientBooking12MonthTotalSum,
-            birthdayDiscountUsedCount);
+            birthdayDiscountUsedCount,
+            activeCampaign?.DiscountRate ?? 0, // Default rabat er 0, hvis ingen kampagne
+            activeCampaign?.Name ?? string.Empty // Default navn er tom string, hvis ingen kampagne
+        );
 
         Lock previewLock = new();
         DiscountResult? bestDiscount = null;
@@ -242,6 +246,7 @@ public class PricingService
         var to2 = from2.AddMinutes(duration2);
         var patientBooking12MonthTotalSum = await _appointmentRepository.GetSumOf12MonthsByPatientIdAsync(patientId, from);
         var birthdayDiscountUsedCount = await _appointmentRepository.GetBirthdayDiscountUsedCountByPatientIdAsync(patientId, from);
+        var activeCampaign = await _campaignRepository.GetCampaignForAppointmentTimeAsync(to2);
 
         var discountInput = new DiscountInput(
             totalPrice,
@@ -249,7 +254,10 @@ public class PricingService
             from,
             patientBirthday,
             patientBooking12MonthTotalSum,
-            birthdayDiscountUsedCount);
+            birthdayDiscountUsedCount,
+            activeCampaign?.DiscountRate ?? 0, // Default rabat er 0, hvis ingen kampagne
+            activeCampaign?.Name ?? string.Empty // Default navn er tom string, hvis ingen kampagne
+        );
 
         Lock previewLock = new();
         DiscountResult? bestDiscount = null;

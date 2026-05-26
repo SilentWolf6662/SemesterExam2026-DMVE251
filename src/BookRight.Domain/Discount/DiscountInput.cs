@@ -7,6 +7,6 @@ public record DiscountInput(
     DateOnly PatientBirthDate,
     decimal PatientBooking12MonthTotalSum,
     int BirthdayDiscountUsedCount,
-    decimal CampaignDiscountAmount,
+    decimal CampaignDiscountRate,
     string CampaignName
 );
