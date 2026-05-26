@@ -1,0 +1,74 @@
+@using BookRight.Facade.DTO
+@using BookRight.Facade.Interfaces.Queries
+@inject IClinicOccupancyQueries OccupancyQueries
+
+<section aria-label="Klinik belægning i dag" class="mt-4">
+    <h3>Belægning i dag</h3>
+
+    @if (_loading)
+    {
+        <p class="text-muted" role="status" aria-live="polite">Indlæser belægning…</p>
+    }
+    else if (_occupancy.Count == 0)
+    {
+        <p class="text-muted">Ingen klinikker fundet.</p>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-2 g-3">
+            @foreach (var clinic in _occupancy)
+            {
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">@clinic.Address</h5>
+                            <dl class="row mb-2">
+                                <dt class="col-sm-7">Rum i alt</dt>
+                                <dd class="col-sm-5">@clinic.TotalRooms</dd>
+
+                                <dt class="col-sm-7">Aftaler i dag</dt>
+                                <dd class="col-sm-5">@clinic.ActiveAppointmentsToday</dd>
+
+                                <dt class="col-sm-7">Peak samtidige rum</dt>
+                                <dd class="col-sm-5">@clinic.PeakConcurrentRooms</dd>
+                            </dl>
+
+                            @* Belægnings-procent som progress-bar *@
+                            <div class="d-flex justify-content-between mb-1">
+                                <small>Belægning</small>
+                                <small>@clinic.OccupancyPercent %</small>
+                            </div>
+                            <div class="progress" role="progressbar"
+                                 aria-valuenow="@clinic.OccupancyPercent"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100"
+                                 aria-label="Belægning @clinic.OccupancyPercent procent">
+                                <div class="progress-bar @GetBarColor(clinic.OccupancyPercent)"
+                                     style="width: @clinic.OccupancyPercent%">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</section>
+
+@code {
+    private bool _loading = true;
+    private IReadOnlyList<ClinicOccupancyDto> _occupancy = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _occupancy = await OccupancyQueries.GetTodayAsync();
+        _loading = false;
+    }
+
+    private static string GetBarColor(double pct) => pct switch
+    {
+        >= 90 => "bg-danger",
+        >= 60 => "bg-warning",
+        _ => "bg-success"
+    };
+}
