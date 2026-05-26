@@ -21,9 +21,10 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
 
         // Konfigurerer Entity Framework til at bruge SQL Server.
         // Denne konfiguration bruges kun under design-time, altså når migrations eller databaseopdateringer køres.
-        optionsBuilder.UseSqlServer(
-            "Server=72.62.45.15,1433;Database=BookRightDb;User Id=db_admin;Password=Y7casg62gv7BkiYPgaJoD2Cxx;TrustServerCertificate=True"
-        );
+        string connectionString = Environment.GetEnvironmentVariable("BOOKRIGHT_CONNECTION_STRING")
+                                  ?? throw new InvalidOperationException("Sæt miljøvariablen BOOKRIGHT_CONNECTION_STRING før du kører EF migrations.");
+
+        optionsBuilder.UseSqlServer(connectionString);
 
         // Returnerer en ny instans af AppDbContext
         // med de konfigurerede options.
