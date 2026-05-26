@@ -6,15 +6,14 @@ public class BlackFridayDiscountStrategy : IDiscountStrategy
 {
     public string Name => "Black Friday Rabat";
 
-
-    private decimal _discountRate = 0.25m; // 25% rabat
+    private decimal DiscountRate = 0.25m; // 25% rabat
 
     async Task<DiscountResult> IDiscountStrategy.Calculate(DiscountInput input)
     {
         // Hvis sluttiden for appointment ligger på black friday kan der gives rabat
         if (IsBlackFriday(input.From))
         {
-            decimal discount = input.CurrentPrice * _discountRate;
+            decimal discount = input.CurrentPrice * DiscountRate;
             return new DiscountResult(Name, discount, true, DiscountType.BlackFriday);
         }
         else // ellers retuneres der ingen rabat
