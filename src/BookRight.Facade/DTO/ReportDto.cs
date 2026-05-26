@@ -7,6 +7,7 @@
         DateTime GeneratedDate,
         DateOnly PeriodStart,
         DateOnly PeriodEnd,
+        decimal EstimatedRevenue,
         decimal TotalRevenue
     );
 }

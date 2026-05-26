@@ -1,4 +1,5 @@
-﻿using BookRight.Facade.DTO;
+﻿using BookRight.Domain.Enums;
+using BookRight.Facade.DTO;
 using BookRight.Facade.Interfaces.Queries;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,10 +16,15 @@ namespace BookRight.Infrastructure.Query
 
         public async Task<ReportDto> GenerateAsync(DateOnly periodStart, DateOnly periodEnd)
         {
-            var totalRevenue = await _db.Appointments
+            var EstimatedRevenue = await _db.Appointments
                 .Where(a => DateOnly.FromDateTime(a.TimeInterval.Start) >= periodStart && DateOnly.FromDateTime(a.TimeInterval.Start) <= periodEnd)
                 .SumAsync(a => a.Price);
-            return new ReportDto(Guid.NewGuid(), "Omsætningsrapport", DateTime.Now, periodStart, periodEnd, totalRevenue);
+
+            var TotalRevenue = await _db.Appointments
+                .Where(a => DateOnly.FromDateTime(a.TimeInterval.Start) >= periodStart &&
+                            DateOnly.FromDateTime(a.TimeInterval.Start) <= periodEnd && a.Status == AppointmentStatus.Completed)
+                .SumAsync(a => a.Price);
+            return new ReportDto(Guid.NewGuid(), "Omsætningsrapport", DateTime.Now, periodStart, periodEnd, EstimatedRevenue, TotalRevenue);
         }
     }
 }

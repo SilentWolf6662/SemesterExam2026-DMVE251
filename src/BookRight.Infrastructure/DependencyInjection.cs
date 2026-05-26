@@ -53,6 +53,8 @@ public static class DependencyInjection
         services.AddScoped<IBookAppointmentUseCase, BookAppointmentUseCase>();
         services.AddScoped<IBookCombinedAppointment, BookCombinedAppointmentUseCase>();
         services.AddScoped<IChangeStatusUseCase, ChangeStatusUseCase>();
+        // Til downloading af omsætningsrapport
+        services.AddScoped<IDownloadReportUseCase, DownloadReportUseCase>();
 
         // Queries (Scoped)
         services.AddScoped<IAppointmentQueries, AppointmentQueriesImpl>();
