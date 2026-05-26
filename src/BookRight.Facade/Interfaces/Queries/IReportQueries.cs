@@ -1,9 +1,8 @@
 ﻿using BookRight.Facade.DTO;
 
-namespace BookRight.Facade.Interfaces.Queries
+namespace BookRight.Facade.Interfaces.Queries;
+
+public interface IReportQueries
 {
-    public interface IReportQueries
-    {
-        Task<ReportDto> GenerateAsync(DateOnly periodStart, DateOnly periodEnd);
-    }
+    Task<ReportDto> GenerateAsync(DateOnly periodStart, DateOnly periodEnd);
 }
