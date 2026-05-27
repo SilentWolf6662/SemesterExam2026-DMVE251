@@ -29,7 +29,9 @@ public class DiscountStrategyTests
             start,
             birthDate ?? new DateOnly(1990, 3, 15),
             monthlySum,
-            birthdayUsedCount);
+            birthdayUsedCount,
+            0m,
+            string.Empty);
     }
 
     // ── Bronze Loyalitetsrabat ─────────────────────────────────────────────────

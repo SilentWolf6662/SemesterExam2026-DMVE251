@@ -4,6 +4,7 @@ using BookRight.Domain.Exceptions;
 using BookRight.Domain.ValueObjects;
 using BookRight.Facade.Command;
 using BookRight.UseCases.Command;
+using BookRight.UseCases.Interfaces;
 using BookRight.UseCases.Repositories;
 using BookRight.UseCases.Services;
 using Moq;
@@ -25,6 +26,7 @@ public class BookCombinedAppointmentTests
     private readonly Mock<IPatientRepository> _patientRepoMock = new();
     private readonly Mock<ITreatmentTypeRepository> _treatmentTypeRepoMock = new();
     private readonly Mock<IClinicRepository> _clinicRepoMock = new();
+    private readonly Mock<ICampaignRepository> _campaignRepoMock = new();
     private readonly BookCombinedAppointmentUseCase _sut;
 
     // Faste Guid-værdier der bruges på tværs af hjælpemetoder og tests.
@@ -41,7 +43,8 @@ public class BookCombinedAppointmentTests
             [],
             _appointmentRepoMock.Object,
             _patientRepoMock.Object,
-            _treatmentTypeRepoMock.Object);
+            _treatmentTypeRepoMock.Object,
+            _campaignRepoMock.Object);
 
         _sut = new BookCombinedAppointmentUseCase(
             _appointmentRepoMock.Object,

@@ -3,6 +3,7 @@ using BookRight.Domain.Enums;
 using BookRight.Domain.ValueObjects;
 using BookRight.Facade.Command;
 using BookRight.UseCases.Command;
+using BookRight.UseCases.Interfaces;
 using BookRight.UseCases.Repositories;
 using BookRight.UseCases.Services;
 using Moq;
@@ -25,7 +26,8 @@ public class BookAppointmentTests
         _patientRepoMock = new Mock<IPatientRepository>();
         _treatmentTypeRepoMock = new Mock<ITreatmentTypeRepository>();
         _clinicRepoMock = new Mock<IClinicRepository>();
-        var pricingService = new PricingService([], _appointmentRepoMock.Object, _patientRepoMock.Object, _treatmentTypeRepoMock.Object);
+        var campaignRepoMock = new Mock<ICampaignRepository>();
+        var pricingService = new PricingService([], _appointmentRepoMock.Object, _patientRepoMock.Object, _treatmentTypeRepoMock.Object, campaignRepoMock.Object);
         _sut = new BookAppointmentUseCase(_appointmentRepoMock.Object, _practitionerRepoMock.Object, _patientRepoMock.Object, _treatmentTypeRepoMock.Object, pricingService, _clinicRepoMock.Object);
     }
 
