@@ -1,4 +1,6 @@
-﻿namespace BookRight.Domain.Entities;
+﻿using BookRight.Domain.ValueObjects;
+
+namespace BookRight.Domain.Entities;
 
 public class OvertimeCharge
 {
@@ -6,14 +8,14 @@ public class OvertimeCharge
     private static readonly TimeOnly EveningStart = new TimeOnly(17, 0); // Aftenstillæg gælder fra kl. 17:00 og frem
 
     // Returnerer basispris + 15 % hvis bookingen er om aftenen (fra 17:00) eller i weekenden.
-    public static decimal Calculate(Appointment appointment)
+    public static decimal Calculate(DateTime start, decimal basePrice)
     {
         // Hvis aftalen starter kl. 17 eller senere, pålægges et tillæg
-        bool isEvening = TimeOnly.FromDateTime(appointment.TimeInterval.Start) >= EveningStart;
+        bool isEvening = TimeOnly.FromDateTime(start) >= EveningStart;
         // Hvis aftalen starter på en lørdag eller søndag, pålægges et tillæg
-        bool isWeekend = appointment.TimeInterval.Start.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
+        bool isWeekend = start.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
 
-        decimal finalPrice = appointment.Price;
+        decimal finalPrice = basePrice;
         // Hvis det er aften eller weekend, pålægges et tillæg. Ellers returneres basisprisen uændret.
         if (isEvening || isWeekend)
         {

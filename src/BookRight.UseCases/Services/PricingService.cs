@@ -2,6 +2,7 @@
 using BookRight.Domain.Discount;
 using BookRight.UseCases.Interfaces;
 using BookRight.UseCases.Repositories;
+using BookRight.Domain.Entities;
 
 namespace BookRight.UseCases.Services;
 
@@ -40,12 +41,7 @@ public class PricingService
         // Beregn basisprisen baseret på BookRight-reglerne ved at ligge overtidsgebyret oveni,
         // hvis bookingen evt. er om aftenen eller i weekenden
         decimal basePrice = treatmentType.GetBasePrice(durationMinutes);
-
-        // Overtidsberegning — samme logik som OvertimeCharge.Calculate men uden at kræve et Appointment-objekt
-        // TODO: FIND UD AF AT BRUGE OvertimeCharge KLASSEN I STEDET
-        bool isEvening = TimeOnly.FromDateTime(from) >= new TimeOnly(17, 0);
-        bool isWeekend = from.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
-        decimal priceAfterOvertime = (isEvening || isWeekend) ? Math.Round(basePrice * 1.15m, 2) : basePrice;
+        decimal priceAfterOvertime = OvertimeCharge.Calculate(from, basePrice);
         decimal overtimeSurcharge = priceAfterOvertime - basePrice;
 
         // Hent patienten for at finde deres fødselsdag
@@ -124,15 +120,11 @@ public class PricingService
         decimal base2 = type2.GetBasePrice(duration2);
 
         // Overtidsberegning for 1. behandling
-        bool eve1 = TimeOnly.FromDateTime(from) >= new TimeOnly(17, 0);
-        bool wkd1 = from.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
-        decimal price1 = (eve1 || wkd1) ? Math.Round(base1 * 1.15m, 2) : base1;
+        decimal price1 = OvertimeCharge.Calculate(from, base1);
 
         // Overtidsberegning for 2. behandling (starter præcis når 1. slutter)
         var from2 = from.AddMinutes(duration1);
-        bool eve2 = TimeOnly.FromDateTime(from2) >= new TimeOnly(17, 0);
-        bool wkd2 = from2.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
-        decimal price2 = (eve2 || wkd2) ? Math.Round(base2 * 1.15m, 2) : base2;
+        decimal price2 = OvertimeCharge.Calculate(from2, base2);
 
         decimal totalPrice = price1 + price2;
 
