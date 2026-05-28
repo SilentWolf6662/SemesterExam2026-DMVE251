@@ -51,7 +51,7 @@ public class AppointmentRepository : IAppointmentRepository
     // Henter summen for alle patientes appointments de sidste 12 måneder
     async Task<decimal> IAppointmentRepository.GetSumOf12MonthsByPatientIdAsync(Guid patientId, DateTime startDate)
     {
-        var twelveMonthsAgo = startDate.AddMonths(-11);
+        var twelveMonthsAgo = startDate.AddMonths(-12);
         return await _db.Appointments
             .Where(a => a.PatientId == patientId &&
                         a.TimeInterval.Start >= twelveMonthsAgo && // Tidsrum over for 12 måneder siden

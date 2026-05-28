@@ -42,6 +42,7 @@ public class PricingService
         decimal basePrice = treatmentType.GetBasePrice(durationMinutes);
 
         // Overtidsberegning — samme logik som OvertimeCharge.Calculate men uden at kræve et Appointment-objekt
+        // TODO: FIND UD AF AT BRUGE OvertimeCharge KLASSEN I STEDET
         bool isEvening = TimeOnly.FromDateTime(from) >= new TimeOnly(17, 0);
         bool isWeekend = from.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
         decimal priceAfterOvertime = (isEvening || isWeekend) ? Math.Round(basePrice * 1.15m, 2) : basePrice;
