@@ -1,7 +1,7 @@
 using BookRight.Domain.Discount.DiscountStrategy;
 using BookRight.Domain.Enums;
-using BookRight.UseCases.Discount;
-using BookRight.UseCases.Discount.DiscountStrategy;
+using BookRight.Domain.Discount;
+using BookRight.Domain.Discount.DiscountStrategy;
 
 namespace BookRight.UseCases.Tests.Discounts;
 

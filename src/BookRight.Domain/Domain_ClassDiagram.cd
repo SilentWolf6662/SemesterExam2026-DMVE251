@@ -1,80 +1,170 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
   <Class Name="BookRight.Domain.Entities.Appointment">
-    <Position X="0.75" Y="4.25" Width="1.5" />
+    <Position X="0.75" Y="4" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAEAAESQABAAIAEAAACAAAAAAAAEAAAAAAAAEIABA=</HashCode>
+      <HashCode>AAAAMQAESQABAAIAEAAgCAAAAACAAEAAAAAAAAGIABA=</HashCode>
       <FileName>Entities\Appointment.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="BookRight.Domain.Entities.Clinic">
-    <Position X="3" Y="4.25" Width="1.5" />
+    <Position X="3" Y="4" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAACAAAAIEAAAAAAAAAAAAE=</HashCode>
       <FileName>Entities\Clinic.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="BookRight.Domain.Entities.Patient">
-    <Position X="5.25" Y="4.25" Width="1.5" />
+    <Position X="5.25" Y="4" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAEAAACAAAAAAAAAAQAAAAAAIAEAAEAAAAAEAAAo=</HashCode>
       <FileName>Entities\Patient.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="BookRight.Domain.Entities.Practitioner">
-    <Position X="9.75" Y="4.25" Width="1.5" />
+    <Position X="9.75" Y="4" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AQAAAEAAACgAAAAAIAAAQAAAQAAAAEAAAAAAAAAAAAg=</HashCode>
+      <HashCode>AQAAAEAAACgAAAAAIAAAQAAAQAAAAEAAAAgAAgAAgAg=</HashCode>
       <FileName>Entities\Practitioner.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="BookRight.Domain.Exceptions.DomainException" Collapsed="true">
-    <Position X="12.25" Y="1.5" Width="1.5" />
+    <Position X="14.5" Y="2.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Exceptions\DomainException.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="BookRight.Domain.Exceptions.NotFoundException" Collapsed="true">
-    <Position X="14" Y="1.5" Width="1.5" />
+    <Position X="19.75" Y="2.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Exceptions\NotFoundException.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="BookRight.Domain.Entity" Collapsed="true">
-    <Position X="5.25" Y="1.25" Width="1.5" />
+    <Position X="6.25" Y="1.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>AggregateRoot.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="BookRight.Domain.AggregateRoot" Collapsed="true">
-    <Position X="5.25" Y="2.75" Width="1.5" />
+    <Position X="6.25" Y="2.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>AggregateRoot.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="BookRight.Domain.Entities.TreatmentType">
-    <Position X="7.5" Y="4.25" Width="1.5" />
+    <Position X="7.5" Y="4" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAEAAAAAAAAAAAAAAAQAAAAAAEAAAAAAAAAACAA=</HashCode>
+      <HashCode>AAAAAAEAAQAAAAAEAAAAAAQAAAAAAEAAAAAAAAAACAA=</HashCode>
       <FileName>Entities\TreatmentType.cs</FileName>
     </TypeIdentifier>
   </Class>
+  <Class Name="BookRight.Domain.Discount.DiscountStrategy.BirthdayDiscountStrategy" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="14.5" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAQAAAAAAAAAAACAAAAEAQAAAAAAAACAAAAAAAAAAA=</HashCode>
+      <FileName>Discount\DiscountStrategy\BirthdayDiscountStrategy.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BookRight.UseCases.Discount.DiscountStrategy.BlackFridayDiscountStrategy" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="16.25" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAIAAAAAAAEAQAAAAQAAACAAAAAAAAAAA=</HashCode>
+      <FileName>Discount\DiscountStrategy\BlackFridayDiscountStrategy.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="BookRight.UseCases.Discount.DiscountStrategy.NoDiscountStrategy" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="18" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAAACAAAAAAAAAAA=</HashCode>
+      <FileName>Discount\DiscountStrategy\NoDiscountStrategy.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="BookRight.Domain.Discount.DiscountStrategy.BronzeLoyaltyDiscountStrategy" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="18" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAEAQAAAAAAAACAAAAAAAAAAA=</HashCode>
+      <FileName>Discount\DiscountStrategy\BronzeLoyaltyDiscountStrategy.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="BookRight.Domain.Discount.DiscountStrategy.CampaignDiscountStrategy" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="19.75" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAA=</HashCode>
+      <FileName>Discount\DiscountStrategy\CampaignDiscountStrategy.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="BookRight.Domain.Discount.DiscountStrategy.GoldLoyaltyDiscountStrategy" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="16.25" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAEAQAAAAAAAACAAAAAAAAAAA=</HashCode>
+      <FileName>Discount\DiscountStrategy\GoldLoyaltyDiscountStrategy.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="BookRight.Domain.Discount.DiscountStrategy.SilverLoyaltyDiscountStrategy" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="18" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAEAQAAAAAAAACAAAAAAAAAAA=</HashCode>
+      <FileName>Discount\DiscountStrategy\SilverLoyaltyDiscountStrategy.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="BookRight.Domain.Entities.Campaign" Collapsed="true">
+    <Position X="11.75" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAACAAAAAAAAAAAGAQAAAAAAEAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\Campaign.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BookRight.Domain.Entities.OvertimeCharge" Collapsed="true">
+    <Position X="14.5" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAAAAAAAAAAAAAAAAAAAAAAACAAAAIAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\OvertimeCharge.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BookRight.Domain.Entities.Report" Collapsed="true">
+    <Position X="16.25" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAECAAAAAAAAAEAAAQEAAAAQAAAAAEAAAAAAAAAAAEA=</HashCode>
+      <FileName>Entities\Report.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Interface Name="BookRight.UseCases.Discount.IDiscountStrategy" Collapsed="true">
+    <Position X="14.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Discount\IDiscountStrategy.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
   <Enum Name="BookRight.Domain.Enums.AppointmentStatus" Collapsed="true">
-    <Position X="12.25" Y="2.75" Width="1.5" />
+    <Position X="14.5" Y="5.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>EAAAAAAAACAAAAIAAACAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Enums\AppointmentStatus.cs</FileName>
     </TypeIdentifier>
   </Enum>
   <Enum Name="BookRight.Domain.Enums.AuthorizationType" Collapsed="true">
-    <Position X="14" Y="2.75" Width="1.5" />
+    <Position X="16.25" Y="5.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAQAAAAAAAAIEAAAAAIAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Enums\AuthorizationType.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="BookRight.Domain.Enums.DiscountType" Collapsed="true">
+    <Position X="18" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAJAAAAAAAAAAAAAACAAAAAAEKAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Enums\DiscountType.cs</FileName>
     </TypeIdentifier>
   </Enum>
   <Font Name="Segoe UI" Size="9" />

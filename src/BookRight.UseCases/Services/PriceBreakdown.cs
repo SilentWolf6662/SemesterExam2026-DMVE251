@@ -1,4 +1,4 @@
-using BookRight.UseCases.Discount;
+using BookRight.Domain.Discount;
 
 namespace BookRight.UseCases.Services;
 

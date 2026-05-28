@@ -1,6 +1,6 @@
 ﻿using BookRight.Domain.Enums;
 
-namespace BookRight.UseCases.Discount.DiscountStrategy;
+namespace BookRight.Domain.Discount.DiscountStrategy;
 
 public class BlackFridayDiscountStrategy : IDiscountStrategy
 {

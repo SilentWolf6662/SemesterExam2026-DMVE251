@@ -1,5 +1,4 @@
 ﻿using BookRight.Domain.Enums;
-using BookRight.UseCases.Discount;
 
 namespace BookRight.Domain.Discount.DiscountStrategy;
 

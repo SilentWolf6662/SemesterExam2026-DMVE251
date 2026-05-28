@@ -1,7 +1,7 @@
 using BookRight.Domain.Entities;
 using BookRight.Domain.Enums;
 using BookRight.Domain.ValueObjects;
-using BookRight.UseCases.Discount;
+using BookRight.Domain.Discount;
 using BookRight.UseCases.Interfaces;
 using BookRight.UseCases.Repositories;
 using BookRight.UseCases.Services;

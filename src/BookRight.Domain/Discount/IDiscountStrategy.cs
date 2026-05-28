@@ -1,4 +1,4 @@
-﻿namespace BookRight.UseCases.Discount;
+﻿namespace BookRight.Domain.Discount;
 
 public interface IDiscountStrategy
 {

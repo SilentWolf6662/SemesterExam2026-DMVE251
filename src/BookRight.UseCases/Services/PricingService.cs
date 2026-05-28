@@ -1,5 +1,5 @@
 ﻿using BookRight.Domain.Exceptions;
-using BookRight.UseCases.Discount;
+using BookRight.Domain.Discount;
 using BookRight.UseCases.Interfaces;
 using BookRight.UseCases.Repositories;
 
@@ -83,7 +83,8 @@ public class PricingService
         {
             var discount = strategy.Calculate(discountInput).GetAwaiter().GetResult();
 
-            lock (strategyLock)
+            // Lås for at sikre tråd-sikker adgang til bestDiscount, og undgå race conditions og lost updates, da Parallel.ForEach kører på flere tråde
+            lock (strategyLock) 
             {
                 // Hvis rabbatten er anvendelig og enten ikke har en rabat endnu eller har en højere rabat end den nuværende rabat
                 if (discount.IsApplicable && (bestDiscount == null || discount.DiscountAmount > bestDiscount.DiscountAmount))
@@ -93,7 +94,7 @@ public class PricingService
             }
         });
 
-        // Beregn den endelige pris ved at trække den højeste rabat fra basisprisen
+        // Beregn den endelige pris ved at trække den højeste rabat fra basisprisenS
         decimal discountAmount = Math.Round(bestDiscount?.DiscountAmount ?? 0, 2);
 
         return new PriceBreakdown(
