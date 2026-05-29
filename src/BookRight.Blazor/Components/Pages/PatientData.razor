@@ -1,0 +1,99 @@
+@page "/patientinfo"
+@rendermode InteractiveServer
+@using BookRight.Blazor.Components.Patient
+@using BookRight.Facade.DTO
+@using BookRight.Facade.Interfaces.Queries
+
+@inject IPatientQueries PatientQueries
+
+<PageTitle>Patient info</PageTitle>
+
+
+
+@if (_fail is not null)
+{
+	<p class="text-danger" role="alert">@_fail</p>
+}
+else if (_loading)
+{
+	<p role="status">Loading patient data</p>
+}
+else
+{
+	<section aria-labelledby="patient-table-heading">
+		<h2 id="patient-table-heading">Patient info</h2>
+		<table>
+			<thead>
+			<tr>
+				<th>  @*Får søgefeltet til at følge tabel fra start af med den ekstra tr og th*@
+						@*Laver søgefelt visuelt og til at skrive i (UI)*@
+					<input class="søgefelt" type="search" 
+					       placeholder="Søg på navn eller telefonnummer"
+					       @oninput="e => _searchText = e.Value?.ToString() ?? string.Empty"/>
+				</th>
+			</tr>
+			<tr>
+				<th scope="col">Navn</th>
+				<th scope="col">Alder</th>
+				<th scope="col">Mail</th>
+				<th scope="col">Telefon.nr</th>
+			</tr>
+			</thead>
+
+			<tbody>
+				@foreach (var patient in FilteredPatients)
+			{
+				<tr class="upcoming-row" role="button" tabindex="0" @onclick="() => OpenModal(patient.Id)" @onkeydown="(e) => HandleRowKeyDown(e, patient.Id)">
+					<td>@patient.FirstName @patient.LastName</td>
+					<td><CalculateAge Birthday="@patient.Birthday"/></td>
+					<td>@patient.Email</td>
+					<td>@patient.PhoneNumber</td>
+				</tr>
+			}
+			</tbody>
+		</table>
+	</section>
+	
+}
+
+@if (_selectedPatientId is not null)
+{
+	<PatientModal PatientId="@_selectedPatientId.Value" OnClose="CloseModal" />
+}
+
+@code {
+	private bool _loading = true;
+	private string? _fail;
+	[PersistentState] public IReadOnlyList<PatientDto>? Patients { get; set; }
+
+	private Guid? _selectedPatientId;
+
+	protected override async Task OnInitializedAsync()
+	{
+		try
+		{
+			Patients = await PatientQueries.GetAllAsync();
+		}
+		catch (Exception ex)
+		{
+			_fail = ex.Message;
+		}
+		finally
+		{
+			_loading = false;
+		}
+	}
+
+	private string _searchText = "";
+	@*Laver en filtrering af patienter*@
+	private IEnumerable<PatientDto> FilteredPatients => Patients?
+		.Where(p => string.IsNullOrEmpty(_searchText) || $"{p.FirstName} {p.LastName}".Contains(_searchText, StringComparison.OrdinalIgnoreCase) || p.PhoneNumber.Contains(_searchText, StringComparison.OrdinalIgnoreCase)) ?? Enumerable.Empty<PatientDto>();
+
+	private void OpenModal(Guid id) => _selectedPatientId = id;
+	private void CloseModal() => _selectedPatientId = null;
+
+	private void HandleRowKeyDown(KeyboardEventArgs e, Guid id)
+	{
+		if (e.Key is "Enter" or " ") OpenModal(id);
+	}
+}

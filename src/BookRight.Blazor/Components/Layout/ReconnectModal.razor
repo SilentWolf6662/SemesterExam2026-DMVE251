@@ -1,11 +1,10 @@
 ﻿<script type="module" src="@Assets["Components/Layout/ReconnectModal.razor.js"]"></script>
 
 <dialog id="components-reconnect-modal" data-nosnippet>
-    <div class="components-reconnect-container">
-        <div class="components-rejoining-animation" aria-hidden="true">
-            <div></div>
-            <div></div>
-        </div>
+    <span aria-hidden="true" class="components-rejoining-animation">
+        <span></span>
+        <span></span>
+    </span>
         <p class="components-reconnect-first-attempt-visible">
             Rejoining the server...
         </p>
@@ -27,5 +26,4 @@
         <button id="components-resume-button" class="components-pause-visible components-resume-failed-visible">
             Resume
         </button>
-    </div>
 </dialog>

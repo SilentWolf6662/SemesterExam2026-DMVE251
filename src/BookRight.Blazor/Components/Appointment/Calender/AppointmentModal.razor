@@ -1,0 +1,274 @@
+@using BookRight.Facade.DTO
+@using BookRight.Facade.Command
+@using BookRight.Facade.Interfaces.Queries
+@using BookRight.Facade.Interfaces.UseCase
+@inject IAppointmentQueries AppointmentQueries
+@inject IPatientQueries PatientQueries
+@inject ITreatmentTypeQueries TreatmentTypeQueries
+@inject IChangeStatusUseCase ChangeStatusUseCase
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+@* ── Mørkt overlay bag modalen ───────────────────────────────────────────────
+   modal-backdrop er et halvgennemsigtigt mørkt lag der dækker hele siden bag
+   dialogen, så brugeren fokuserer på modal-indholdet. Det er rent dekorativt.
+*@
+<span aria-hidden="true" class="modal-backdrop fade show"></span>
+
+@* ── Modal-container ─────────────────────────────────────────────────────────
+   <dialog open> er det semantisk korrekte HTML5-element for en modal dialog —
+   det giver implicit role="dialog" uden at man skal sætte det manuelt.
+   aria-modal="true" indikerer at resten af siden er inaktiv mens dialogen er åben.
+   aria-labelledby peger på id'et for overskriften inde i dialogen, så
+   skærmlæsere læser titlen op når dialogen åbnes.
+   d-flex centrerer <article> lodret og vandret i det faste overlay.
+   p-3 sikrer luft til skærmkanter på små skærme.
+   @onclick="OnClose" lukker dialogen hvis man klikker på baggrunden.
+   @onkeydown="HandleKeyDown" fanger tastaturhændelser (fx Escape).
+*@
+<dialog open class="modal fade show d-flex align-items-center justify-content-center p-3"
+        aria-modal="true"
+        aria-labelledby="apt-modal-title"
+        @onclick="OnClose"
+        @onkeydown="HandleKeyDown">
+
+    @* <article> er semantisk korrekt for selvstændigt indhold som en dialog.
+       @ref og tabindex="-1" bruges til fokusstyring via JavaScript.
+       @onclick:stopPropagation forhindrer at klik inde i dialogen lukker vinduet. *@
+    <article class="modal-content" @ref="_dialogRef" tabindex="-1" @onclick:stopPropagation>
+
+            @* ── Overskriftslinje ────────────────────────────────────────────
+               <header> grupperer modalens titelrække og luk-knap.
+               id="apt-modal-title" er det id som aria-labelledby peger på. *@
+            <header class="modal-header">
+                <h5 class="modal-title" id="apt-modal-title">Aftaledetaljer</h5>
+
+                @* Luk-knap – disabled mens en gemmehandling kører så brugeren
+                   ikke kan lukke og miste igangværende ændringer. *@
+                <button type="button" class="btn-close" @onclick="OnClose" aria-label="Luk dialog" disabled="@_saving"></button>
+            </header>
+
+            @* ── Indholdssektion ─────────────────────────────────────────────
+               Indholdet skifter mellem tre tilstande:
+               1) Indlæsning (spinner) → 2) Fejl (rød tekst) → 3) Detaljer (liste)
+            *@
+            <section class="modal-body">
+                @if (_loading)
+                {
+                    @* Bootstrap spinner – aria-hidden="true" skjuler det animerede
+                       ikon for skærmlæsere da selve teksten "Indlæser…" er nok. *@
+                    <p class="text-center text-muted my-3">
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Indlæser detaljer…
+                    </p>
+                }
+                else if (_details is null)
+                {
+                    <p class="text-danger">Kunne ikke hente aftaledetaljer.</p>
+                }
+                else
+                {
+                    @* <dl> (definition list) er den semantisk korrekte HTML-struktur
+                       til nøgle-/værdiparlister som "Dato: 12. maj 2025".
+                       <dt> = definition term (etiketten), <dd> = definition data (værdien).
+                       Bootstrap's "row" klasse på <dl> kombineret med col-sm-* på
+                       <dt>/<dd> laver et to-kolonne grid-layout. *@
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Dato</dt>
+                        <dd class="col-sm-7">
+                            @* <time> med maskinlæsbar datetime og læsvenligt synligt indhold *@
+                            <time datetime="@_details.Start.ToString("yyyy-MM-dd")">
+                                @_details.Start.ToString("dd. MMMM yyyy")
+                            </time>
+                        </dd>
+
+                        <dt class="col-sm-5">Tidspunkt</dt>
+                        <dd class="col-sm-7">
+                            <time datetime="@_details.Start.ToString("yyyy-MM-ddTHH:mm")">
+                                @_details.Start.ToString("HH:mm") – @_details.End.ToString("HH:mm")
+                            </time>
+                        </dd>
+
+                        <dt class="col-sm-5">Status</dt>
+                        <dd class="col-sm-7">
+                            @* <span class="badge"> er en Bootstrap-pille-komponent der viser
+                               status med en farvet baggrund (klassen sættes dynamisk af C#). *@
+                            <span class="badge @StatusBadgeClass">@StatusLabel</span>
+                        </dd>
+
+                        <dt class="col-sm-5">Patient</dt>
+                        <dd class="col-sm-7">@(_patient is null ? "Ukendt" : $"{_patient.FirstName} {_patient.LastName}")</dd>
+
+                        <dt class="col-sm-5">Behandler</dt>
+                        <dd class="col-sm-7">@PractitionerName</dd>
+
+                        <dt class="col-sm-5">Behandlingstype</dt>
+                        <dd class="col-sm-7">@(_treatmentType?.Name ?? "Ukendt")</dd>
+
+                        @* Noten vises kun hvis den ikke er tom – ingen tom række i listen *@
+                        @if (!string.IsNullOrWhiteSpace(_details.Note))
+                        {
+                            <dt class="col-sm-5">Note</dt>
+                            <dd class="col-sm-7">@_details.Note</dd>
+                        }
+                    </dl>
+                }
+            </section>
+
+            @* ── Handlingsrække ──────────────────────────────────────────────
+               <footer> viser forskellige knapper afhængigt af aftalens tilstand.
+               Der er fire mulige udseender (håndteret med @if / else if / else):
+               1) Gemmer (spinner + deaktiveret Luk-knap)
+               2) Ventende statusskift (bekræft/annuller)
+               3) Terminal status – aftalen kan ikke ændres
+               4) Aktiv aftale – vis de tre handlingsknapper
+            *@
+            <footer class="modal-footer d-flex gap-2">
+                @if (_saving)
+                {
+                    @* Mens der gemmes vises en spinner og Luk er deaktiveret *@
+                    <span class="text-muted small me-auto">
+                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                        Gemmer…
+                    </span>
+                    <button type="button" class="btn btn-secondary btn-sm" disabled>Luk</button>
+                }
+                else if (_pendingStatus is not null)
+                {
+                    @* Bekræftelsesvisning – brugeren skal bekræfte statusskiftet
+                       inden det gemmes, så ingen utilsigtet ændring sker. *@
+                    <span class="me-auto">
+                        Skift status til <strong>@PendingStatusLabel</strong>?
+                    </span>
+                    <button class="btn btn-primary btn-sm" @onclick="ConfirmStatusChange">Bekræft</button>
+                    <button class="btn btn-secondary btn-sm" @onclick="CancelStatusChange">Annuller</button>
+                }
+                else if (_details is not null && IsTerminalStatus)
+                {
+                    @* Afsluttet, aflyst eller udeblevet – ingen handlingsknapper *@
+                    <span class="text-muted fst-italic small me-auto">Aftalen kan ikke ændres</span>
+                    <button type="button" class="btn btn-secondary btn-sm" @onclick="OnClose">Luk</button>
+                }
+                else if (_details is not null)
+                {
+                    @* Aktiv (booket) aftale – tre knapper til at skifte status.
+                       Lambda-udtrykkene sender det ønskede statusnavn som argument
+                       op til RequestStatusChange og sætter bekræftelsestilstanden. *@
+                    <menu class="d-flex gap-2 flex-wrap me-auto list-unstyled mb-0 p-0">
+                        <li><button class="btn btn-success btn-sm" @onclick='() => RequestStatusChange("completed")'>Gennemført</button></li>
+                        <li><button class="btn btn-danger btn-sm" @onclick='() => RequestStatusChange("cancelled")'>Aflys</button></li>
+                        <li><button class="btn btn-warning btn-sm" @onclick='() => RequestStatusChange("noshow")'>Udeblevet</button></li>
+                    </menu>
+                    <button type="button" class="btn btn-secondary btn-sm" @onclick="OnClose">Luk</button>
+                }
+                else
+                {
+                    @* Fallback: data mangler – vis kun Luk *@
+                    <button type="button" class="btn btn-secondary btn-sm ms-auto" @onclick="OnClose">Luk</button>
+                }
+            </footer>
+        </article>
+</dialog>
+
+@code {
+    [Parameter, EditorRequired] public Guid AppointmentId { get; set; }
+    [Parameter, EditorRequired] public string PractitionerName { get; set; } = null!;
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnStatusChanged { get; set; }
+
+    private ElementReference _dialogRef;
+
+    private bool _loading = true;
+    private bool _saving;
+    // _pendingStatus fungerer som en bekræftelsestilstand – brugeren vælger først status,
+    // ser bekræftelsesbanneret, og trykker derefter "Bekræft" for at gemme
+    private string? _pendingStatus;
+    private AppointmentDetailedDto? _details;
+    private PatientDetailedDto? _patient;
+    private TreatmentTypeDto? _treatmentType;
+
+    // Afsluttede, aflyste og udeblevne aftaler må ikke ændres igen – domæneregel
+    private bool IsTerminalStatus =>
+        _details?.Status.ToLower() is "completed" or "cancelled" or "noshow";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Fokus flyttes til dialogen og fangstlåses via JS så tastaturnavigation
+            // ikke undslipper modalen (WCAG 2.1 succeskriterie 2.1.2)
+            await _dialogRef.FocusAsync();
+            await JS.InvokeVoidAsync("accessibility.trapFocus", _dialogRef);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        // Frigiver fokus-fangsten, så resten af siden igen kan modtage tastaturinput
+        await JS.InvokeVoidAsync("accessibility.releaseFocus", _dialogRef);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _details = await AppointmentQueries.GetAsync(AppointmentId);
+
+        if (_details is not null)
+        {
+            _patient = await PatientQueries.GetAsync(_details.PatientId);
+            _treatmentType = await TreatmentTypeQueries.GetAsync(_details.TreatmentTypeId);
+        }
+
+        _loading = false;
+    }
+
+    private string StatusBadgeClass => (_details?.Status ?? "").ToLower() switch
+    {
+        "booked"    => "bg-primary",
+        "completed" => "bg-success",
+        "cancelled" => "bg-danger",
+        "noshow"    => "bg-warning text-dark",
+        _           => "bg-secondary"
+    };
+
+    private string StatusLabel => (_details?.Status ?? "").ToLower() switch
+    {
+        "booked"    => "Booket",
+        "completed" => "Afsluttet",
+        "cancelled" => "Aflyst",
+        "noshow"    => "Udeblevet",
+        _           => _details?.Status ?? ""
+    };
+
+    private string PendingStatusLabel => _pendingStatus switch
+    {
+        "completed" => "Gennemført",
+        "cancelled" => "Aflyst",
+        "noshow"    => "Udeblevet",
+        _           => _pendingStatus ?? ""
+    };
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        // Escape lukker dialogen, men ikke mens en gemmehandling kører
+        if (e.Key == "Escape" && !_saving)
+            await OnClose.InvokeAsync();
+    }
+
+    private void RequestStatusChange(string status) => _pendingStatus = status;
+    private void CancelStatusChange() => _pendingStatus = null;
+
+    private async Task ConfirmStatusChange()
+    {
+        if (_details is null || _pendingStatus is null) return;
+        _saving = true;
+        // Gem den ønskede status lokalt inden vi nulstiller _pendingStatus,
+        // så re-render ikke mister værdien før asynkront kald er afsluttet
+        var statusToApply = _pendingStatus;
+        _pendingStatus = null;
+        await ChangeStatusUseCase.Execute(new ChangeStatusRequest(_details.Id, _details.Note, statusToApply));
+        // Henter opdaterede detaljer så badge og knapper reflekterer den nye status
+        _details = await AppointmentQueries.GetAsync(AppointmentId);
+        _saving = false;
+        await OnStatusChanged.InvokeAsync();
+    }
+}

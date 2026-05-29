@@ -1,0 +1,8 @@
+.upcoming-row {
+    cursor: pointer;
+}
+
+.upcoming-row:focus-visible {
+    outline: 3px solid #258cfb;
+    outline-offset: -1px;
+}

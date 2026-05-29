@@ -2,7 +2,6 @@ using BookRight.Domain.Entities;
 using BookRight.Domain.Enums;
 using BookRight.Domain.Exceptions;
 using BookRight.Domain.ValueObjects;
-using System.Net.NetworkInformation;
 
 namespace BookRight.Domain.Tests.Entities;
 
@@ -49,7 +48,7 @@ public class AppointmentTests
 
         // Act
         // Opret appointment med hjælpe-data
-        var appointment = Appointment.Create(interval, TreatmentTypeId, PatientId, PractitionerId, [], []);
+        var appointment = Appointment.Create(interval, TreatmentTypeId, PatientId, PractitionerId, Guid.Empty, 0m, [], []);
 
         // Assert
         // Tjek om hjælpe-data er blevet sat ind i appointment attributterne, ved at sætte de forventede værdier lig med hinanden
@@ -67,7 +66,7 @@ public class AppointmentTests
         var interval = CreateInterval(9, 10);
 
         // Act
-        var appointment = Appointment.Create(interval, TreatmentTypeId, PatientId, PractitionerId, [], []);
+        var appointment = Appointment.Create(interval, TreatmentTypeId, PatientId, PractitionerId, Guid.Empty, 0m, [], []);
 
         // Assert
         Assert.Equal(AppointmentStatus.Booked, appointment.Status);
@@ -83,10 +82,10 @@ public class AppointmentTests
         var interval2 = CreateInterval(9, 10); // Samme tidsinterval for overlap
 
         // Act & Assert
-        var appointment = Appointment.Create(interval, TreatmentTypeId, PatientId, PractitionerId, [], []);
+        var appointment = Appointment.Create(interval, TreatmentTypeId, PatientId, PractitionerId, Guid.Empty, 0m, [], []);
 
         Assert.Throws<DomainException>(() =>
-            Appointment.Create(interval2, ExtraTreatmentTypeId, PatientId, ExtraPractitionerId, [appointment], [])
+            Appointment.Create(interval2, ExtraTreatmentTypeId, PatientId, ExtraPractitionerId, Guid.Empty, 0m, [appointment], [])
         );
     }
 
@@ -100,10 +99,10 @@ public class AppointmentTests
         var interval2 = CreateInterval(9, 10); // Samme tidsinterval for overlap
 
         // Act & Assert
-        var appointment = Appointment.Create(interval, TreatmentTypeId, PatientId, PractitionerId, [], []);
+        var appointment = Appointment.Create(interval, TreatmentTypeId, PatientId, PractitionerId, Guid.Empty, 0m, [], []);
 
         Assert.Throws<DomainException>(() =>
-            Appointment.Create(interval2, ExtraTreatmentTypeId, ExtraPatientId, PractitionerId, [appointment], [])
+            Appointment.Create(interval2, ExtraTreatmentTypeId, ExtraPatientId, PractitionerId, Guid.Empty, 0m, [], [appointment])
         );
     }
 
@@ -117,10 +116,10 @@ public class AppointmentTests
         var interval2 = CreateInterval(9, 10); // Samme tidsinterval for overlap
 
         // Act
-        var appointment = Appointment.Create(interval, TreatmentTypeId, PatientId, PractitionerId, [], []);
+        var appointment = Appointment.Create(interval, TreatmentTypeId, PatientId, PractitionerId, Guid.Empty, 0m, [], []);
         appointment.Cancel(); // Annuller appointment for at simulere en anullering
 
-        var newAppointment = Appointment.Create(interval2, ExtraTreatmentTypeId, PatientId, PractitionerId, [appointment], []);
+        var newAppointment = Appointment.Create(interval2, ExtraTreatmentTypeId, PatientId, PractitionerId, Guid.Empty, 0m, [appointment], []);
 
         // Assert
         Assert.Equal(AppointmentStatus.Cancelled, appointment.Status); // Tjek at den første appointment er annulleret
@@ -137,8 +136,8 @@ public class AppointmentTests
         var interval2 = CreateInterval(10, 11); // Næste tidsinterval starter lige efter det første
 
         // Act
-        var appointment = Appointment.Create(interval, TreatmentTypeId, PatientId, PractitionerId, [], []);
-        var nextAppointment = Appointment.Create(interval2, ExtraTreatmentTypeId, PatientId, PractitionerId, [appointment], []);
+        var appointment = Appointment.Create(interval, TreatmentTypeId, PatientId, PractitionerId, Guid.Empty, 0m, [], []);
+        var nextAppointment = Appointment.Create(interval2, ExtraTreatmentTypeId, PatientId, PractitionerId, Guid.Empty, 0m, [appointment], []);
 
         // Assert
         Assert.NotNull(nextAppointment); // Tjek at den anden appointment blev oprettet UDEN at kaste DomainException
@@ -153,7 +152,7 @@ public class AppointmentTests
     {
         // Arrange
         var interval = CreateInterval(9, 10);
-        var appointment = Appointment.Create(interval, TreatmentTypeId, PatientId, PractitionerId, [], []);
+        var appointment = Appointment.Create(interval, TreatmentTypeId, PatientId, PractitionerId, Guid.Empty, 0m, [], []);
 
         // Act
         appointment.UpdateTreatmentType(ExtraTreatmentTypeId);
@@ -196,7 +195,7 @@ public class AppointmentTests
         // Arrange
         var interval = CreateInterval(9, 10);
 
-        var appointment = Appointment.Create(interval, TreatmentTypeId, PatientId, PractitionerId, [], []);
+        var appointment = Appointment.Create(interval, TreatmentTypeId, PatientId, PractitionerId, Guid.Empty, 0m, [], []);
 
         // Act
         changeStatus(appointment);
@@ -214,7 +213,7 @@ public class AppointmentTests
     {
         // Arrange
         var interval = CreateInterval(9, 10);
-        var appointment = Appointment.Create(interval, TreatmentTypeId, PatientId, PractitionerId, [], []);
+        var appointment = Appointment.Create(interval, TreatmentTypeId, PatientId, PractitionerId, Guid.Empty, 0m, [], []);
 
         // Act & Assert
         appointment.Cancel();

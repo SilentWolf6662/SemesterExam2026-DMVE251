@@ -1,0 +1,294 @@
+@* @page fortæller Blazor hvilken URL denne side svarer på. *@
+@page "/opretbehandler"
+
+@* @rendermode InteractiveServer gør siden interaktiv via en SignalR-forbindelse
+   til serveren. Uden dette ville knapklik og @oninput ikke reagere — siden
+   ville bare være statisk HTML. *@
+@rendermode InteractiveServer
+
+@* @using er det samme som C# "using" øverst i en .cs-fil.
+   Det fortæller Blazor hvilke navnerum der skal importeres. *@
+@using System.Text.RegularExpressions
+@using BookRight.Domain.Exceptions
+@using BookRight.Facade.Command
+@using BookRight.Facade.Interfaces.UseCase
+
+@* @inject henter en service fra dependency injection-containeren.
+   CreatePractitionerUseCase bruges til at oprette en behandler i databasen. *@
+@inject ICreatePractitionerUseCase CreatePractitionerUseCase
+
+@* <PageTitle> sætter teksten i browserens faneblad. *@
+<PageTitle>Opret Behandler</PageTitle>
+
+@* <h2> er en overskrift på niveau 2.
+   id="practitioner-heading" bruges af <form aria-labelledby> nedenfor,
+   så skærmlæsere ved hvilken overskrift der hører til formularen. *@
+<h2 id="practitioner-heading">Opret Behandler</h2>
+
+@* <output> er et HTML5-element designet til at vise dynamiske resultater.
+   Det har implicit aria-live="polite", dvs. skærmlæsere annoncerer
+   ændringer automatisk uden at afbryde det brugeren er i gang med.
+   aria-atomic="true" betyder at hele elementet læses op på én gang
+   når indholdet skifter — ikke bare den ændrede del.
+   class="d-block" er Bootstrap for display:block, da <output> er inline som standard. *@
+<output aria-atomic="true" class="d-block">
+    @* @if (_error is not null) viser kun fejlbeskeden hvis der er en fejl.
+       role="alert" gør at skærmlæsere læser beskeden op med det samme. *@
+    @if (_error is not null)
+    {
+        <p class="alert alert-danger" role="alert">@_error</p>
+    }
+    @* role="status" er en blødere version af alert — annonceres når
+       brugeren ikke er i gang med noget andet. *@
+    @if (_success)
+    {
+        <p class="alert alert-success" role="status">Behandler oprettet!</p>
+    }
+</output>
+
+@* En lille hjælpetekst øverst der forklarer at * markerer påkrævede felter.
+   <span aria-hidden="true"> skjuler stjernen for skærmlæsere, da den
+   rent visuelle markering ikke giver mening i lyd. *@
+<p class="text-muted small mb-3">Felter markeret med <span aria-hidden="true">*</span> er påkrævet.</p>
+
+@* <form> grupperer alle formularens felter.
+   aria-labelledby="practitioner-heading" knytter formularen til sidens <h2>
+   overskrift — skærmlæsere annoncerer overskriften når fokus flyttes til formen.
+   novalidate slår browserens indbyggede validering fra, så vi selv styrer den.
+   @onsubmit="OnSubmit" kalder vores C#-metode når brugeren trykker "Opret".
+   @onsubmit:preventDefault stopper browseren fra at genindlæse siden ved submit. *@
+<form aria-labelledby="practitioner-heading" novalidate
+      @onsubmit="OnSubmit" @onsubmit:preventDefault>
+
+    @* Fornavn — @bind binder feltet two-way til _firstName.
+       Klassen skifter til "is-invalid" (rød ramme) hvis formularen er forsøgt indsendt
+       uden en værdi; ellers tilføjes "mb-3" (margin-bottom) for luft under feltet. *@
+    <label class="form-label" for="firstname">Fornavn <span aria-hidden="true">*</span></label>
+    <input id="firstname"
+           class="form-control @(_submitted && string.IsNullOrWhiteSpace(_firstName) ? "is-invalid" : "mb-3")"
+           type="text"
+           @bind="_firstName"
+           aria-required="true"
+           placeholder="Fornavn" />
+    @if (_submitted && string.IsNullOrWhiteSpace(_firstName))
+    {
+        <small class="invalid-feedback d-block mb-3">Fornavn er påkrævet.</small>
+    }
+
+    <label class="form-label" for="lastname">Efternavn <span aria-hidden="true">*</span></label>
+    <input id="lastname"
+           class="form-control @(_submitted && string.IsNullOrWhiteSpace(_lastName) ? "is-invalid" : "mb-3")"
+           type="text"
+           @bind="_lastName"
+           aria-required="true"
+           placeholder="Efternavn" />
+    @if (_submitted && string.IsNullOrWhiteSpace(_lastName))
+    {
+        <small class="invalid-feedback d-block mb-3">Efternavn er påkrævet.</small>
+    }
+
+    @* Telefonnummer — type="tel" aktiverer talstaturtast på mobilenheder.
+       aria-describedby="phone-hint" peger på <small>-teksten nedenfor,
+       så skærmlæsere læser hjælpeteksten op som en del af feltbeskrivelsen.
+       maxlength="20" forhindrer ekstremt lange inputs. *@
+    <label class="form-label" for="phonenumber">Telefonnummer <span aria-hidden="true">*</span></label>
+    <input id="phonenumber"
+           class="form-control @(_submitted && !IsPhoneValid ? "is-invalid" : "")"
+           type="tel"
+           @bind="_phoneNumber"
+           aria-required="true"
+           aria-describedby="phone-hint"
+           maxlength="20"
+           placeholder="11223344 eller +45 11 22 33 44" />
+    <small id="phone-hint" class="d-block text-muted @(_submitted && !IsPhoneValid ? "" : "mb-3")">
+        Skriv 8 cifre (defaulter til +45), eller med landekode: +45, +47, 0045 … Mellemrum og bindestreger ignoreres.
+    </small>
+    @if (_submitted && !IsPhoneValid)
+    {
+        <small class="invalid-feedback d-block mb-3">Ugyldigt telefonnummer. Eksempler: 11223344, +45 11 22 33 44.</small>
+    }
+
+    <label class="form-label" for="email">E-mail <span aria-hidden="true">*</span></label>
+    <input id="email"
+           class="form-control @(_submitted && !IsEmailValid ? "is-invalid" : "mb-3")"
+           type="text"
+           @bind="_email"
+           aria-required="true"
+           placeholder="navn@eksempel.dk" />
+    @if (_submitted && !IsEmailValid)
+    {
+        <small class="invalid-feedback d-block mb-3">Angiv en gyldig e-mailadresse.</small>
+    }
+
+    @* Autorisation — <select> er en dropdown-liste.
+       @onchange kalder kode hver gang brugeren vælger noget nyt.
+       Vi sender strengværdien direkte til use casen, som parser den til
+       AuthorizationType-enum — dette undgår at Blazor-laget afhænger af domæn-enumet. *@
+    <label class="form-label" for="authorization">Autorisation <span aria-hidden="true">*</span></label>
+    <select id="authorization"
+            class="form-select @(_submitted && string.IsNullOrEmpty(_authorization) ? "is-invalid" : "mb-3")"
+            value="@_authorization"
+            @onchange="e => _authorization = e.Value?.ToString() ?? string.Empty"
+            aria-required="true">
+        <option value="">-- Vælg autorisation --</option>
+        <option value="Physiotherapist">Fysioterapeut</option>
+        <option value="Masseur">Massør</option>
+        <option value="Acupuncturist">Akupunktør</option>
+        <option value="Dietician">Diætist</option>
+    </select>
+    @if (_submitted && string.IsNullOrEmpty(_authorization))
+    {
+        <small class="invalid-feedback d-block mb-3">Vælg venligst en autorisationstype.</small>
+    }
+
+    @* Autorisationsnummer — type="number" giver et numerisk inputfelt.
+       min="1" sørger for at browseren viser op/ned-pile fra 1. *@
+    <label class="form-label" for="authorizationnumber">Autorisationsnummer <span aria-hidden="true">*</span></label>
+    <input id="authorizationnumber"
+           class="form-control @(_submitted && !IsAuthNumberValid ? "is-invalid" : "mb-3")"
+           type="number"
+           @bind="_authorizationNumber"
+           aria-required="true"
+           min="1"
+           placeholder="Autorisationsnummer" />
+    @if (_submitted && !IsAuthNumberValid)
+    {
+        <small class="invalid-feedback d-block mb-3">Autorisationsnummer skal være et positivt tal.</small>
+    }
+
+    @* type="submit" gør knappen til en indsend-knap — klik kalder formens @onsubmit.
+       disabled="@_submitting" låser knappen kun mens behandleren oprettes på serveren.
+       aria-busy fortæller skærmlæsere at knappen er i gang med noget. *@
+    <button type="submit"
+            class="btn btn-primary"
+            disabled="@_submitting"
+            aria-busy="@(_submitting ? "true" : "false")">
+        @if (_submitting)
+        {
+            @* Bootstrap-spinner der vises mens serveren behandler anmodningen.
+               role="status" + aria-hidden="true": selve animationen skjules for
+               skærmlæsere, men teksten "Opretter behandler…" nedenfor læses op. *@
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            <span>Opretter behandler…</span>
+        }
+        else
+        {
+            <span>Opret Behandler</span>
+        }
+    </button>
+
+</form>
+
+@code {
+    // Tilstandsfelter — private felter med _ foran er konventionen for Blazor-state.
+    // ? efter typen betyder feltet må være null (ingen værdi endnu).
+    private string? _firstName;
+    private string? _lastName;
+    private string? _phoneNumber;
+    private string? _email;
+    private string _authorization = string.Empty;
+    private int? _authorizationNumber;
+
+    private string? _error;
+    private bool _success;
+    private bool _submitting;
+    private bool _submitted; // Sættes til true første gang brugeren forsøger at indsende — aktiverer feltvalidering
+
+    // Validerer E.164-format: + efterfulgt af 7–15 cifre (international standard).
+    // NormalizePhone sørger for at nummeret er i dette format inden validering.
+    private static readonly Regex E164Regex = new(@"^\+\d{7,15}$", RegexOptions.Compiled);
+
+    // Kræver tegn@domæne.tld — tillader de fleste gyldige e-mailadresser.
+    private static readonly Regex EmailRegex = new(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.Compiled);
+
+    // Renser og normaliserer brugerens input til E.164-format (+4511223344).
+    // 1. Fjerner mellemrum og bindestreger: "+45 11-22-33-44" → "+4511223344"
+    // 2. Konverterer 00XX-præfiks til +XX: "004511223344" → "+4511223344"
+    // 3. Tilføjer +45 som standard hvis ingen landekode: "11223344" → "+4511223344"
+    private static string NormalizePhone(string raw)
+    {
+        var cleaned = Regex.Replace(raw.Trim(), @"[\s\-]", "");
+        if (cleaned.StartsWith("00"))
+            cleaned = "+" + cleaned[2..];
+        if (!cleaned.StartsWith("+"))
+            cleaned = "+45" + cleaned;
+        return cleaned;
+    }
+
+    // Computed properties — beregnes automatisk ud fra de nuværende feltværdier.
+    private bool IsPhoneValid =>
+        !string.IsNullOrWhiteSpace(_phoneNumber) &&
+        E164Regex.IsMatch(NormalizePhone(_phoneNumber));
+
+    private bool IsEmailValid =>
+        !string.IsNullOrWhiteSpace(_email) &&
+        EmailRegex.IsMatch(_email.Trim());
+
+    private bool IsAuthNumberValid => _authorizationNumber is > 0;
+
+    // CanSubmit er true kun når alle påkrævede felter er gyldigt udfyldt.
+    private bool CanSubmit =>
+        !string.IsNullOrWhiteSpace(_firstName) &&
+        !string.IsNullOrWhiteSpace(_lastName) &&
+        IsPhoneValid &&
+        IsEmailValid &&
+        !string.IsNullOrEmpty(_authorization) &&
+        IsAuthNumberValid;
+
+    // Kaldes når formularen indsendes (brugeren klikker "Opret Behandler").
+    private async Task OnSubmit()
+    {
+        _submitted = true;
+        if (!CanSubmit) return; // Vis valideringsfejl pr. felt, men gør intet mere
+
+        _submitting = true;
+        _error = null;
+        _success = false;
+
+        // try/catch/finally: kode i try køres, catch fanger fejl, finally køres altid.
+        try
+        {
+            await CreatePractitionerUseCase.Execute(new CreatePractitionerRequest(
+                _firstName!,
+                _lastName!,
+                NormalizePhone(_phoneNumber!),
+                _email!.Trim(),
+                _authorization,       // Streng parses til AuthorizationType-enum inde i use casen
+                _authorizationNumber!.Value));
+
+            _success = true;
+            ResetForm(); // Ryd formularen så man kan oprette en ny behandler med det samme
+        }
+        catch (DomainException ex)
+        {
+            // DomainException er vores egne forretningsfejl, f.eks. "e-mail allerede i brug".
+            _error = ex.Message;
+        }
+        catch (NotFoundException ex)
+        {
+            _error = ex.Message;
+        }
+        catch (Exception)
+        {
+            // Opsamler alle andre uventede fejl og viser en generisk besked.
+            _error = "Der opstod en uventet fejl. Prøv igen.";
+        }
+        finally
+        {
+            // Slår spinner fra uanset om det gik godt eller dårligt.
+            _submitting = false;
+        }
+    }
+
+    // Nulstiller alle formularfelter til null/tom efter en vellykket oprettelse.
+    private void ResetForm()
+    {
+        _firstName = null;
+        _lastName = null;
+        _phoneNumber = null;
+        _email = null;
+        _authorization = string.Empty;
+        _authorizationNumber = null;
+        _submitted = false;
+    }
+}

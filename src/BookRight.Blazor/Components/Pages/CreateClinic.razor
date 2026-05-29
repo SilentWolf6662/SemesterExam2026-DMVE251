@@ -1,0 +1,343 @@
+@* @page fortæller Blazor hvilken URL denne side svarer på. *@
+@page "/opretklinik"
+
+@* @rendermode InteractiveServer gør siden interaktiv via en SignalR-forbindelse
+   til serveren. Uden dette ville knapklik og @oninput ikke reagere — siden
+   ville bare være statisk HTML. *@
+@rendermode InteractiveServer
+
+@* @using er det samme som C# "using" øverst i en .cs-fil.
+   Det fortæller Blazor hvilke navnerum der skal importeres. *@
+@using BookRight.Domain.Exceptions
+@using BookRight.Facade.Command
+@using BookRight.Facade.DTO
+@using BookRight.Facade.Interfaces.UseCase
+
+@* @inject henter en service fra dependency injection-containeren.
+   CreateClinicUseCase bruges til at oprette en klinik i databasen. *@
+@inject ICreateClinicUseCase CreateClinicUseCase
+
+@* <PageTitle> sætter teksten i browserens faneblad. *@
+<PageTitle>Opret Klinik</PageTitle>
+
+@* <h2> er en overskrift på niveau 2.
+   id="clinic-heading" bruges af <form aria-labelledby> nedenfor,
+   så skærmlæsere ved hvilken overskrift der hører til formularen. *@
+<h2 id="clinic-heading">Opret Klinik</h2>
+
+@* <output> er et HTML5-element designet til at vise dynamiske resultater.
+   Det har implicit aria-live="polite", dvs. skærmlæsere annoncerer
+   ændringer automatisk uden at afbryde det brugeren er i gang med.
+   aria-atomic="true" betyder at hele elementet læses op på én gang
+   når indholdet skifter — ikke bare den ændrede del.
+   class="d-block" er Bootstrap for display:block, da <output> er inline som standard. *@
+<output aria-atomic="true" class="d-block">
+    @* @if (_error is not null) viser kun fejlbeskeden hvis der er en fejl.
+       role="alert" gør at skærmlæsere læser beskeden op med det samme. *@
+    @if (_error is not null)
+    {
+        <p class="alert alert-danger" role="alert">@_error</p>
+    }
+    @* role="status" er en blødere version af alert — annonceres når
+       brugeren ikke er i gang med noget andet. *@
+    @if (_success)
+    {
+        <p class="alert alert-success" role="status">Klinik oprettet!</p>
+    }
+</output>
+
+@* En lille hjælpetekst øverst der forklarer at * markerer påkrævede felter.
+   <span aria-hidden="true"> skjuler stjernen for skærmlæsere, da den
+   rent visuelle markering ikke giver mening i lyd. *@
+<p class="text-muted small mb-3">Felter markeret med <span aria-hidden="true">*</span> er påkrævet.</p>
+
+@* <form> grupperer alle formularens felter.
+   aria-labelledby="clinic-heading" knytter formularen til sidens <h2>
+   overskrift — skærmlæsere annoncerer overskriften når fokus flyttes til formen.
+   novalidate slår browserens indbyggede validering fra, så vi selv styrer den.
+   @onsubmit="OnSubmit" kalder vores C#-metode når brugeren trykker "Opret".
+   @onsubmit:preventDefault stopper browseren fra at genindlæse siden ved submit. *@
+<form aria-labelledby="clinic-heading" novalidate
+      @onsubmit="OnSubmit" @onsubmit:preventDefault>
+
+    @* Vejnavn — @bind binder feltet two-way til _street.
+       Klassen skifter til "is-invalid" (rød ramme) hvis formularen er forsøgt indsendt
+       uden en værdi; ellers tilføjes "mb-3" (margin-bottom) for luft under feltet. *@
+    <label class="form-label" for="street">Vejnavn <span aria-hidden="true">*</span></label>
+    <input id="street"
+           class="form-control @(_submitted && string.IsNullOrWhiteSpace(_street) ? "is-invalid" : "mb-3")"
+           type="text"
+           @bind="_street"
+           aria-required="true"
+           placeholder="Vejnavn og husnummer" />
+    @if (_submitted && string.IsNullOrWhiteSpace(_street))
+    {
+        <small class="invalid-feedback d-block mb-3">Vejnavn er påkrævet.</small>
+    }
+
+    @* Postnummer — type="number" giver et numerisk inputfelt.
+       min="1000" max="9999" afgrænser til gyldige danske postnumre. *@
+    <label class="form-label" for="zipcode">Postnummer <span aria-hidden="true">*</span></label>
+    <input id="zipcode"
+           class="form-control @(_submitted && !IsZipValid ? "is-invalid" : "mb-3")"
+           type="number"
+           @bind="_zipCode"
+           aria-required="true"
+           min="1000"
+           max="9999"
+           placeholder="Postnummer" />
+    @if (_submitted && !IsZipValid)
+    {
+        <small class="invalid-feedback d-block mb-3">Postnummer skal være et gyldigt dansk postnummer (1000–9999).</small>
+    }
+
+    @* Antal rum — bruges til rumsbegrænsning når bookinger oprettes.
+       Domænet afviser bookinger der ville overstige dette antal samtidige aftaler. *@
+    <label class="form-label" for="rooms">Antal rum <span aria-hidden="true">*</span></label>
+    <input id="rooms"
+           class="form-control @(_submitted && !IsRoomsValid ? "is-invalid" : "mb-3")"
+           type="number"
+           @bind="_rooms"
+           aria-required="true"
+           min="1"
+           placeholder="Antal behandlingsrum" />
+    @if (_submitted && !IsRoomsValid)
+    {
+        <small class="invalid-feedback d-block mb-3">Antal rum skal være mindst 1.</small>
+    }
+
+    @* ── Åbningstider ────────────────────────────────────────────────────────────
+       <fieldset> grupperer de relaterede åbningstidsfelter visuelt og semantisk.
+       Skærmlæsere annoncerer <legend>-teksten som overskrift for gruppen.
+       Brugeren kan tilføje og fjerne rækker dynamisk — hver række repræsenterer
+       én åbningstid (dato + fra-tid + til-tid). *@
+    <fieldset class="mb-3">
+        <legend class="fs-6 fw-semibold mb-2">
+            Åbningstider <span aria-hidden="true">*</span>
+        </legend>
+
+        @* Valideringsfejl for hele gruppen — vises hvis ingen åbningstider er tilføjet. *@
+        @if (_submitted && _workingHours.Count == 0)
+        {
+            <p class="text-danger small mb-2" role="alert">Tilføj mindst én åbningstid.</p>
+        }
+
+        @* Tabellen vises kun når der er mindst én åbningstid.
+           table-responsive sørger for vandret scroll på små skærme. *@
+        @if (_workingHours.Count > 0)
+        {
+            <div class="table-responsive mb-2">
+                <table class="table table-sm align-middle mb-0" aria-label="Åbningstider">
+                    <thead>
+                        <tr>
+                            <th scope="col">Dato</th>
+                            <th scope="col">Fra</th>
+                            <th scope="col">Til</th>
+                            @* visually-hidden skjuler kolonneoverskriften visuelt men
+                               bevarer den for skærmlæsere. *@
+                            <th scope="col"><span class="visually-hidden">Fjern</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @* @foreach genererer én tabelrække per åbningstid i listen.
+                           .Select((r, i) => (r, i)) giver os både rækken og dens indeks,
+                           så vi kan lave unikke aria-labels (f.eks. "Dato for åbningstid 1"). *@
+                        @foreach (var (row, index) in _workingHours.Select((r, i) => (r, i)))
+                        {
+                            <tr>
+                                <td>
+                                    @* @onchange bruges i stedet for @bind fordi vi kalder en
+                                       statisk hjælpemetode der opdaterer row-objektet direkte.
+                                       row er en reference-type (class), så ændringen slår igennem
+                                       uden at vi behøver StateHasChanged. *@
+                                    <input type="date"
+                                           class="form-control form-control-sm @(_submitted && row.Date is null ? "is-invalid" : "")"
+                                           value="@(row.Date?.ToString("yyyy-MM-dd"))"
+                                           @onchange="e => OnDateChanged(row, e.Value?.ToString())"
+                                           aria-label="Dato for åbningstid @(index + 1)" />
+                                </td>
+                                <td>
+                                    <input type="time"
+                                           class="form-control form-control-sm @(_submitted && row.StartTime is null ? "is-invalid" : "")"
+                                           value="@(row.StartTime?.ToString(@"hh\:mm"))"
+                                           @onchange="e => OnStartTimeChanged(row, e.Value?.ToString())"
+                                           aria-label="Starttidspunkt for åbningstid @(index + 1)" />
+                                </td>
+                                <td>
+                                    @* Sluttid markeres ugyldig hvis den ikke er sat eller ikke er
+                                       efter starttiden — IsEndValid tjekker begge betingelser. *@
+                                    <input type="time"
+                                           class="form-control form-control-sm @(_submitted && !row.IsEndValid ? "is-invalid" : "")"
+                                           value="@(row.EndTime?.ToString(@"hh\:mm"))"
+                                           @onchange="e => OnEndTimeChanged(row, e.Value?.ToString())"
+                                           aria-label="Sluttidspunkt for åbningstid @(index + 1)" />
+                                </td>
+                                <td>
+                                    @* type="button" forhindrer at klik på fjern-knappen
+                                       utilsigtet indsender formularen. *@
+                                    <button type="button"
+                                            class="btn btn-outline-danger btn-sm"
+                                            @onclick="() => RemoveRow(row)"
+                                            aria-label="Fjern åbningstid @(index + 1)">
+                                        &times;
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        @* type="button" er vigtigt her — uden det ville knappen opføre sig som
+           type="submit" og indsende formularen i stedet for at tilføje en række. *@
+        <button type="button" class="btn btn-outline-secondary btn-sm" @onclick="AddRow">
+            + Tilføj åbningstid
+        </button>
+    </fieldset>
+
+    @* type="submit" gør knappen til en indsend-knap — klik kalder formens @onsubmit.
+       disabled="@_submitting" låser knappen kun mens klinikken oprettes på serveren.
+       aria-busy fortæller skærmlæsere at knappen er i gang med noget. *@
+    <button type="submit"
+            class="btn btn-primary"
+            disabled="@_submitting"
+            aria-busy="@(_submitting ? "true" : "false")">
+        @if (_submitting)
+        {
+            @* Bootstrap-spinner der vises mens serveren behandler anmodningen.
+               role="status" + aria-hidden="true": selve animationen skjules for
+               skærmlæsere, men teksten "Opretter klinik…" nedenfor læses op. *@
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            <span>Opretter klinik…</span>
+        }
+        else
+        {
+            <span>Opret Klinik</span>
+        }
+    </button>
+
+</form>
+
+@code {
+    // Tilstandsfelter — private felter med _ foran er konventionen for Blazor-state.
+    private string? _street;
+    private int? _zipCode;
+    private int? _rooms;
+    private List<WorkingHourRow> _workingHours = [];
+
+    private string? _error;
+    private bool _success;
+    private bool _submitting;
+    private bool _submitted; // Sættes til true første gang brugeren forsøger at indsende — aktiverer feltvalidering
+
+    // Computed properties — beregnes automatisk ud fra de nuværende feltværdier.
+    private bool IsZipValid => _zipCode is >= 1000 and <= 9999;
+    private bool IsRoomsValid => _rooms is >= 1;
+
+    // AreWorkingHoursValid kræver mindst én række og at alle rækker er fuldt udfyldt
+    // med en slutid der er efter starttiden.
+    private bool AreWorkingHoursValid => _workingHours.Count > 0 && _workingHours.All(r => r.IsValid);
+
+    // CanSubmit er true kun når alle påkrævede felter er gyldigt udfyldt.
+    private bool CanSubmit =>
+        !string.IsNullOrWhiteSpace(_street) &&
+        IsZipValid &&
+        IsRoomsValid &&
+        AreWorkingHoursValid;
+
+    // Tilføjer en ny tom åbningstidsrække til listen.
+    private void AddRow() => _workingHours.Add(new WorkingHourRow());
+
+    // Fjerner en specifik åbningstidsrække fra listen.
+    private void RemoveRow(WorkingHourRow row) => _workingHours.Remove(row);
+
+    // Statiske hjælpemetoder opdaterer row-objektet direkte — row er en reference-type
+    // så ændringen slår igennem i _workingHours-listen uden ekstra kald.
+    private static void OnDateChanged(WorkingHourRow row, string? value) =>
+        row.Date = DateOnly.TryParse(value, out var d) ? d : null;
+
+    private static void OnStartTimeChanged(WorkingHourRow row, string? value) =>
+        row.StartTime = TimeOnly.TryParse(value, out var t) ? t : null;
+
+    private static void OnEndTimeChanged(WorkingHourRow row, string? value) =>
+        row.EndTime = TimeOnly.TryParse(value, out var t) ? t : null;
+
+    // Kaldes når formularen indsendes (brugeren klikker "Opret Klinik").
+    private async Task OnSubmit()
+    {
+        _submitted = true;
+        if (!CanSubmit) return; // Vis valideringsfejl pr. felt, men gør intet mere
+
+        _submitting = true;
+        _error = null;
+        _success = false;
+
+        // try/catch/finally: kode i try køres, catch fanger fejl, finally køres altid.
+        try
+        {
+            // Konverterer åbningstidsrækkerne til de DTO'er use casen forventer.
+            // ToDateTime kombinerer DateOnly og TimeOnly til et DateTime-objekt.
+            var workingHourDtos = _workingHours.Select(r =>
+            {
+                var start = r.Date!.Value.ToDateTime(r.StartTime!.Value);
+                var end = r.Date!.Value.ToDateTime(r.EndTime!.Value);
+                return new TimeIntervalDto(start, end);
+            }).ToList();
+
+            await CreateClinicUseCase.Execute(new CreateClinicRequest(
+                _street!,
+                _zipCode!.Value,
+                workingHourDtos,
+                _rooms!.Value));
+
+            _success = true;
+            ResetForm(); // Ryd formularen så man kan oprette en ny klinik med det samme
+        }
+        catch (DomainException ex)
+        {
+            // DomainException er vores egne forretningsfejl.
+            _error = ex.Message;
+        }
+        catch (NotFoundException ex)
+        {
+            _error = ex.Message;
+        }
+        catch (Exception)
+        {
+            // Opsamler alle andre uventede fejl og viser en generisk besked.
+            _error = "Der opstod en uventet fejl. Prøv igen.";
+        }
+        finally
+        {
+            // Slår spinner fra uanset om det gik godt eller dårligt.
+            _submitting = false;
+        }
+    }
+
+    // Nulstiller alle formularfelter til null/tom efter en vellykket oprettelse.
+    private void ResetForm()
+    {
+        _street = null;
+        _zipCode = null;
+        _rooms = null;
+        _workingHours = [];
+        _submitted = false;
+    }
+
+    // Hjælpeklasse til at holde tilstanden for én åbningstidsrække i formularen.
+    // class (reference-type) bruges bevidst frem for record/struct, så @onchange-metoderne
+    // kan opdatere objektet direkte uden at Blazor skal genskabe listen.
+    private class WorkingHourRow
+    {
+        public DateOnly? Date { get; set; }
+        public TimeOnly? StartTime { get; set; }
+        public TimeOnly? EndTime { get; set; }
+
+        // Sluttiden er kun gyldig hvis den er sat og ligger efter starttiden.
+        public bool IsEndValid => EndTime is not null && StartTime is not null && EndTime > StartTime;
+
+        // En hel række er gyldig når alle tre felter er udfyldt og sluttiden er efter starttiden.
+        public bool IsValid => Date is not null && StartTime is not null && IsEndValid;
+    }
+}
