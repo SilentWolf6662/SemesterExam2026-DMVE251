@@ -1,0 +1,42 @@
+﻿using BookRight.Domain.Enums;
+using BookRight.Domain.ValueObjects;
+using BookRight.Domain.Exceptions;
+
+namespace BookRight.Domain.Entities;
+
+public class TreatmentType : AggregateRoot
+{
+    public string Name { get; private set; }
+    public AuthorizationType AuthorizationType { get; private set; }
+    public int? MaxParticipants { get; private set; }
+
+    // Listen af gyldige prisvarianter for denne behandlingstype.
+    // Hver TreatmentPrice indeholder en varighed i minutter og en tilhørende basispris.
+    public List<TreatmentPrice> Prices { get; private set; } = [];
+
+    private TreatmentType() { } // EF-Core kræver en parameterløs konstruktør
+
+    private TreatmentType(string name, AuthorizationType authorizationType, int? maxParticipants, IEnumerable<TreatmentPrice> prices)
+    {
+        Name = name;
+        AuthorizationType = authorizationType;
+        MaxParticipants = maxParticipants;
+        Prices = prices.ToList();
+    }
+
+    // Slår basisprisen op for en bestemt varighed.
+    // Kaster DomainException hvis den ønskede varighed ikke har en defineret pris —
+    // det sikrer at BookAppointmentUseCase ikke kan oprette en booking med en ugyldig varighed.
+    public decimal GetBasePrice(int durationMinutes)
+    {
+        var price = Prices.FirstOrDefault(p => p.DurationMinutes == durationMinutes)
+            ?? throw new DomainException($"Ingen pris fundet for {durationMinutes} minutters behandling");
+        return price.BasePrice;
+    }
+
+    // Factory-metode — eneste måde at oprette en TreatmentType på udefra
+    public static TreatmentType Create(string name, AuthorizationType authorizationType, int? maxParticipants, IEnumerable<TreatmentPrice> prices)
+    {
+        return new TreatmentType(name, authorizationType, maxParticipants, prices);
+    }
+}

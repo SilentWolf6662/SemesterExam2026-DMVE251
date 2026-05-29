@@ -34,7 +34,6 @@ Log/
 
 # Publish output
 publish/
-wwwroot/
 
 # =========================
 # .NET / NuGet / SDK
@@ -130,4 +129,16 @@ PublishScripts/
 # Blazor Envoirmental Settings
 # =========================
 
-*.Blazor/appsettings.json
+**/appsettings.json
+**/appsettings.Development.json
+
+# =========================
+# Fixes til blazor
+# =========================
+
+!src/BookRight.Blazor/wwwroot/lib/bootstrap/dist/
+!src/BookRight.Blazor/wwwroot/lib/bootstrap/dist/**
+!wwwroot/
+!wwwroot/**/*.*
+/src/BookRight.Blazor/appsettings.Development.json
+src/BookRight.Infrastructure/AppDbContextFactory.cs

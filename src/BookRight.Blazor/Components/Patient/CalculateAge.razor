@@ -1,0 +1,20 @@
+﻿@Age
+
+@code {
+	private int Age => AgeCalculation(Birthday);
+
+	[Parameter]	
+	public DateTime Birthday { get; set; }
+
+	private int AgeCalculation(DateTime birthday)
+	{
+		var today = DateTime.Today;
+
+		int age = today.Year - birthday.Year;
+
+		if (birthday > today.AddYears(-age)) --age;
+		return age;
+	}
+
+
+}

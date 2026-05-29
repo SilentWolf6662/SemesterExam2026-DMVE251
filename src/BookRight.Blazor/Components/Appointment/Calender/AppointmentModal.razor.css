@@ -1,0 +1,5 @@
+/* Replaces Bootstrap's .modal-dialog width constraint now that the wrapper div is gone */
+article.modal-content {
+    width: calc(100% - 1rem);
+    max-width: 500px;
+}

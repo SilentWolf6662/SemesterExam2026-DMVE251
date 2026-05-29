@@ -1,9 +1,21 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 
-@Body
+<a href="#main-content" class="skip-link visually-hidden-focusable">Spring til indhold</a>
 
-<div id="blazor-error-ui" data-nosnippet>
+<aside class="sidebar">
+    <NavMenu />
+</aside>
+
+<main id="main-content" tabindex="-1">
+    <header class="top-row px-4" aria-hidden="true"></header>
+
+    <article class="content px-4">
+        @Body
+    </article>
+</main>
+
+<aside id="blazor-error-ui" data-nosnippet role="alert">
     An unhandled error has occurred.
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
-</div>
+</aside>

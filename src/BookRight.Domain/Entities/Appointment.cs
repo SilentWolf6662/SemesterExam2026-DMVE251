@@ -10,18 +10,27 @@ public class Appointment : AggregateRoot
     public Guid TreatmentTypeId { get; private set; }
     public Guid PatientId { get; private set; }
     public Guid PractitionerId { get; private set; }
+    public Guid ClinicId { get; private set; }
     public string Note { get; private set; } = string.Empty;
     public AppointmentStatus Status { get; private set; }
-    
+    // Prisen låses fast ved oprettelsen via PricingService og TreatmentType.GetBasePrice().
+    // Den gemmes på bookingen så en fremtidig prisændring på behandlingstypen
+    // ikke påvirker allerede oprettede bookinger.
+    public decimal Price { get; private set; }
+    public DiscountType DiscountType { get; private set; }
+
     // PRIVAT constructor — tvinger brug af factory-metoden Create()
-    private Appointment() { } // EF Core
-    private Appointment(TimeInterval timeInterval, Guid type, Guid patient, Guid practitioner)
+    private Appointment() { } // EF Core kræver en parameterløs konstruktør
+    private Appointment(TimeInterval timeInterval, Guid type, Guid patient, Guid practitioner, Guid clinic)
     {
         TimeInterval = timeInterval;
         TreatmentTypeId = type;
         PatientId = patient;
         PractitionerId = practitioner;
+        ClinicId = clinic;
+        // Alle nye bookinger starter med status Booked
         Status = AppointmentStatus.Booked;
+        DiscountType = DiscountType.None;
     }
 
     // ── Factory-metode: eneste måde at oprette en booking for behandling ──────
@@ -30,19 +39,25 @@ public class Appointment : AggregateRoot
         Guid treatmentTypeId,
         Guid patientId,
         Guid practitionerId,
+        Guid clinicId,
+        decimal price,
         IEnumerable<Appointment> existingForPatient,
         IEnumerable<Appointment> existingForPractitioner)
     {
-        // Laver en ny appointment med en tid, Id for behandlingstype, patient Id og behandler Id
-        var appointment = new Appointment(timeInterval, treatmentTypeId, patientId, practitionerId);
-        // Tjek overlap mellem ny appointment med eksisterende appointment,
-        // ved at kigge på den nye appointments sluttid og starttid ligger inde i tiden for den eksisterende appointment
+        // Opret den nye booking — status sættes automatisk til Booked i konstruktøren
+        var appointment = new Appointment(timeInterval, treatmentTypeId, patientId, practitionerId, clinicId);
+
+        // Prisen tildeles efter objektet er oprettet fordi Price har private set
+        appointment.Price = price;
+
+        // Tjek at den nye booking ikke overlapper med eksisterende aktive bookinger
+        // for hverken patienten eller behandleren
         ValidateNoOverlap(appointment, existingForPatient, existingForPractitioner);
-        return appointment; // Returner den validerede appointment uden overlap
+        return appointment;
     }
 
     public void UpdateTreatmentType(Guid newType)
-    {          
+    {
         //Hvis behandlingen er aflyst, gennemført eller Noshow, kan behandlingstypen ikke opdateres
         if (Status == AppointmentStatus.Cancelled || Status == AppointmentStatus.Completed || Status == AppointmentStatus.NoShow)
         {
@@ -69,6 +84,21 @@ public class Appointment : AggregateRoot
         Status = AppointmentStatus.Completed; // Opdater status til Completed
 
         Note = note; // Gem eventuelle noter om behandlingen
+    }
+
+    // En appointment har en pris hvis den er større end 0
+    public bool HasPrice => Price > 0;
+
+    // Opdaterer prisen med den endelige beregnede pris fra PricingService.
+    public void ApplyFinalPrice(decimal finalPrice)
+    {
+        Price = finalPrice;
+    }
+
+    // Opdater rabattypen til den højeste rabat
+    public void ApplyDiscountType(DiscountType discountType)
+    {
+        DiscountType = discountType;
     }
 
     public bool IsActive => Status == AppointmentStatus.Booked; // En appointment er aktiv hvis den er 'Booked' (IKKE 'Cancelled', 'Completed', eller 'NoShow')
