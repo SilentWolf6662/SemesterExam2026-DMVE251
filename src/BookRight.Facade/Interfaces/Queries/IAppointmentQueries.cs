@@ -6,4 +6,5 @@ public interface IAppointmentQueries
 {
     Task<AppointmentDetailedDto?> GetAsync(Guid id);
     Task<IReadOnlyList<AppointmentDto>> GetAllAsync();
+    Task<IReadOnlyList<AppointmentDetailedDto>> GetAllByCombinedBookingIdAsync(Guid combinedBookingId);
 }

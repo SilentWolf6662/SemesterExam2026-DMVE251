@@ -120,6 +120,10 @@ public class BookCombinedAppointmentUseCase : IBookCombinedAppointment
         second.ApplyFinalPrice(secondBreakdown.FinalPrice);
         second.ApplyDiscountType(secondBreakdown.BestDiscount?.DiscountType ?? DiscountType.None);
 
+        var combinedId = Guid.NewGuid();
+        first.MarkAsCombined(combinedId);
+        second.MarkAsCombined(combinedId);
+
         await _appointmentRepo.AddAsync(first);
         await _appointmentRepo.AddAsync(second);
         await _appointmentRepo.SaveAsync();

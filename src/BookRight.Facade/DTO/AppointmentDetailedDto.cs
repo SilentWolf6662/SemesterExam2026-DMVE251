@@ -12,4 +12,5 @@ public record AppointmentDetailedDto(
     Guid PractitionerId,
     string Status,
     string Note,
-    decimal Price);
+    decimal Price,
+    Guid? CombinedBookingId = null);
