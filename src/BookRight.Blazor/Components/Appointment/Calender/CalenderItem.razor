@@ -8,20 +8,19 @@
    aria-haspopup="dialog" fortæller skærmlæsere at klik åbner en dialog.
    title="@Tooltip" viser en hover-tekst med alle detaljer i ét.
 *@
-<button class="calendar-apt @StatusClass" type="button" @onclick="OpenModal" aria-haspopup="dialog" title="@Tooltip">
+<button class="calendar-apt @StatusClass" type="button" @onclick="OpenModal" aria-haspopup="dialog" title="@Tooltip" style="@ItemStyle">
 
-    @* <time> er et semantisk HTML-element til dato/tidspunkt.
-       datetime-attributten giver maskinlæsbar ISO-8601 format (bruges af søgemaskiner
-       og hjælpeteknologier), mens det synlige indhold er et læservenligt format. *@
     <time datetime="@Appointment.Start.ToString("yyyy-MM-ddTHH:mm")" class="small fw-semibold d-block">
         @Appointment.Start.ToString("HH:mm")–@Appointment.End.ToString("HH:mm")
     </time>
 
-    @* Behandlerens navn vises som en blok under tidspunktet *@
     <span class="small d-block">@PractitionerName</span>
 
-    @* visually-hidden skjuler teksten visuelt men lader skærmlæsere læse den,
-       så status (f.eks. "Booket") er tilgængeligt uden at fylde i layoutet. *@
+    @if (Appointment.CombinedBookingId.HasValue)
+    {
+        <span class="apt-combined-label">Kombineret</span>
+    }
+
     <span class="visually-hidden">, @StatusLabel</span>
 </button>
 
@@ -40,6 +39,16 @@
     [Parameter] public EventCallback OnStatusChanged { get; set; }
 
     private bool _showModal;
+
+    // Højden beregnes fra varighed: 48px pr. time svarer til én kalenderrække
+    private string ItemStyle
+    {
+        get
+        {
+            double height = (Appointment.End - Appointment.Start).TotalMinutes / 60.0 * 48;
+            return $"height:{height:F0}px";
+        }
+    }
 
     // CSS-klassen styrer baggrundsfarven i CalenderItem.razor.css – én klasse pr. status
     private string StatusClass => Appointment.Status.ToLower() switch
