@@ -62,13 +62,13 @@ else
            role="alert" gør at skærmlæsere læser beskeden op med det samme. *@
         @if (_error is not null)
         {
-            <p class="alert alert-danger" role="alert">@_error</p>
+            <span class="alert alert-danger" role="alert">@_error</span>
         }
         @* role="status" er en blødere version af alert — annonceres når
            brugeren ikke er i gang med noget andet. *@
         @if (_success)
         {
-            <p class="alert alert-success" role="status">Booking oprettet!</p>
+            <span class="alert alert-success" role="status">Booking oprettet!</span>
         }
     </output>
 
@@ -88,7 +88,7 @@ else
 
         @* ClinicSelect er en Blazor-komponent vi selv har lavet (se ClinicSelect.razor).
            Parametre sendes som HTML-attributter. @ foran en værdi betyder at det er
-           C#-kode, ikke en tekststreng. EventCallback er Blazors måde at lade en
+           C#-kode, ikke en tekststreng. EventCallback er Blazors måde aKt lade en
            underkomponent "kalde op" til forælderen på — her får vi besked når
            brugeren vælger en klinik. *@
         <ClinicSelect SelectId="clinic"
@@ -262,41 +262,6 @@ else
                     }
                 </p>
 
-                @* Prisestimering for 2. behandling — vises når alle felter for 2. behandling er valgt. *@
-                @if (_loadingSecondPreview)
-                {
-                    <p class="text-muted small mt-2 mb-0" role="status" aria-live="polite">Beregner pris…</p>
-                }
-                else if (_secondPricePreview is not null)
-                {
-                    <section aria-labelledby="price-preview-2-heading" class="card mt-3 mb-0">
-                        <header class="card-header" id="price-preview-2-heading">Prisestimering 2. behandling</header>
-                        <dl class="card-body mb-0">
-                            <div class="d-flex justify-content-between mb-1">
-                                <dt class="fw-normal">Basispris</dt>
-                                <dd>@_secondPricePreview.BasePrice.ToString("N2") kr.</dd>
-                            </div>
-                            @if (_secondPricePreview.OvertimeSurcharge > 0)
-                            {
-                                <div class="d-flex justify-content-between mb-1 text-warning-emphasis">
-                                    <dt class="fw-normal">Aften/weekend-tillæg (15 %)</dt>
-                                    <dd>+ @_secondPricePreview.OvertimeSurcharge.ToString("N2") kr.</dd>
-                                </div>
-                            }
-                            @if (_secondPricePreview.DiscountAmount > 0)
-                            {
-                                <div class="d-flex justify-content-between mb-1 text-success">
-                                    <dt class="fw-normal">Rabat (@_secondPricePreview.DiscountName)</dt>
-                                    <dd>− @_secondPricePreview.DiscountAmount.ToString("N2") kr.</dd>
-                                </div>
-                            }
-                            <div class="d-flex justify-content-between border-top mt-2 pt-2 fw-bold">
-                                <dt>Pris i alt</dt>
-                                <dd>@_secondPricePreview.FinalPrice.ToString("N2") kr.</dd>
-                            </div>
-                        </dl>
-                    </section>
-                }
             </fieldset>
         }
 
@@ -373,18 +338,17 @@ else
         @* Prisestimering — vises når patient, behandlingstype, varighed, dato og tid er valgt.
            aria-live="polite" gør at skærmlæsere annoncerer ændringer uden at afbryde brugeren.
            <section> er semantisk korrekt her da det er et selvstændigt indholdsafsnit med overskrift. *@
-        @if (_loadingPreview)
+        @if (!_isCombined && _loadingPreview)
         {
             <p class="text-muted small mb-3" role="status" aria-live="polite">Beregner pris…</p>
         }
-        else if (_pricePreview is not null)
+        else if (!_isCombined && _pricePreview is not null)
         {
             <section aria-labelledby="price-preview-heading" class="card mb-3">
-                <header class="card-header" id="price-preview-heading">@(_isCombined ? "Prisestimering 1. behandling" : "Prisestimering")</header>
+                <header class="card-header" id="price-preview-heading">Prisestimering</header>
 
                 @* <dl> (description list) er det semantisk korrekte element til nøgle/værdi-par.
-                   <dt> er termen (nøglen), <dd> er definitionen (værdien).
-                   Den indre <div> giver os flex-layout uden at bryde semantikken. *@
+                   <dt> er termen (nøglen), <dd> er definitionen (værdien). *@
                 <dl class="card-body mb-0">
                     <div class="d-flex justify-content-between mb-1">
                         <dt class="fw-normal">Basispris</dt>
@@ -419,29 +383,49 @@ else
         }
 
         @* Samlet pris for kombineret besøg — vises kun når begge behandlinger er estimeret. *@
-        @if (_isCombined && _pricePreview is not null && _secondPricePreview is not null)
+        @if (_isCombined && _loadingSecondPreview)
         {
-            var totalWithoutDiscount = _pricePreview.PriceBeforeDiscount + _secondPricePreview.PriceBeforeDiscount;
-            var totalFinal = _pricePreview.FinalPrice + _secondPricePreview.FinalPrice;
-            var totalDiscount = _pricePreview.DiscountAmount + _secondPricePreview.DiscountAmount;
+            <p class="text-muted small mb-3" role="status" aria-live="polite">Beregner pris…</p>
+        }
+        else if (_isCombined && _pricePreview is not null && _secondPricePreview is not null)
+        {
+            var baseTotal    = _pricePreview.BasePrice + _secondPricePreview.BasePrice;
+            var surchargeTotal = _pricePreview.OvertimeSurcharge + _secondPricePreview.OvertimeSurcharge;
+            var discountTotal  = _pricePreview.DiscountAmount + _secondPricePreview.DiscountAmount;
+            var finalTotal     = _pricePreview.FinalPrice + _secondPricePreview.FinalPrice;
 
             <section aria-labelledby="price-total-heading" class="card mb-3 border-primary">
                 <header class="card-header bg-primary text-white" id="price-total-heading">Samlet pris for besøget</header>
                 <dl class="card-body mb-0">
                     <div class="d-flex justify-content-between mb-1">
-                        <dt class="fw-normal">Pris uden rabat</dt>
-                        <dd>@totalWithoutDiscount.ToString("N2") kr.</dd>
+                        <dt class="fw-normal">1. behandling (Basispris)</dt>
+                        <dd>@_pricePreview.BasePrice.ToString("N2") kr.</dd>
                     </div>
-                    @if (totalDiscount > 0)
+                    <div class="d-flex justify-content-between mb-1">
+                        <dt class="fw-normal">2. behandling (Basispris)</dt>
+                        <dd>@_secondPricePreview.BasePrice.ToString("N2") kr.</dd>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1 border-top mt-2 pt-2">
+                        <dt class="fw-normal">Samlet basispris uden rabat</dt>
+                        <dd>@baseTotal.ToString("N2") kr.</dd>
+                    </div>
+                    @if (surchargeTotal > 0)
+                    {
+                        <div class="d-flex justify-content-between mb-1 text-warning-emphasis">
+                            <dt class="fw-normal">Samlet tillæg (15 %)</dt>
+                            <dd>+ @surchargeTotal.ToString("N2") kr.</dd>
+                        </div>
+                    }
+                    @if (discountTotal > 0)
                     {
                         <div class="d-flex justify-content-between mb-1 text-success">
                             <dt class="fw-normal">Samlet rabat (@_pricePreview.DiscountName)</dt>
-                            <dd>− @totalDiscount.ToString("N2") kr.</dd>
+                            <dd>− @discountTotal.ToString("N2") kr.</dd>
                         </div>
                     }
                     <div class="d-flex justify-content-between border-top mt-2 pt-2 fw-bold fs-5">
                         <dt>Total</dt>
-                        <dd>@totalFinal.ToString("N2") kr.</dd>
+                        <dd>@finalTotal.ToString("N2") kr.</dd>
                     </div>
                 </dl>
             </section>
