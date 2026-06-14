@@ -5,8 +5,9 @@
 @inject IAppointmentQueries AppointmentQueries
 @inject IPatientQueries PatientQueries
 @inject ITreatmentTypeQueries TreatmentTypeQueries
+@inject IPractitionerQueries PractitionerQueries
 @inject IChangeStatusUseCase ChangeStatusUseCase
-@inject IJSRuntime JS
+@inject IJSRuntime Js
 @implements IAsyncDisposable
 
 @* ── Mørkt overlay bag modalen ───────────────────────────────────────────────
@@ -26,7 +27,7 @@
    @onclick="OnClose" lukker dialogen hvis man klikker på baggrunden.
    @onkeydown="HandleKeyDown" fanger tastaturhændelser (fx Escape).
 *@
-<dialog open class="modal fade show d-flex align-items-center justify-content-center p-3"
+<dialog open="true" class="modal fade show d-flex align-items-center justify-content-center p-3"
         aria-modal="true"
         aria-labelledby="apt-modal-title"
         @onclick="OnClose"
@@ -41,7 +42,9 @@
                <header> grupperer modalens titelrække og luk-knap.
                id="apt-modal-title" er det id som aria-labelledby peger på. *@
             <header class="modal-header">
-                <h5 class="modal-title" id="apt-modal-title">Aftaledetaljer</h5>
+                <h5 class="modal-title" id="apt-modal-title">
+                    @(_details?.CombinedBookingId.HasValue == true ? "Kombineret aftale" : "Aftaledetaljer")
+                </h5>
 
                 @* Luk-knap – disabled mens en gemmehandling kører så brugeren
                    ikke kan lukke og miste igangværende ændringer. *@
@@ -55,8 +58,6 @@
             <section class="modal-body">
                 @if (_loading)
                 {
-                    @* Bootstrap spinner – aria-hidden="true" skjuler det animerede
-                       ikon for skærmlæsere da selve teksten "Indlæser…" er nok. *@
                     <p class="text-center text-muted my-3">
                         <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                         Indlæser detaljer…
@@ -66,17 +67,79 @@
                 {
                     <p class="text-danger">Kunne ikke hente aftaledetaljer.</p>
                 }
-                else
+                else if (_details.CombinedBookingId.HasValue)
                 {
-                    @* <dl> (definition list) er den semantisk korrekte HTML-struktur
-                       til nøgle-/værdiparlister som "Dato: 12. maj 2025".
-                       <dt> = definition term (etiketten), <dd> = definition data (værdien).
-                       Bootstrap's "row" klasse på <dl> kombineret med col-sm-* på
-                       <dt>/<dd> laver et to-kolonne grid-layout. *@
+                    @* ── Kombineret booking ──────────────────────────────────── *@
                     <dl class="row mb-0">
                         <dt class="col-sm-5">Dato</dt>
                         <dd class="col-sm-7">
-                            @* <time> med maskinlæsbar datetime og læsvenligt synligt indhold *@
+                            <time datetime="@_details.Start.ToString("yyyy-MM-dd")">
+                                @_details.Start.ToString("dd. MMMM yyyy")
+                            </time>
+                        </dd>
+
+                        <dt class="col-sm-5">Samlet tidspunkt</dt>
+                        <dd class="col-sm-7">
+                            <time datetime="@_details.Start.ToString("yyyy-MM-ddTHH:mm")">
+                                @_details.Start.ToString("HH:mm") – @(_secondDetails?.End.ToString("HH:mm") ?? _details.End.ToString("HH:mm"))
+                            </time>
+                        </dd>
+
+                        <dt class="col-sm-5">Status</dt>
+                        <dd class="col-sm-7"><span class="badge @StatusBadgeClass">@StatusLabel</span></dd>
+
+                        <dt class="col-sm-5">Patient</dt>
+                        <dd class="col-sm-7">@(_patient is null ? "Ukendt" : $"{_patient.FirstName} {_patient.LastName}")</dd>
+                    </dl>
+
+                    <hr class="my-2" />
+
+                    <p class="fw-semibold mb-1 small">1. behandling</p>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Tid</dt>
+                        <dd class="col-sm-7">@_details.Start.ToString("HH:mm") – @_details.End.ToString("HH:mm")</dd>
+                        <dt class="col-sm-5">Behandler</dt>
+                        <dd class="col-sm-7">@PractitionerName</dd>
+                        <dt class="col-sm-5">Behandlingstype</dt>
+                        <dd class="col-sm-7">@(_treatmentType?.Name ?? "Ukendt")</dd>
+                        @if (!string.IsNullOrWhiteSpace(_details.Note))
+                        {
+                            <dt class="col-sm-5">Note</dt>
+                            <dd class="col-sm-7">@_details.Note</dd>
+                        }
+                    </dl>
+
+                    @if (_secondDetails is not null)
+                    {
+                        <hr class="my-2" />
+                        <p class="fw-semibold mb-1 small">2. behandling</p>
+                        <dl class="row mb-0">
+                            <dt class="col-sm-5">Tid</dt>
+                            <dd class="col-sm-7">@_secondDetails.Start.ToString("HH:mm") – @_secondDetails.End.ToString("HH:mm")</dd>
+                            <dt class="col-sm-5">Behandler</dt>
+                            <dd class="col-sm-7">@_secondPractitionerName</dd>
+                            <dt class="col-sm-5">Behandlingstype</dt>
+                            <dd class="col-sm-7">@(_secondTreatmentType?.Name ?? "Ukendt")</dd>
+                            @if (!string.IsNullOrWhiteSpace(_secondDetails.Note))
+                            {
+                                <dt class="col-sm-5">Note</dt>
+                                <dd class="col-sm-7">@_secondDetails.Note</dd>
+                            }
+                        </dl>
+                    }
+
+                    <hr class="my-2" />
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Samlet pris</dt>
+                        <dd class="col-sm-7">@((_details.Price + (_secondDetails?.Price ?? 0)).ToString("N2")) kr.</dd>
+                    </dl>
+                }
+                else
+                {
+                    @* ── Enkelt booking ──────────────────────────────────────── *@
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Dato</dt>
+                        <dd class="col-sm-7">
                             <time datetime="@_details.Start.ToString("yyyy-MM-dd")">
                                 @_details.Start.ToString("dd. MMMM yyyy")
                             </time>
@@ -90,11 +153,7 @@
                         </dd>
 
                         <dt class="col-sm-5">Status</dt>
-                        <dd class="col-sm-7">
-                            @* <span class="badge"> er en Bootstrap-pille-komponent der viser
-                               status med en farvet baggrund (klassen sættes dynamisk af C#). *@
-                            <span class="badge @StatusBadgeClass">@StatusLabel</span>
-                        </dd>
+                        <dd class="col-sm-7"><span class="badge @StatusBadgeClass">@StatusLabel</span></dd>
 
                         <dt class="col-sm-5">Patient</dt>
                         <dd class="col-sm-7">@(_patient is null ? "Ukendt" : $"{_patient.FirstName} {_patient.LastName}")</dd>
@@ -105,7 +164,6 @@
                         <dt class="col-sm-5">Behandlingstype</dt>
                         <dd class="col-sm-7">@(_treatmentType?.Name ?? "Ukendt")</dd>
 
-                        @* Noten vises kun hvis den ikke er tom – ingen tom række i listen *@
                         @if (!string.IsNullOrWhiteSpace(_details.Note))
                         {
                             <dt class="col-sm-5">Note</dt>
@@ -184,8 +242,11 @@
     // ser bekræftelsesbanneret, og trykker derefter "Bekræft" for at gemme
     private string? _pendingStatus;
     private AppointmentDetailedDto? _details;
+    private AppointmentDetailedDto? _secondDetails;
     private PatientDetailedDto? _patient;
     private TreatmentTypeDto? _treatmentType;
+    private TreatmentTypeDto? _secondTreatmentType;
+    private string _secondPractitionerName = "Ukendt";
 
     // Afsluttede, aflyste og udeblevne aftaler må ikke ændres igen – domæneregel
     private bool IsTerminalStatus =>
@@ -198,14 +259,14 @@
             // Fokus flyttes til dialogen og fangstlåses via JS så tastaturnavigation
             // ikke undslipper modalen (WCAG 2.1 succeskriterie 2.1.2)
             await _dialogRef.FocusAsync();
-            await JS.InvokeVoidAsync("accessibility.trapFocus", _dialogRef);
+            await Js.InvokeVoidAsync("accessibility.trapFocus", _dialogRef);
         }
     }
 
     public async ValueTask DisposeAsync()
     {
         // Frigiver fokus-fangsten, så resten af siden igen kan modtage tastaturinput
-        await JS.InvokeVoidAsync("accessibility.releaseFocus", _dialogRef);
+        await Js.InvokeVoidAsync("accessibility.releaseFocus", _dialogRef);
     }
 
     protected override async Task OnInitializedAsync()
@@ -216,6 +277,19 @@
         {
             _patient = await PatientQueries.GetAsync(_details.PatientId);
             _treatmentType = await TreatmentTypeQueries.GetAsync(_details.TreatmentTypeId);
+
+            if (_details.CombinedBookingId.HasValue)
+            {
+                var combined = await AppointmentQueries.GetAllByCombinedBookingIdAsync(_details.CombinedBookingId.Value);
+                _secondDetails = combined.FirstOrDefault(a => a.Id != AppointmentId);
+
+                if (_secondDetails is not null)
+                {
+                    _secondTreatmentType = await TreatmentTypeQueries.GetAsync(_secondDetails.TreatmentTypeId);
+                    var secondPractitioner = await PractitionerQueries.GetAsync(_secondDetails.PractitionerId);
+                    _secondPractitionerName = secondPractitioner is null ? "Ukendt" : $"{secondPractitioner.FirstName} {secondPractitioner.LastName}";
+                }
+            }
         }
 
         _loading = false;
@@ -263,7 +337,7 @@
         _saving = true;
         // Gem den ønskede status lokalt inden vi nulstiller _pendingStatus,
         // så re-render ikke mister værdien før asynkront kald er afsluttet
-        var statusToApply = _pendingStatus;
+        string? statusToApply = _pendingStatus;
         _pendingStatus = null;
         await ChangeStatusUseCase.Execute(new ChangeStatusRequest(_details.Id, _details.Note, statusToApply));
         // Henter opdaterede detaljer så badge og knapper reflekterer den nye status

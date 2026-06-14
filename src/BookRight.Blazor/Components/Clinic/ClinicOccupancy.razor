@@ -25,22 +25,19 @@
     }
     else
     {
-        @* Bootstrap-grid: row-cols-1 giver én kolonne på mobil,
-           row-cols-md-2 giver to kolonner på mellemstore skærme og større.
-           g-3 er gutter (afstand) mellem kortene. *@
-        <div class="row row-cols-1 row-cols-md-2 g-3">
+        @* <ul> er semantisk korrekt for en liste af ensartede elementer (klinikker).
+           list-unstyled fjerner bullets. Bootstrap-grid-klasserne styrer layoutet. *@
+        <ul class="row row-cols-1 row-cols-md-2 g-3 list-unstyled">
             @foreach (var clinic in _occupancy)
             {
-                <div class="col">
-                    @* h-100 strækker kortet til fuld højde i sin kolonne
-                       så alle kort er lige høje på samme række. *@
-                    <div class="card h-100">
+                @* <li> er list item — det direkte barn af <ul>. *@
+                <li class="col">
+                    @* <article> er semantisk korrekt for selvstændigt indhold der giver
+                       mening alene, her et klinik-kort med egne data. *@
+                    <article class="card h-100">
                         <div class="card-body">
                             <h5 class="card-title">@clinic.Address</h5>
 
-                            @* <dl> (description list) er det semantisk korrekte element til nøgle/værdi-par.
-                               <dt> er termen (nøglen), <dd> er definitionen (værdien).
-                               Bootstrap's row/col-klasser giver et pænt to-kolonne-layout. *@
                             <dl class="row mb-2">
                                 <dt class="col-sm-7">Rum i alt</dt>
                                 <dd class="col-sm-5">@clinic.TotalRooms</dd>
@@ -50,34 +47,27 @@
 
                                 <dt class="col-sm-7">Peak samtidige rum</dt>
                                 <dd class="col-sm-5">@clinic.PeakConcurrentRooms</dd>
+
+                                @* Belægning er en nøgle/værdi-pair og hører naturligt i <dl>. *@
+                                <dt class="col-sm-7">Belægning</dt>
+                                <dd class="col-sm-5">@clinic.OccupancyPercent %</dd>
                             </dl>
 
-                            @* Belægningsprocenten vises som en Bootstrap progress-bar.
-                               role="progressbar" fortæller skærmlæsere at elementet
-                               repræsenterer en fremskridtsindikator.
-                               aria-valuenow, aria-valuemin og aria-valuemax giver
-                               skærmlæsere de nødvendige grænseværdier til at annoncere
-                               den aktuelle procent korrekt. *@
-                            <div class="d-flex justify-content-between mb-1">
-                                <small>Belægning</small>
-                                <small>@clinic.OccupancyPercent %</small>
-                            </div>
+                            @* Bootstrap progress-bar kræver disse to <div>-elementer — ingen semantisk alternativ. *@
                             <div class="progress" role="progressbar"
                                  aria-valuenow="@clinic.OccupancyPercent"
                                  aria-valuemin="0"
                                  aria-valuemax="100"
                                  aria-label="Belægning @clinic.OccupancyPercent procent">
-                                @* Farven skifter efter belægning: grøn under 60 %, gul 60–90 %, rød 90 %+.
-                                   style="width:" sætter søjlens bredde til belægningsprocenten. *@
                                 <div class="progress-bar @GetBarColor(clinic.OccupancyPercent)"
                                      style="width: @clinic.OccupancyPercent%">
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    </article>
+                </li>
             }
-        </div>
+        </ul>
     }
 </section>
 

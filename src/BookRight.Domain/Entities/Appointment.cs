@@ -101,6 +101,10 @@ public class Appointment : AggregateRoot
         DiscountType = discountType;
     }
 
+    public Guid? CombinedBookingId { get; private set; }
+
+    public void MarkAsCombined(Guid id) => CombinedBookingId = id;
+
     public bool IsActive => Status == AppointmentStatus.Booked; // En appointment er aktiv hvis den er 'Booked' (IKKE 'Cancelled', 'Completed', eller 'NoShow')
 
     // Metode til at validere at en oprettet appointment ikke overlapper med en eksisterende appoinment
