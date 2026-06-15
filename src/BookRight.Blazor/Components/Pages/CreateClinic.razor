@@ -159,7 +159,7 @@
                                 <td>
                                     <input type="time"
                                            class="form-control form-control-sm @(_submitted && row.StartTime is null ? "is-invalid" : "")"
-                                           value="@(row.StartTime?.ToString(@"hh\:mm"))"
+                                           value="@(row.StartTime?.ToString(@"HH\:mm"))"
                                            @onchange="e => OnStartTimeChanged(row, e.Value?.ToString())"
                                            aria-label="Starttidspunkt for åbningstid @(index + 1)" />
                                 </td>
@@ -168,7 +168,7 @@
                                        efter starttiden — IsEndValid tjekker begge betingelser. *@
                                     <input type="time"
                                            class="form-control form-control-sm @(_submitted && !row.IsEndValid ? "is-invalid" : "")"
-                                           value="@(row.EndTime?.ToString(@"hh\:mm"))"
+                                           value="@(row.EndTime?.ToString(@"HH\:mm"))"
                                            @onchange="e => OnEndTimeChanged(row, e.Value?.ToString())"
                                            aria-label="Sluttidspunkt for åbningstid @(index + 1)" />
                                 </td>
